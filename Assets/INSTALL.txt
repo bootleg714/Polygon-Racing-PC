@@ -1,0 +1,10 @@
+Polygon Racing VR - dashboard text fix v02
+
+1. Stop Play Mode in Unity.
+2. Merge this ZIP's Assets folder into your Polygon Racing VR project root. Replace the two C# scripts when asked; keep existing .meta files.
+3. Return to Unity and let it compile, then press Play.
+
+No need to run Create Forest Circuit again. The driver shrinks the existing dashboard automatically when Play starts. New generated circuits also use the smaller text.
+
+Character size reduced from 0.031 to 0.008 (about 74% smaller). Handling and camera settings unchanged.
+Source diff and ZIP integrity checked. Visual verification remains in your local Unity editor/headset.

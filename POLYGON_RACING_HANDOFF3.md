@@ -1,0 +1,562 @@
+# Polygon Racing VR — current development handoff
+
+Updated: October 26, 2026 (America/Chicago).
+
+This replaces the previous contents of this handoff. It supersedes the old v01/v02 instructions: slipstreaming, the coastal circuit, marina, minimap, banking and the seaside venue are now implemented and user-tested. Do not restart from the old “implement slipstreaming next” plan.
+
+## Resume here
+
+Latest PC validation (October 26, 2026): Thomas completed a Riviera Harbour test lap, reported that the lighting looks good, and confirmed that tree shadows visibly affect the car. The lighting and car-shadow behavior are user-validated; this does not establish measured frame rate or completion of the separate building-side geometry work. See the local-checkpoint note below.
+
+Thomas has a working standalone Quest 2 arcade racer and a first Windows desktop configuration in this separate PC copy. The current accepted gameplay baseline combines **Coastal Style v11 Seaside Paddock**, **v10 Gantry Lettering Fix**, **v09 Start Gantry**, earlier coastal dependencies, and **Rival Pace v02 Arcade Corners**.
+
+Latest feedback: Thomas likes the faster opponents and noticed their avoidance behavior. They previously lost ground in tight bends because AI alone braked for curvature while the player could stay flat out. The latest rival patch removes that curvature speed cap, retaining traffic slowing, lane changes, drafting and existing rubberbanding. Do not add corner braking back yet.
+
+Immediate next step: open this copy in Unity, confirm Windows is the active build platform, build and play without a headset, and test the controls and six circuit menu entries. Keep the gameplay baseline unchanged. Once desktop behavior is confirmed, race several rounds to judge whether drafting supports repeated exchanges of position; only adjust catch-up or baseline pace if those tests show an actual remaining problem.
+
+## Graphics revamp — Look v01: sky, light and water (in testing)
+
+Thomas asked for a graphics revamp done entirely in code (no image generation). Agreed order: sky/lighting/water/shader first, then car and cockpit, then scenery models. Look v01 is committed but **not yet headset-tested**.
+
+What it does (no geometry, route, cockpit, tracking or gameplay changes):
+
+- `PolygonFlat.shader` (Resources): flat-lit polygon shader. Facet normal from screen-space derivatives of camera-relative position, oriented toward the viewer (no reliance on mesh normals or platform derivative sign). Half-wrapped sun + sky/ground hemisphere ambient (material properties, not Unity's ambient probe), mild rim tinted by fog colour, contact darkening on the lower 1.6 m of vertical faces, emission kept (start lights), radial per-pixel linear fog. SRP-batcher layout, stereo/instancing macros, DepthOnly pass.
+- `PolygonWater.shader`: flat water geometry with per-pixel animated triangular-lattice facets (7 m cells, 0.85 m virtual waves), facet colour variation, Fresnel sky reflection (horizon = fog colour), sun glints. Facets fade out 60–320 m and the lattice math is skipped past the fade.
+- `PolygonSky.shader`: skybox gradient (zenith → horizon = fog colour), sun disc/halo from the main light.
+- `PolygonClouds.shader` + generated mesh: 16 faceted cloud puffs 7–17° above the horizon, re-centred on each eye in the vertex shader so they sit at infinity (ring radius 1100 m coastal / 650 m forest, inside the far clip planes 1400/850). Mesh bounds are huge so it is never culled.
+- `PolygonLook.cs` (Runtime): per-layout presets and `LitShader()`; `PolygonWorld.Paint`, `PolygonRace` panel and `PolygonRival` suit/helmet materials now use it.
+- `PolygonLookSetup.cs` (Editor): menu **Polygon Racing → 9 - Apply Sky, Light and Water Look**. Backs up both scenes to `PolygonRacingBackups`, converts Simple Lit materials in place (colour, emission and cull kept), converts water materials only on water objects (merged landmark meshes that share the lagoon colour get a flat “twin” material in `Generated/Look`), sets sun, trilight ambient, fog, skybox and camera clear flags, rebuilds clouds. Menus 6 and 7 call the same apply step, so a coastal scenery refresh keeps the look.
+
+Presets: coastal sun Euler(38,−35) colour (1,.94,.82) ×1.3, fog 380–1300 m, horizon (.66,.86,.93), zenith (.16,.46,.82). Forest sun Euler(42,−35) ×1.25, fog 220–800 m, horizon (.70,.84,.88). Shared ambient sky (.60,.74,.86), ground (.50,.42,.33) × 0.75. Tune live on materials / Lighting window; re-running menu 9 resets to the presets in `PolygonLook.cs`.
+
+Install: pull, let Unity import (check the Console for shader errors — magenta means a shader failed), run menu 9 once, Play in editor, then Build And Run. Watch: shader errors, water shimmer or sparkle in the headset, frame rate on the coastal straight, whether the sun disc/clouds look right in both eyes, cockpit readability.
+
+Headset result for Look v01: accepted, FPS good with no dips, water facets visible but too subtle. Water strengthened in the next commit (cell 8 m, waves 1.5 m, speed 1.2, tint 0.22, fade 90–420 m, Fresnel 0.35, glint 2.0 / power 60); menu 9 writes these values onto the existing water materials.
+
+### Car and cockpit — Car v01 (in testing)
+
+Menu **Polygon Racing → 10 - Rebuild Player Car (Faceted)** (`Editor/PolygonCarSetup.cs`) backs up both scenes and replaces the player car's old box parts with one multi-material faceted body mesh: lofted nose with ivory centre stripe, open cockpit tub, shaped sidepods with dark intakes, engine cover/airbox, floor, diffuser strakes, two-element front wing, rear wing with swan-neck pylons, wishbones/pushrods and mirrors. It also rebuilds the steering wheel (flat-bottom rim, grips, centre plate with coloured buttons, yellow top marker) under the existing `Steering wheel` pivot, and gives each existing tyre an 18-sided chamfered mesh plus a rim child with five ivory spokes and a metal nut.
+
+Kept exactly: car root and `PolygonDriver` values, `Seated tracking space`/camera at `(0, 1.03, −0.53)`, the tuned `Dashboard` box (0, .8, .43; scale .4×.15×.1) and `Live instruments` text, steering/wheel pivots and the `wheels`/`frontSteering`/`steeringWheel` references. Only known old part names are deleted. Steering-wheel top stays at y ≈ .83 so it does not cover the instrument text from the seat.
+
+Meshes and seven double-sided flat-lit materials live in `Assets/PolygonRacing/Generated/Car`. The livery material is `PR_Vermilion car body` (name prefix required: rivals recolour `PR_Vermilion*`), so rivals get the new body in their team colours automatically. Re-running menu 10 reuses the same assets and keeps any colours tuned in the Inspector. Body is about 2,000 triangles in one renderer.
+
+Headset result for Car v01: “massive difference”, FPS good, water now clearly visible. Feedback: suspension top bars ended in mid-air; steering-wheel rim segments were asymmetric/hollow (grip test depended on segment order, open square tubes); wanted tilt, a smoother rim and more button detail.
+
+Car v02 (menu 10 again): metal uprights on each wheel pivot (front ones steer, with a steering arm), flat aero wishbones that start just inside the real body surface (`BodyHalfWidth` intersects the nose/engine/sidepod sections) and end on the uprights, plus pushrods. Steering wheel is one continuous swept 6-sided tube around a flat-bottomed oval (40 samples, grip thickness from |cos t| so it is symmetric), carbon centre plate, teal display, 9-segment LED strip (static until the tachometer pass), octagonal buttons, two rotary knobs, shift paddles, yellow top marker. Tilt 15° comes from a new parent `Steering column - tilted`; `PolygonDriver` still rotates the `Steering wheel` transform about its own axis. Two new materials: `PR_Car LED green`, `PR_Car display`.
+
+Headset result for Car v02: everything looked good. Next agreed step: scenery models.
+
+### Scenery models — Scenery v01 (in testing)
+
+New `Runtime/PolygonSceneryMeshes.cs` generates the models (closed shapes wound outward from a local centre; fronds/sails emitted with both windings, so ordinary back-face culling works):
+
+- Palms: three variants (height/lean) with ringed, curving 8-segment trunks, 12 serrated drooping fronds split into two meshes so alternate fronds use the two greens, and a coconut cluster (`CE Art Coconut brown`). Same footprint as before; variant picked from position.
+- Rocks: noisy squashed icosphere boulders (3 seeds) for beach outcrops and the lighthouse islet; stepped four-layer sandstone mesas (3 seeds) for headland cliffs, inland bluffs and canyon walls; gentler boulders for the four islands. Old object names are kept (marina and banking code match them by name).
+- Offshore boats: lofted hull with transom, cabin, mast and boom, mainsail and jib (scaled 1.3).
+- Lighthouse: tapered octagonal striped tiers, flared gallery with 16 railing posts and a rail, glazed lantern, coral dome.
+- Forest (menu **11 - Refresh Forest Scenery Models**, `Editor/PolygonSceneryModelsSetup.cs`): the 159 pines become tiered faceted pines (three variants, unit-height meshes scaled by the original height, variant from position) and the 15 pyramid hills become rounded faceted mountains, reusing the existing materials. Backs up the scene; safe to re-run.
+
+Coastal models update by running menu 7 (it re-applies the look). Not yet touched: grandstands/crowds, Sunbay houses and moored boats, paddock buildings and parked cars, start gantry, bridge, signs, forest pit garages and grandstand.
+
+Headset result for Scenery v01: looked good; forest good. Two bugs: palm fronds missing (C# `Mathf.Sin(Mathf.PI)` is slightly negative, `Pow(negative,.7)` gave NaN vertices, so the whole crown mesh was culled) and faint road-sign text visible through rocks (TextMesh default font material ignores depth).
+
+### Scenery v02 (in testing)
+
+- Fixes: frond width clamps `Max(0, sin)`; menu 7/9 now give all non-cockpit TextMesh signs a shared depth-tested lettering material (`Generated/Look/Sign lettering depth tested.mat`, `PolygonGantryLettering` shader, which now also takes fog) and add `PolygonSignLettering` to the circuit root to rebind the font atlas.
+- `Runtime/PolygonSceneryKit.cs`: multi-material mesh kit (boxes, beams, chamfered octagon frustums, columns, sheets, seated `Person`) that bakes one mesh per material. Details always stand proud of their surface.
+- Seaside grandstands: stepped concrete, bay-coloured benches with backrests, ~580 seated faceted fans (torso, legs, head, hair or cap, some arms raised), front rail, ribbed back wall; sails kept.
+- Sunbay houses: pilasters, cornice, hipped roof with overhang and chimney, shuttered windows with sills/lintels on all faces, door canopy, water-side balcony on brackets with railings, sloped striped cafe awning with valance, two umbrellas. Moored boats use the offshore sailboat meshes (0.9 scale).
+- Paddock: chamfered control tower with coral belt, teal fins, raked wrap-around glazing with mullions, overhanging roof, balcony, mast. Team bays are open-front garages (team back wall, side walls, overhanging roof, fascia, roof units). Parked cars are real copies of the player car: CoastalArt leaves `Paddock parked car slots` outside the merged paddock and `PolygonCarSetup.FillParkedCarSlots` (called by menus 6/7) builds them with `PR_Paddock car livery 1-3`.
+- Start gantry: chamfered tapered pylons with collars and teal fins, banners, visor hoods over the five signals, housing trim. Lenses, lights controller and lettering unchanged.
+- Bridge: gates removed (parapet gaps at ±88 closed); twin teal tied arches (parabola, 16.8 m crown) with cream hangers at the markers and three overhead braces; octagonal piers.
+- Forest (menu 11): pit garages rebuilt (canopy, fascia, slatted roller door, pilasters, roof units, number panel) using their own materials; grandstand rebuilt with benches, ~130 fans, back/side walls, columns, trussed cantilever roof (`Generated/Scenery/PR_Crowd *` materials; hidden `Grandstand materials` marker keeps the palette for re-runs).
+
+### Downtown street circuit — Downtown v01 (built in Unity, not yet on Quest)
+
+New third circuit, "POLYGON CITY" (`PolygonCircuitLayout.Downtown`, scene `Assets/PolygonRacing/Scenes/DowntownCircuit.unity`, lap 3,213 m, road half-width 10 m). Inspired by the reserved downtown screenshots' ideas (dense stands, repeated canopies, bold team flags, tall buildings, busy gantry), with original designs and the game's palette.
+
+- Route: city grid with 90-degree corners (B-spline radius about 35 m, fine at the 21.6 m minimum turning radius at top speed), boulevards up to about 700 m, two block-step jogs. Knots 32 m either side of each grid corner. Start straight runs +x; inside of the loop is +z.
+- Race menu: circuit list is FOREST / COASTAL / DOWNTOWN STREETS / BACK (desktop buttons too). Time Trial key `DowntownV01`.
+- Look preset: golden hour (sun Euler 26,-62, warm 1.35, peach horizon .93,.80,.68, fog 320-1150 m). Camera far clip 1400.
+- `Runtime/PolygonDowntownArt.cs` builds everything, baked per material into 400 m chunks via `PolygonSceneryKit` (ground sits at y -0.25 to avoid distant z-fighting with road paint at .025):
+  cross-section road 0-10 m (edge line 9.6-10) | kerbs 10-11.2 at corners | run-off to 16.8 | livery wall 16.8-17.4 with debris fence to 4 m | sidewalk to 26 | buildings from 27.5 m (footprint+2.5 m clearance by `ProjectLap`). Driver barrier limit 16.5 m matches the wall.
+  Start gantry at d 32 (truss, "POLYGON CITY" depth-tested lettering both sides, five-light signal with `PolygonStartLights`), timing pylon, six grandstands with seated crowds (`PersonLite`) and peaked canopy modules, team garage block with six paddock car slots (filled by `PolygonCarSetup.FillParkedCarSlots`), monorail viaduct crossing the north boulevard at 10 m with a parked train, street lamps, trees, team flags, corner boards, procedural towers (glass, stepped, round, apartments, plazas) with three detail levels by distance from the track, harbor with sea wall, water and boats, distant skyline ring.
+- Menu **12 - Create or Refresh Downtown Circuit** (`Editor/PolygonDowntownSetup.cs`): first run copies the Forest scene (tested car, cockpit, tracking, race systems), then builds scenery, parked cars, persists meshes/materials in `Generated/Downtown` (folder replaced each build), applies the look, adds all three scenes to the build list. Menu 9 now also covers Downtown.
+- Menu **Debug - Next Circuit Viewpoint** steps the Scene view through overviews, driver-height and helicopter views every 1/16 lap (its Ctrl+Shift+V shortcut conflicts with an Edit menu shortcut; use the menu).
+- Verified on Thomas's PC on 22 Oct via desktop control: compiles (only existing deprecation warnings), menu 12 builds in about 40 s with 757 scenery renderers and about 400k scenery triangles; Scene views checked around the lap. In editor Play mode the race menu and rivals did not appear (dashboard showed the plain driver readout), so the race flow must be checked in a Quest build; the driver itself drove and hit the corner wall correctly.
+- Not yet checked: Quest frame rate (400k triangles is the main risk; levers are crowd density `Hash<.24` skip, tower band spacing, chunk size, fence posts), race start/rivals on device, minimap scale for the bigger layout.
+
+Headset result for Downtown v01: "no slow down, very detailed". Building windows flickered (bands only 7–20 cm proud). Fixed: facades are stacked solid wall slabs with glass `Sleeve`s recessed 0.35 m (no coplanar faces), proud parts at least 0.6 m clear, camera near clip 0.1. Accepted after the fix.
+
+### Riviera Harbour — Riviera v01 (built in Unity, not yet on Quest)
+
+Fourth circuit, "POLYGON RIVIERA" (`PolygonCircuitLayout.Riviera`, scene `Scenes/RivieraHarbour.unity`, lap 2,597 m, road half-width 7.5 m, Time Trial key `RivieraV01`). Inspired by Monaco's character with an original layout and buildings: narrow guard-railed streets, a climb from the harbour to a casino square, a very tight hairpin (B-spline radius about 20.7 m, so the player must brake), a descent to a seafront tunnel under a hotel, a harbour-front chicane, the pool section and a final hairpin back onto the start straight beside the yachts.
+
+- **Real elevation (first circuit with it):** `PolygonCircuit.rivieraHeights` (55 values, one per knot) evaluated with the same B-spline basis (`PolygonCircuit.Elevation`, `HasElevation`). `PolygonBanking.Height/Normal` use it, so the player car and rivals ride the hills and pitch with the grade (about +13 % up, −10 % down). Lap checkpoint distances ignore height. Other layouts return 0.
+- **Barriers:** `PolygonCircuit.BarrierMargin` (1.3 m on Riviera, 6.5 m elsewhere). The driver's off-road/barrier checks now use exact `ProjectLap` instead of the old 256-point lookup.
+- `Runtime/PolygonRivieraArt.cs`: terrain grid (8 m fine, 40 m coarse with skirts) blending road elevation with hills/mountains to the north; harbour water quad at y −0.6 with quay walls, six pontoons of stern-to yachts, superyachts and sailboats in the bay, two harbour-mouth lighthouses; guardrails at 8.7–9.0 m, pavements to 13 m, catch fences; tunnel (knots 28.7–32.6) with sea-side arches and light strips under a stepped hotel; start gantry with five lights, team garages with parked cars, four grandstands with crowds; casino palace with gardens and fountain, hotel and cafe; hairpin hotel; pool; palace rock headland; terraced stucco villas with shutters, balconies and terracotta roofs; cypresses, palms, lamps, 100/50 boards.
+- Look preset Riviera: bright Mediterranean noon (sun Euler 46,−120 ×1.3, zenith .10,.36,.78, horizon .72,.86,.92, fog 420–1350 m, cloud seed 53).
+- Menu **13 - Create or Refresh Riviera Harbour** (`Editor/PolygonRivieraSetup.cs`): copies the Forest scene on first run, persists assets to `Generated/Riviera`, applies the look, near clip 0.1, adds the scene to the build list. Race menu: FOREST / COASTAL EXPRESSWAY / DOWNTOWN STREETS / RIVIERA HARBOUR / BACK.
+- Verified on Thomas's PC on 22 Oct: compiles; menu 13 builds in 42.8 s, 883 renderers, 393,855 scenery triangles; all 34 debug viewpoints checked (start, harbour, climb, casino, hairpin, tunnel, chicane, pool, final hairpin) with no floating or intersecting geometry found.
+- To test on Quest: frame rate, whether the elevation feels right (car pitch, rivals on hills), the narrow 1.3 m barrier margin, hairpin braking, rivals' pace in the hairpin (no AI corner braking — they may need it here), minimap scale.
+
+### Sakura Hills — Sakura v01 (built in Unity, not yet on Quest)
+
+Fifth circuit, "POLYGON SAKURA" (`PolygonCircuitLayout.Sakura`, scene `Scenes/SakuraHills.unity`, lap 3,452 m, road half-width 9 m, barrier margin 6.5 m, Time Trial key `SakuraV01`). Inspired by the famous Japanese figure-eight with an original layout: start straight past the pits and a grandstand with an amusement park behind, turns 1-2, climbing esses, a long left at the top, two right kinks, a downhill run **under the back straight on a bridge**, the west run to a far hairpin (radius about 21.7 m, needs braking), a sweep, a double-apex right, the back straight **over the bridge**, a fast left and a chicane onto the straight. Gentle grades (about 6 %), heights 2-19 m.
+
+- **Crossover handling (new, layout-gated by `PolygonCircuit.HasCrossover`):** `ProjectLap` adds a height term (3 m sideways per metre of height) on this layout only, so race position, banking alignment, barrier checks and lap progress never snap between the bridge and the road below. `ProjectLapFlat` is the old plan-view projection for scenery. The driver keeps real height in `NearestPoint` on crossover layouts, starts at the grid elevation, and its checkpoints also need |height difference| < 5 m. Rivals ignore cars more than 4 m above/below in gap and lane checks. Other circuits behave exactly as before.
+- Crossover in the build: lower road at 1,381 m (3.1 m high), bridge at 3,118 m (12.6 m high). Bridge deck spans ±30 m along the upper road, girders, parapets, "POLYGON SAKURA" name boards on both faces, stone abutments 19.5 m either side of the lower road. Near the bridge the terrain follows the lower road and the back straight runs on stone-walled embankments that rejoin the ground 100-180 m away.
+- `Runtime/PolygonSakuraArt.cs` also builds: run-off (gravel on corner outsides), kerbs, steel barriers, tyre walls and catch fences at corners; torii-style start gantry with the five lights; pit wall, apron, 14 garages with parked-car slots, paddock trucks and tents, race control tower; six grandstands with crowds; amusement park with a paved plaza, **turning Ferris wheel** (`PolygonFerrisWheel`, kept in the sibling root "Sakura animated rides" so static batching never freezes it), coaster, carousel, drop tower, tents and stalls; lake with a great gate standing in the water, stone lanterns and a tea house; pagoda hill with shrine hall and gates; gate on the hill outside the hairpin; terraced paddies and farmhouses; cherry trees along the track; pine woods; mountains ringing the valley; corner boards and marshal posts. Levelled "sites" (`AddSite`) cut the ground flat under pits, stands, park and lake.
+- Look preset Sakura: clear spring morning (sun Euler 34,115 ×1.28, horizon .84,.86,.93, fog 420-1500 m, clouds radius 1250, seed 71); camera far clip 1600, near 0.1.
+- Menu **14 - Create or Refresh Sakura Hills** (`Editor/PolygonSakuraSetup.cs`) and **Debug - Sakura Landmark Views** (under-bridge, Ferris wheel, park, lake, pagoda, hairpin gate, esses). Race menu: FOREST / COASTAL EXPRESSWAY / DOWNTOWN STREETS / RIVIERA HARBOUR / SAKURA HILLS / BACK (instruction lines merged to keep 8 lines on the panel).
+- Verified on Thomas's PC on 22 Oct: compiles; menu 14 builds in about 85 s, 1,064 renderers, about 413k scenery triangles; all lap viewpoints and landmark views checked.
+- Headset result (22 Oct): looks really good, good FPS, Ferris wheel turns, mini-map tracks the figure-eight correctly. Accepted.
+- To test on Quest: frame rate (413k triangles; crowd density and pine count are the levers), driving under and over the bridge (no height snapping, lap counter keeps counting, rivals don't brake for cars on the other road), hairpin braking, Ferris wheel turning, minimap readability of the figure-eight.
+
+### Nordwald Ring — Nordwald v01 (built in Unity; tested on Quest 22 Oct: perfect FPS)
+
+Sixth circuit, "NORDWALD RING" (`PolygonCircuitLayout.Nordwald`, scene `Scenes/NordwaldRing.unity`, lap 5,069 m, road half-width 7 m, barrier margin 2.5 m, Time Trial key `NordwaldV01`). An original take on the great German mountain track: narrow road through a forest tunnel, twisting downhill esses after the start, a crest, a plunge to the valley under a stone road bridge by the village, a long climb to an **18-degree banked concrete hairpin** at the top of the hill (radius about 18 m, needs braking), spectator corners and jumpy dips on the way down, and a long straight home under a second bridge. Heights 0-48 m, grades +9.5 % / -7.7 %.
+
+- **Banking support (new):** `PolygonCircuit.BankDegrees/BankSlope` from a per-layout table of (first knot, last knot, degrees), ramped over 0.8 knot; `PolygonBanking.Height` adds lateral × slope, so the player, rivals and the surface normal all tilt with the bank. Only Nordwald has banks; other circuits are unchanged.
+- `Runtime/PolygonNordwaldArt.cs`: patched asphalt, concrete slab surface with joints on the banked hairpin, verges, double steel barriers (blue lower rails in places), catch fences and standing crowds in five spectator zones, embankments where the road is raised, two country-road stone bridges with ramps and onlookers, castle with keep and curtain walls on the hill inside the loop, half-timbered village with a church spire, camping meadow (camper vans with awnings, ridge tents, flags), pits with tower and parked cars, five grandstands, corner boards, kilometre posts, about 6,500 trees (spruce and beech; back rows and distant hills use simple silhouettes).
+- Levelled sites (pits, village, camping meadow) can only lower the ground beside the road; their upward pull fades out within 60 m so they never bury the track (this caused floating spectators by the valley bridge before the fix).
+- Look preset Nordwald: cool summer afternoon (sun Euler 42,-150 ×1.22, horizon .78,.84,.86, fog 300-1150 m). Far clip 1350, near 0.1.
+- Menu **15 - Create or Refresh Nordwald Ring** and **Debug - Nordwald Landmark Views**. Race menu now lists six circuits (panel slightly taller).
+- Verified on Thomas's PC on 22 Oct: compiles; menu 15 builds in about 105 s, about 457k scenery triangles (first build was 538k; forest thinned). Landmark views and lap views checked.
+- Quest result (22 Oct, Thomas): frame rate perfect, no drops. The banked hairpin is cool but taking it at full speed is nauseating in VR; expected to be fixed by the planned over/understeer handling, which will force braking. Rivals feel good, but because they never brake they are impossible to catch once ahead, so AI tuning and rubberbanding for the player are needed. Lap counting and minimap were fine. Original checklist, for any later regression: frame rate (levers are tree grids in `BuildForest` and crowd density), the banked hairpin feel, rivals in the banked hairpin, lap counting over the 5 km lap, minimap scale.
+
+Colours were chosen with a Python software preview that mirrors the shader maths (not Unity output). It lives outside the repo.
+
+## Project, workflow and validation
+
+- Platform: Meta Quest 2 standalone, Windows Unity project.
+- Unity: 6000.6.4f1; URP + OpenXR. Original starter listed URP 17.6.0 and Input System 1.20.0; check the current manifest before changing packages.
+- Working title: Polygon Racing VR. Coastal venue branding: POLYGON COAST.
+- Previously used Windows folder: `C:\Users\User1\Downloads\Polygon Racing VR`.
+- Workflow (from October 21, 2026): the repo is `bootleg714/PolygonRacingVR` on GitHub. The assistant commits small changes to `main`; Thomas pulls them with GitHub Desktop, lets Unity compile, runs any editor menu the change needs, then uses Build And Run over USB and reports headset results. ZIP patches are retired. Revert a bad change in GitHub Desktop (History → Revert changes in commit).
+- Codex in VS previously resolved workspace/build issues and implemented working slipstreaming and the original larger coastal layout. Preserve those additions.
+- No Unity editor, C# compiler or Quest is available in this assistant workspace. Numerical/source checks and independent software geometry previews were used; these are not Unity screenshots or hardware performance measurements.
+- Thomas has tested and accepted the delivered features below. No exact measured FPS for this racing project was established here. Maintain the Quest performance target and keep checking on device.
+- Work incrementally. Keep working Android/OpenXR/build-profile settings, tuned cockpit and dashboard dimensions intact.
+
+### Essential install distinction
+
+Gameplay-only script changes generally need compile/build only. Generated-scene changes also require regeneration:
+
+1. Stop Play Mode; save.
+2. Replace scripts in `Assets/PolygonRacing/Runtime`, preserving existing `.meta` files.
+3. Place required shaders in `Assets/PolygonRacing/Resources` and let all files import/compile.
+4. For coastal scenery changes run **Polygon Racing → 7 - Refresh Coastal Expressway Scenery**.
+5. Save and Build And Run.
+
+The latest Rival Pace v02 patch needs **no scenery refresh**.
+
+Menu 7 preserves the player/cockpit, rebuilds scenery, persists generated meshes/materials, and saves the CoastalExpressway scene. It backs up the scene under `PolygonRacingBackups` beside Assets. Its generated-art directory is named `Assets/PolygonRacing/Generated/CoastalExpresswayArtV02`; that directory name does not indicate the current patch revision.
+
+Do not rerun the original circuit/car creation command to update scenery. Avoid duplicate classes, `Assets/Assets` nesting, or applying an old whole-project ZIP over the current project.
+
+## Design direction
+
+- Fast, colorful, flat-shaded arcade racing with an editable polygon cockpit/car.
+- Large circuits, long drafting straights and broad sweeping bends; preserve the sensation of speed.
+- Strong original coastal identity: turquoise sea, warm sand and cliffs, sculpted palms, ivory/teal/coral architecture, maritime roofs and flags.
+- Add a few considered elements at a time; judge scale, readability and comfort from the seated headset view.
+- Tight corners currently do not require the player to slow. AI must use the same arcade assumption.
+- Future higher speeds, understeer and oversteer should be introduced deliberately; corner braking then becomes relevant to both player and AI.
+- Preserve natural HMD tracking and recentering. No artificial camera shake. The accepted 4-degree bank rolls the car/cockpit mildly while leaving the tracking code intact.
+- Reference another game's ideas without copying its designs. Thomas explicitly reserved the dense urban reference screenshots for a future downtown city race, not this coastal venue.
+
+## Current playable features
+
+- Seated cockpit, natural head tracking, recenter, arcade throttle/brake/steering.
+- Forest Circuit and Coastal Expressway, selected through the race menu.
+- Three opponents: blue, yellow and green; four-car field.
+- Three-lap races, countdown/start lights, race position, lap timing, close-finish interpolation and results.
+- Solo Time Trial with locally saved best laps per layout.
+- Shared player/AI slipstreaming, dashboard draft feedback and short passing carryover; disabled in Time Trial.
+- Existing smooth race-distance rubberbanding and configurable shared rival baseline pace.
+- Rival following-distance slowing, lane changes and passing checks. Cars do not have physical car-to-car collision response.
+- Player engine, spatial opponent engines, tire sound, gravel rumble and gentle controller pulses.
+- Coastal drive-through marina lane with an 80 km/h limit and appropriate race-progress mapping.
+- Small translucent car-mounted minimap showing the actual circuit, car headings, opponents, start line and marina branch.
+- One gently banked coastal sweeper.
+- Coastal landmarks, festival stands, functional red starting signals, corrected two-sided gantry lettering, tower and static team paddock.
+
+### Controls
+
+| Action | Quest | Desktop keyboard | Gamepad |
+| --- | --- | --- | --- |
+| Steer | Left stick horizontal | A/D or arrows | Left stick horizontal |
+| Accelerate | Right trigger | W/up arrow | Right trigger |
+| Brake | Left trigger | S/down arrow/Space | Left trigger |
+| Menu navigation | Left stick up/down | Up/down arrows | Left stick or D-pad |
+| Confirm menu | A | Enter | A / South |
+| Restart current mode | A | R | A / South |
+| Return to menu | Y | M | Y / North |
+| Pause/resume | X | P | Start |
+| Camera | Natural head tracking | Fixed cockpit view | Fixed cockpit view |
+| Recenter | B | Not used on desktop | B / East (no effect without XR) |
+
+### Windows desktop v01 (October 26, 2026; needs Unity build and play test)
+
+This PC copy keeps all six enabled circuits and existing race/gameplay systems. Windows is configured for a resizable 1280×720 window, x64, Direct3D 11/12, and its own `Polygon Racing PC` player identity. The Standalone XR settings have no loaders and disable XR initialization; Android's OpenXR configuration is retained for the VR project.
+
+Runtime controls read standard Input System gamepads directly: left stick steering/menu navigation, D-pad menu navigation, analog right/left triggers for throttle/brake, A/South for menu confirm/restart, Y/North for returning to the menu, and Start for pause/resume. Keyboard controls remain. On PC the seat and camera stay at the fixed cockpit pose; mouse-look is removed, while headset tracking remains in the XR branch.
+
+Unity steps: open this folder with Unity 6000.6.4f1; allow assets to import and check Console errors; in **File → Build Profiles**, select **Windows** and **Switch Platform** if it is not already active; verify the six circuit scenes are enabled in the build scene list; build and run. XR Plug-in Management should show no Standalone loader/automatic initialization while the Android loader settings remain unchanged.
+
+Validation so far: Unity's open editor compiled `Assembly-CSharp` with no compiler errors; the IDE reports no errors in the changed scripts. The separate `dotnet build` check was unavailable because no .NET SDK is installed. No Windows player build, runtime play test, or target-hardware performance check has yet been performed.
+
+Test with no headset: menu arrows and Enter; gamepad stick/D-pad and A/Y; start Race and Time Trial on every circuit; keyboard and gamepad steering/throttle/brake; Start/P pause and resume; A/R restart; Y/M return to menu; fixed camera remains aimed from the cockpit while moving the mouse; race, slipstream, marina, AI, results, and track switching remain intact.
+
+### PC Visual v01 — Riviera Harbour (lighting correction ready; Unity visual test pending)
+
+The PC visual pass is isolated from the Quest/mobile materials and scenes:
+
+- `Resources/PolygonFlatPC.shader` preserves derivative-based faceted normals while adding URP main-light shadow reception/casting, restrained metallic/smoothness response, and sky/reflection-probe environment sampling. The existing `PolygonFlat.shader` and VR materials remain unchanged.
+- The PC renderer is now explicitly selected for the project default and Windows PC quality level; Mobile and Meta Quest retain their renderer references. PC URP enables HDR, 4× MSAA, four shadow cascades and 120 m shadow distance. Existing screen-space AO remains enabled.
+- The Riviera editor profile configures a warm directional sun with soft shadows, balanced sky/ground ambient, a blue Riviera gradient sky and subtle linear haze. The revised global volume uses Neutral tonemapping, slight exposure lift, mild contrast/saturation and low-intensity bloom; motion blur is not enabled.
+- Scene materials are cloned into `Generated/PCVisuals/Riviera` and only Riviera renderers are reassigned. The profile sets painted car bodywork, metallic fittings, glass, and rough asphalt/carbon responses without changing meshes, geometry, placement or race behavior.
+- Apply the setup outside Play Mode using **Polygon Racing → PC Visuals → Apply PC Visual Profile - Riviera Harbour**. It makes a timestamped `PolygonRacingBackups/RivieraHarbour_before_pc_visuals_*.unity` scene backup before writing scene assets, then saves the scene, materials, sky and volume profile. Safe to rerun.
+
+#### Riviera brightness correction (October 26, 2026)
+
+Comparison with `PolygonRacingBackups/RivieraHarbour_before_pc_visuals_20261026_012540_393.unity` found that the sun intensity remained 1.3, but the original scene had shadows disabled and the PC profile introduced soft shadows at 78% strength. Custom shader ambient before/after was almost level: the original effective sky ambient was about `.60 × .75 = .45`, versus `.56 × .82 = .46` in the first PC pass; ground ambient was similarly about `.38` before and after. That made new shadowed faces substantially darker without a matching ambient lift. The updated profile keeps sun intensity fixed, lowers shadow strength to 62%, raises sky/ground fill, and restores the original .12 sun wrap while retaining the contact shade.
+
+The first PC material conversion does not multiply vertex colors or baked lightmaps: both the source and PC shaders shade from `_BaseColor` and ignore those channels. Highly metallic materials did lose too much diffuse energy (`lerp(1, .28, metallic)`); the PC shader now retains 55% at full metallic, while paint uses low metallic with a restrained smooth highlight. Source material colors and scene geometry are unchanged.
+
+The serialized Riviera volume profile was also found to contain three null component references. `VolumeProfile.Add` creates components in memory but they must be added as sub-assets for durable serialization. The setup now explicitly attaches Tonemapping, Color Adjustments, and Bloom as profile sub-assets, checks creation, and uses Neutral tonemapping with +0.1 EV, contrast +2, saturation +8, and the existing restrained bloom. The fallback desktop HUD's hard-coded “Forest circuit / time attack” label was stale UI; the Riviera selector is set to Riviera, and race menu/timing is created by `PolygonRace`. The fallback now says “POLYGON RACING - PC” and displays the active circuit dynamically.
+
+To apply the correction, let Unity import the shader/editor/runtime changes, check Console, select Windows if needed, and run **Polygon Racing → PC Visuals → Apply PC Visual Profile - Riviera Harbour** again outside Play Mode. It makes another timestamped scene backup and updates Riviera's cloned materials, lighting, and volume profile persistently. Confirm the Volume Profile Inspector shows Tonemapping, Color Adjustments, and Bloom, then Play Riviera and check shadowed cockpit/tire/foliage/building detail, bright colorful materials, highlight restraint and race UI. Build and test performance on the target PC afterward.
+
+Verified from project files: Windows maps to `PC_RPAsset` while Mobile/Meta Quest retain their own render-pipeline references; PC URP enables HDR/soft shadows and the PC quality level specifies 4× AA and 120 m shadow distance; source material assets and non-Riviera scenes are not rewritten by the setup code. Riviera already references its generated PC materials, sky and volume asset; the lighting correction still needs to be applied by rerunning the menu command. The existing serialized volume asset has null component references, which the corrected command now replaces with saved sub-assets. IDE diagnostics report no errors in the changed editor script, shader or runtime UI. Unity has not freshly imported/compiled these corrections, and no post-correction visual review, Windows player build, or PC performance test has been run. Run the Unity steps above before treating the profile as visually accepted.
+
+### Riviera Harbour — PC starting-straight detail pass (implemented; Unity build and visual review pending)
+
+`Runtime/PolygonRivieraArt.cs` now builds a dedicated `Riviera starting straight detail` group on every Riviera generation. Ten individually named frontage modules line the first 152 m, with recessed dark window bays and reveals, projecting balcony slabs/rails, framed shop entries, broad awnings, varied stucco/roof silhouettes, and selective rooftop structures. Three original trackside sponsor panels and three marshal posts are placed outside the road surface. A low pit-side wall has a pale cap, while repeated drainage grates and barrier-end markers remain outside the 7.5 m road edge. The continuous guardrail and catch fence receive extra supports, base plates, diagonal braces and intermediate fence rails on this opening section.
+
+All additions use the existing Riviera palette and `PolygonSceneryKit`; repeated track furniture is batched, and each façade module has its own clearly named transform for later repositioning. The modules reserve their footprints from background town placement. Meshes are visual-only: no colliders, road/kerb changes, route changes, new signals, or gameplay changes. Existing PC sunlight, ambient and post-processing values are held at the corrected profile; the Riviera refresh applies the base sky/water look then reapplies the PC profile before saving.
+
+To install: allow Unity to compile/import the changes and confirm there are no Console errors; stop Play Mode; run **Polygon Racing → 13 - Create or Refresh Riviera Harbour**. The refresh writes a timestamped `PolygonRacingBackups/RivieraHarbour_before_refresh_*.unity` backup before rebuilding, persists the new geometry/materials into `Generated/Riviera`, and reapplies the existing PC visual profile. Open Riviera Harbour and Play to inspect the start straight from the cockpit, particularly window depth, awnings/balconies, fence supports, signage visibility, and marshal/pit-wall clearance. Confirm the pit lane/road view and corner sightlines remain unobstructed; then build and test frame rate on the target PC.
+
+Current verification: IDE diagnostics report no errors in `PolygonRivieraArt.cs`, `PolygonRivieraSetup.cs`, or `PolygonPCVisualSetup.cs`. No fresh Unity import/build, scene refresh, screenshot review or PC performance test has yet been run. Verify the new module placement and the lighting values in Unity before accepting the pass.
+
+### Riviera rebuild repair — PC shader and generated asset identity (October 26, 2026)
+
+After menu 13 was run twice, the Unity Editor log recorded two compile failures in `PolygonFlatPC.shader`: `ApplyShadowBias` was undeclared in the ShadowCaster pass. The PC material assets point to the shader's valid GUID, but a shader compile failure makes converted scenery magenta; the unconverted car can continue to render. The shadow pass included `Core.hlsl` but omitted URP's `Shadows.hlsl`, where `ApplyShadowBias` is defined. The PC shader now includes that URP header.
+
+The rebuild workflow also deleted all of `Generated/Riviera` before persisting the replacement scenery. `PolygonWorld.Paint` caches palette materials in the editor domain, so a repeated menu action could reuse material objects whose asset files had just been deleted. New scene renderers, source materials, and PC material clones could then have unstable or missing asset identity. The refresh now retains the generated folder and deterministically reuses `Mesh_N.asset` and named material assets, copying freshly generated mesh/material contents into existing assets and reassigning transient material references to their persistent assets. This preserves colors and custom material properties while keeping asset GUIDs stable across rebuilds; PC material conversion remains unchanged.
+
+The current saved Riviera scene contains the new `Riviera starting straight detail` group and its frontage modules, and the Editor log reports two successful refreshes (962 scenery renderers each). The log's shader failures are the cause of the magenta display; Unity import/recompile after the repair is still required to confirm their removal. Rebuild once with menu 13, then repeat it to verify stable materials, shader rendering, and facade details. Confirm the current PC lighting, car rendering, scene save, and backup behavior in Unity. No gameplay or lighting values were changed by this repair.
+
+### Riviera facade visibility correction (October 26, 2026)
+
+The starting-straight facades were blank because the detail builder placed windows, frames, floor panels, entrances, balconies and awnings on the outward/back side of each frontage module. `Frame` aligns local +X to the track-side vector; for a building at signed lateral offset `side*23`, the road-facing direction is `-side`, not `side`. The replacement frontage reserves its footprint before `BuildTown`, so that prevents the original procedural `Villa` (and its `Facade` window bands) from being emitted there. Consequently the reversed modules left a plain shell facing the cockpit with the original town facade intentionally omitted.
+
+The starting-straight generator now places the facade features along the road-facing local-X direction and positions the window panes just proud of the shell face so the opaque wall cannot hide them; the reveals and floor divisions stand proud on that same frontage. Balcony slabs/rails, ground-level shop openings, awnings and supports use that same facing direction. Building footprint, module positions and scale, lighting, shaders, asset persistence and gameplay remain unchanged.
+
+This placement correction is verified by source geometry/orientation analysis and IDE diagnostics only; a fresh Unity scene refresh and cockpit Game-view acceptance check remain required. After scripts compile, stop Play Mode and run **Polygon Racing → 13 - Create or Refresh Riviera Harbour**. In the Hierarchy expand `Circuit - editable scenery → Riviera starting straight detail → Facade modules - reposition individually`, select **Riviera frontage module 016m - town**, then frame it in Scene view (press **F**) and orbit to its road-facing side. The sibling **Riviera frontage module 016m - harbour** is the opposite-side comparison. Confirm visible window panes, horizontal floor divisions, balconies and rails from the cockpit Game view before considering the correction accepted.
+
+### PC material refresh — preserve surface tuning (October 26, 2026)
+
+This section supersedes the earlier instructions to reapply the full visual profile for the incomplete material correction. `Editor/PolygonPCVisualSetup.cs` now refreshes already-converted PC-shader materials as well as newly converted materials, including the existing Vermilion car-body and Charcoal assets that retained `_AmbientStrength = .82`. Shared materials are refreshed once per pass, including materials on inactive renderers; other loaded scenes, lettering and particle renderers are excluded.
+
+Material ownership is explicit: only `_SkyAmbient` (.68,.78,.90), `_GroundAmbient` (.54,.48,.40), `_AmbientStrength` (.95) and `_SunWrap` (.12) are refreshed by the PC profile. Existing PC materials and reused persistent clones retain their names, colors, metallic, smoothness, reflection strength, emission, culling, rim/contact shade, textures, keywords and other artist settings. Reusing a clone no longer copies all properties from its source or reapplies surface presets. Surface defaults are initialized only when creating a new clone, and only for properties its source shader does not expose. The source material remains untouched and the clone keeps the same asset identity across repeats and scenery regeneration.
+
+**Exact command for this correction:** stop Play Mode, let scripts compile, then choose **Polygon Racing → PC Visuals → Refresh PC Materials - Riviera Harbour**. It opens Riviera, creates a timestamped `PolygonRacingBackups/RivieraHarbour_before_pc_materials_*.unity` scene backup, refreshes/converts the scene's eligible materials and saves. This materials-only path does not run pipeline, sun/ambient/fog/sky, volume/post-processing or camera configuration, and does not change renderer shadow flags. It does not rebuild scenery. The original **Apply PC Visual Profile - Riviera Harbour** and menu 13 still use the corrected material handling, but also perform their existing broader setup; use the materials-only command to preserve current scene settings.
+
+**Building-side inspection from the supplied screenshot:** source inspection found that the outer frontage infill panels are centered at local z = ±8.25 m with a 3.5 m width, giving ends at ±10 m. The shell half-depth is 10 m for variants divisible by three and 9.2 m for other variants; consequently seven of the ten modules have infill projecting 0.8 m beyond the shell on each side at the window rows. These rectangular projections can explain the stepped/uneven side edges in the screenshot. This is a geometry issue, and the geometry is deliberately unchanged under the current request. A later geometry pass should trim or reposition the outer infill to the shell depth while keeping window openings and deliberate cornice/balcony projections; confirm against the cockpit and side views first.
+
+Lessons: an initial conversion filter cannot refresh already-converted assets; copying source properties on every run destroys later PC-specific tuning. Keep recurring profile updates separate from first-conversion defaults, and provide a materials-only command when scene settings must be preserved.
+
+Validation and next steps: the editor assembly compiles against Unity's existing response file with Unity's bundled Roslyn compiler. Regression checks passed 22 assertions using the production material-helper bodies with editor API shims and the actual serialized Vermilion/Charcoal values to exercise property preservation, new/reused/shared clones, exclusions and repeated application. Hash comparison found no changes to 12,223 other project assets, settings and package files during the checks. These checks do not execute Unity's native material serialization or prove visual appearance. The bundled compiler was invoked directly, avoiding NuGet restore/profile access restrictions; no packages were added. Apply the materials-only command twice in Unity, confirm that the four profile values update while Vermilion retains metallic .18 / smoothness .4 and Charcoal retains .02 / .18, verify stable material references and the unchanged lighting/camera, then review the cockpit and building sides in motion. A fresh Windows player build and target-PC performance review remain pending. No commit or push was made.
+
+### Riviera PC test lap and local Git checkpoint (October 26, 2026)
+
+Thomas completed a Riviera Harbour test lap and reported: **lighting looks good, and tree shadows visibly affect the car.** Record this as user confirmation of the current Riviera lighting and shadow reception on the car. No numerical frame-rate measurement or Windows build result was supplied. The separately identified 0.8 m frontage-panel side projections remain unchanged and are still a geometry follow-up.
+
+This separate `Polygon Racing PC` folder had no Git repository. A local repository has been initialized on `main` for the requested checkpoint, titled **Checkpoint current Polygon Racing PC work and Riviera lighting validation**; it is not a clone of the VR repository. The checkpoint includes the current `Assets` tree (all six scenes, scripts/shaders, generated meshes/materials, the Riviera PC volume/sky profile and their `.meta` files), `Packages`, `ProjectSettings`, project instructions and handoffs. The root `.gitignore` excludes Unity caches (`Library`, `Temp`), logs, `UserSettings`, generated IDE files, build output folders/packages, and `PolygonRacingBackups` before-change scene copies. Generated assets under `Assets/PolygonRacing/Generated` are intentionally tracked. Staging verification found 12,229 files, including 12,025 generated assets/metadata files, with all six scenes and every generated asset's `.meta` present; no project files were missing and no excluded cache/build files were staged. No remote is configured and no push is requested. Later historical "no commit or push" statements describe those earlier passes; this checkpoint is explicitly authorized.
+
+No gameplay, lighting, geometry or camera changes accompany this test report/checkpoint. No new build is required for the documentation/ignore-rule changes; the earlier editor compilation and material-regression results remain recorded above. Continue with a cockpit/side-view review of the frontage projections before any authorized geometry correction, and measure target-PC performance during later build validation.
+
+## What happened in this conversation
+
+Earlier work established the working four-car racer, fixed race positions and Time Trial, sound/haptics and a longer straight. Thomas then used Codex in VS to resolve issues and get slipstreaming working. The uploaded project already contained that implementation and multiple-circuit support. The major work here was coastal art, scene integration, track features and AI pace.
+
+### Coastal updates and accepted results
+
+| Patch | Delivered work | User feedback/status |
+| --- | --- | --- |
+| Coastal Style v01 | Replaced sparse coast with colorful sculpted palms, beaches/shallows/surf, warm rock formations, offshore islands, lighthouse, boats, festival scenery and rebuilt bridge | Accepted; substantial visual improvement |
+| Rival Pace v01 | Shared configurable faster baseline and smooth gap-based catch-up/leader easing | Fast initially and drafting useful, but rivals still fell behind after being passed; tuning deferred during scenery work |
+| Coastal Style v02 | Corner chevrons, curb guidance, Coral Sweep name/pennants/lookout | Looked good; overlapping sign/road colors flickered |
+| Coastal Style v03 Marina | Drive-through marina pit, nearby shore setting, rebuilt adjacent road/paint/curb surfaces to remove overlays | Accepted; remaining bridge arch/barrier flicker reported |
+| Coastal Style v04 Map | Car-mounted transparent minimap and rebuilt bridge joints/deck/parapets | User explicitly confirmed flicker gone and map works well |
+| Coastal Style v05 Banking | First 4-degree banked sweeper, matching road/verge, player/AI poses and nearby scenery | Headset-tested and accepted |
+| Coastal Style v06 Sunbay Cove | Carved curved estuary beach, sheltered water/surf, three moored sailboats, six colorful waterfront houses, promenade/landing | Everything worked and looked great |
+| Coastal Style v07 Amber Point | 160 m inland cliff gallery, three short overhead stone fingers, ocean side open | Accepted |
+| Coastal Style v08 Seaside Grandstands | Six bays, six rows per bay, peaked sail canopies, 589 spectators with heads/shirts/caps/some raised arms | Accepted |
+| Coastal Style v09 Start Gantry | POLYGON COAST header, checkers, ivory supports, five countdown-driven reds; floating countdown hidden when physical signal exists | Looked good; user caught rear title showing through |
+| Coastal Style v10 Gantry Lettering Fix | Dedicated depth-tested font shader plus view-side title selection and font-atlas rebinding | User explicitly confirmed text fixed |
+| Coastal Style v11 Seaside Paddock | Replaced old pavilions with control tower, three open team shelters, static coupes, tire stacks, equipment and maritime team flags | Accepted; track feels more fleshed out |
+| Rival Pace v02 Arcade Corners | Removed AI-only curvature speed cap; kept traffic slowing, drafting, catch-up and bank alignment | User likes it: opponents faster and appear to avoid collisions |
+
+### Exact current patch filenames
+
+Scenery sequence:
+
+- `PolygonRacingVR_CoastalStyle_v01.zip`
+- `PolygonRacingVR_CoastalStyle_v02.zip`
+- `PolygonRacingVR_CoastalStyle_v03_Marina.zip`
+- `PolygonRacingVR_CoastalStyle_v04_Map.zip`
+- `PolygonRacingVR_CoastalStyle_v05_Banking.zip`
+- `PolygonRacingVR_CoastalStyle_v06_SunbayCove.zip`
+- `PolygonRacingVR_CoastalStyle_v07_AmberPoint.zip`
+- `PolygonRacingVR_CoastalStyle_v08_SeasideGrandstands.zip`
+- `PolygonRacingVR_CoastalStyle_v09_StartGantry.zip`
+- `PolygonRacingVR_CoastalStyle_v10_GantryLetteringFix.zip`
+- `PolygonRacingVR_CoastalStyle_v11_SeasidePaddock.zip`
+
+Opponent pace sequence:
+
+- `PolygonRacingVR_RivalPace_v01.zip`
+- `PolygonRacingVR_RivalPace_v02_ArcadeCorners.zip`
+
+These are incremental patches, not complete projects. Coastal Style v11 alone does not contain the earlier new scripts/shaders. Rival Pace numbering is separate from Coastal Style numbering. Old gameplay v11/v12/v13 ZIPs are a third, earlier sequence and must not replace the current scripts just because their numbers look higher.
+
+## Latest file ownership — important for avoiding regressions
+
+Runtime files live in `Assets/PolygonRacing/Runtime` unless noted.
+
+| File | Latest source in the accepted patch stack |
+| --- | --- |
+| `PolygonCoastalArt.cs` | Coastal Style v11 Seaside Paddock; includes all prior art, banking call, gantry and lettering wiring |
+| `PolygonRival.cs` | Rival Pace v02 Arcade Corners; includes v05 banked pose and v01 catch-up/draft logic |
+| `PolygonRace.cs` | Coastal Style v09 Start Gantry; retains marina race projection/slipstream logic and exposes light count |
+| `PolygonDriver.cs` | Coastal Style v05 Banking; retains v03 pit handling and existing draft/VR tracking |
+| `PolygonMarinaPit.cs` | Coastal Style v05 Banking; retains v03 marina and adds banked road vertex heights |
+| `PolygonBanking.cs` | New in Coastal Style v05 |
+| `PolygonMiniMap.cs` | New in Coastal Style v04 |
+| `PolygonMiniMap.shader` | v04; `Assets/PolygonRacing/Resources` |
+| `PolygonStartLights.cs` | New in Coastal Style v09 |
+| `PolygonGantryLettering.cs` | New in Coastal Style v10 |
+| `PolygonGantryLettering.shader` | v10; `Assets/PolygonRacing/Resources` |
+| `PolygonRacingFeedback.cs` | Coastal Style v03 marina integration |
+| `PolygonRivalPaceSettings.cs` and its editor helper | Rival Pace v01; retain existing user settings asset |
+| `PolygonWorld.cs` and `PolygonCoastalExpresswaySetup.cs` | Coastal Style v01 integration/editor workflow |
+| `PolygonCircuit.cs`, `PolygonCircuitSelector.cs`, `PolygonSlipstream.cs`, engine code | Working uploaded/VS project; unchanged by recent art/pace patches |
+
+The last full uploaded source archive was `Polygon Racing VR(2).zip`. It predates this coastal patch stack. Obtain a fresh ZIP of Thomas's installed project before future coding if the current merged source is unavailable. Never treat that upload as the latest whole project.
+
+## Geometry, race and VR architecture
+
+### Shared route
+
+- Closed cubic B-spline with 1024 samples and an arc-length lookup table.
+- Forest: approximately 1,440 m, road half-width 9 m; earlier v12 added a 280 m exactly straight section.
+- Coastal Expressway: approximately 3,954 m, road half-width 11 m, 28 control knots; long straights and sweeping sections.
+- `PolygonCircuit` owns route samples, tangent, curvature, projection and layout identity. `PolygonWorld.Point/Side/Tangent` wrap that route.
+- Main route and race distance intentionally remain in XZ; bank elevation is a separate shared surface function.
+- Saved road meshes do not update merely because a route/builder script changed. The earlier invisible/out-of-bounds road mismatch came from failing to regenerate saved scenery.
+
+### Race logic to preserve
+
+- Player progress is unwrapped route projection, with rejection for implausible large jumps/off-course movement.
+- Rivals report actual accumulated `RaceDistance`; do not replace it with raw wrapped projection of visual position.
+- Marina progress maps its branch back to main-route race distance.
+- Preserve seam crossing, reverse behavior, finish-time interpolation, race locks and locally saved Time Trial layout keys.
+- `+1L` means an actual lap deficit; physical overtaking does not erase one. `FIN` identifies finished rivals.
+- Menu hides/locks opponents in Time Trial. Keep draft state reset on mode changes, restart, menu and finish, and frozen/disabled appropriately during pause/countdown.
+- Rival visuals copy player meshes, excluding tracking, cameras, TextMesh, dashboard and cockpit race panel. That exclusion fixed the old black square in front of rivals.
+
+### Tracking and update order
+
+- Preserve manual HMD pose tracking; the tracking-space transform compensates to the seated point without overwriting natural headset motion.
+- Seat constant is `(0, 1.03, -0.53)` in the current driver; preserve manually tuned cockpit/dashboard scale.
+- Circuit selector initializes before gameplay; race runs at execution order 100, start lights 150, racing feedback 200, minimap 250.
+- Gantry lettering is ordinary LateUpdate camera-side selection; it does not alter the headset or car.
+
+### Slipstreaming — already complete
+
+Current source constants, before any future user tuning:
+
+- Up to 8% top-speed and 12% acceleration bonus.
+- Valid longitudinal route gap 4.5–28 m; full range strength by 9 m.
+- Lateral tolerance 5.2 m, full lateral strength within 3.5 m.
+- Buildup 1.25 s, carryover 1.1 s, fade 0.55 s.
+- Requires suitable car/route heading alignment and real forward separation; rejects adjacent-track false matches and off-road cars.
+- Shared player/AI implementation. Dashboard updates belong to `PolygonRace`.
+- Time Trial has no draft benefit.
+
+## Current AI baseline and the key handling lesson
+
+### Rival Pace settings
+
+Menu **Polygon Racing → 8 - Opponent Pace Settings** creates/selects `Assets/Resources/PolygonRivalPace.asset`. Do not recreate/reset it during unrelated patches. Runtime can use defaults if missing.
+
+Default v01 settings (check the installed asset for any later manual values):
+
+| Setting | Default |
+| --- | --- |
+| Shared nominal top speed | 1.01 × configured player top speed |
+| Acceleration | 0.98 × configured player acceleration |
+| Neutral gap | 40 m |
+| Full gap adjustment | 220 m |
+| Maximum catch-up | +8% |
+| Maximum leader easing | −4% |
+| Response blend | 4 seconds |
+
+At the driver's default 42 m/s, nominal rivals are about 153 km/h before draft/catch-up. Rival colors retain distinct grid/lane behavior, not intentionally different baseline speeds.
+
+Catch-up uses unwrapped player-minus-rival race distance and blends gradually. It does not teleport cars. Existing settings/tooltips may still describe “straight” speed and `cornerGrip`; following Rival Pace v02, nominal speed modifiers apply through bends too, and the retained `cornerGrip` field no longer caps speed.
+
+### Why rivals previously fell away
+
+Thomas observed that he passed opponents mainly at tight turns. AI used `sqrt(grip / curvature)` while the player had no equivalent traction limit. Numerical inspection at the default player speed found the old tightest coastal corner cap around 85 km/h versus roughly 153 km/h nominal rival pace. Stronger rubberbanding would have masked this asymmetric handling rule rather than fixing it.
+
+Rival Pace v02 removes curvature lookahead/braking and the unused Grip accessor. It retains:
+
+- Following-distance slowing when another car occupies the lane.
+- Lane-change/passing checks and the same lane-change rate.
+- Existing acceleration/braking response to traffic and speed modifiers.
+- Catch-up, leader easing and draft behavior.
+- Route-following, race distance, wheel steering animation and banked surface pose.
+
+Thomas reported faster rivals and apparent avoidance after testing. The avoidance itself was already present; the patch did not introduce physical collision response or a new avoidance algorithm.
+
+## Coastal features and implementation lessons
+
+### Flicker: repair geometry instead of adding another overlay
+
+Overlapping or nearly coplanar faces caused the reported sign/road/arch flicker.
+
+- Road asphalt, lines and curb bands now occupy adjacent polygons, using matching longitudinal boundaries (4 m sections plus lane-dash/feature cuts).
+- Chevron foreground and background are adjoining inlaid shapes.
+- Bridge deck is an open-top shell; road and footpaths provide its top rather than competing with a slab immediately below.
+- Bridge post tops meet beam undersides; parapets are split around markers/supports.
+- Generic roadside rails/posts near the dedicated bridge are removed.
+- Cove surf replaces water polygons in its band rather than being painted directly above them.
+- New canopy panels/checkers/flags avoid stacked colored faces. Inspect both near and far in VR.
+
+User explicitly confirmed the bridge flicker was gone in v04.
+
+### Marina
+
+- Entry at knot 11.2 (~1,739 m), exit knot 14.9 (~2,357 m).
+- Offset reaches 42 m with 100 m eased entry/exit; lane half-width 5.5 m.
+- Speed limit 80 km/h. Driver/feedback/race projection understand the branch.
+- Scenic drive-through lane only; repair/refuel/service gameplay is future work.
+
+### Minimap
+
+- Small translucent teal panel to the right of the dashboard, attached to the car, not the head.
+- Static line geometry plus moving markers, no second camera or render texture.
+- Ivory course/player marker; blue/yellow/green rival dots; mint start mark; coral pit branch.
+- Forest uses its own route. Time Trial omits rivals. Map hides while race-locked.
+- Custom URP shader in Resources has VR stereo macros. Keep it included in builds.
+
+### Banking
+
+- Coral Sweep centered at knot 9.4 (~1,467 m), window ~1,317–1,617 m.
+- Maximum 4 degrees: 100 m easing in, 100 m hold, 100 m easing out. Ends over 100 m before marina entry.
+- Raises the surface rather than excavating ground; center rises up to ~1.4 m.
+- Road, markings, verge and nearby rails/signs/palms follow the surface; player and AI use its height and normal. Forest remains flat.
+- Numerical normals use nearby surface samples. Verge/road cuts must match to avoid cracks.
+- Steering integrates horizontal heading/movement first, then applies vertical surface alignment. Solve the forward vector's Y component to lie on the bank while preserving its XZ heading.
+- Do not repeatedly project the entire car-forward vector onto the tilted plane: that can subtly change XZ heading and accumulate yaw drift.
+- This is geometric banking, not suspension/gravity/traction simulation. Tracking code was preserved exactly and Thomas accepted the headset feel.
+
+### Landmark placement and static geometry
+
+- Sunbay Cove reshapes the original estuary south bank, not an overlay on uncut grass. Six houses, three moored sailboats, promenade and landing are on the bridge's south/east side. Look right crossing from the start straight.
+- Amber Point is a 160 m inland rock gallery around 1.50–1.66 km. Three overhead fingers have a minimum 14 m datum height, over 11 m above maximum bank height. Ocean side stays open; it ends before marina entry.
+- Seaside stands have six bays and 589 static spectators. Head/body silhouettes and repeated sail roofs create density without individual animated agents.
+- Paddock replaces five old pavilions. Tower at ~116 m/lateral −53 m; team bays at 96/132/168 m/lateral −77 m. Closest tower/bay footprint is about 45 m from road center. Parked cars are static props, not extra opponents.
+- Remove palms occupying new structures before baking. Use exact route projection/footprint checks, not just center-point clearance.
+- `MergeLandmarkMeshes` bakes each stand, Sunbay village and paddock into meshes grouped by palette material. Nested transforms are baked via the root's inverse/world matrices.
+- Existing materials are reused; meshes are persisted by the editor workflow. Most new scenery has no colliders, updates, extra lights or cameras. Do not call that proof of a measured FPS gain.
+
+### Start gantry and lettering fix
+
+- Gantry placed 32 m ahead of the original grid/start position so the driver can see the signals. Lap timing line is unchanged.
+- Broad ivory supports, coral collars, teal crown, checkered panels and POLYGON COAST titles in both directions.
+- The race exposes `StartLightCount` from its actual remaining countdown: first red at 0 s, then 0.5/1/1.5/2 s; all out at 3 s when race unlocks. No green phase or independent timer.
+- Menus/driving/results show no red lights. Pause holds the countdown/light state; restart repeats it. Forest keeps its original countdown panel.
+- The floating countdown/GO panel hides when a physical gantry exists so it cannot obscure the signals. Menus/results still appear.
+- Red and off materials are both initially assigned to scene renderers so the existing editor persistence pass saves both. A material held only by a MonoBehaviour would not be found by that renderer-based save loop.
+- v10 fixes simultaneous forward/mirrored lettering: custom font shader uses scene depth (`ZTest LEqual`), and `PolygonGantryLettering` enables only the title facing the main camera. Both VR eyes share that side choice.
+- Bind the custom material to the dynamic font atlas on enable and `Font.textureRebuilt`; unsubscribe on disable. Keep URP stereo macros and text vertex color/atlas alpha support.
+- User explicitly verified the text fix. Preserve it when replacing `PolygonCoastalArt.cs`.
+
+## Reference images reserved for downtown
+
+Thomas supplied these screenshots and explicitly chose to save their design ideas for a future downtown city race:
+
+- `image(20261021-220913).png`
+- `image(20261021-220930).png`
+- `image(20261021-220946).png`
+
+They show dense urban grandstands, repeated canopy structures, bold team flags, tall buildings and a busy gantry/start straight. Coastal work borrows the general ideas of density, rhythm and event atmosphere while using maritime roofs and the game's own coastal palette. Do not reproduce the reference's logos or exact buildings/canopies.
+
+## What to do next
+
+### Immediate: evaluate the accepted AI baseline
+
+Race several rounds without changing settings first:
+
+1. Compare tight bends and straights: rivals should no longer brake for curvature alone.
+2. Check repeated draft/pull-out/pass exchanges, including whether a passed rival can stay close or return.
+3. Distinguish legitimate following-distance slowing from old corner braking.
+4. Watch lane changes and full-speed packs for bunching or cars seeming to overlap.
+5. Confirm bank alignment, lap position, restart/pause and Time Trial remain correct.
+
+If rivals still cannot recover, inspect real gap, target speed, traffic cap and available straight length before increasing rubberbanding. Adjust one parameter at a time. Do not change baseline pace, drafting and catch-up together or add teleporting.
+
+### Next priority (Thomas, 22 Oct)
+
+1. **Handling pass:** introduce understeer/oversteer with mandatory braking for corners, for both player and AI. This also solves the nauseating full-speed banked hairpin on Nordwald Ring (consider comfort limits on bank tilt and camera roll if it still feels rough).
+2. **AI and catch-up tuning:** rivals never brake, so once ahead they cannot be caught. Give rivals corner and hairpin braking (ties into the handling pass) and add rubberbanding that helps the player catch up (a speed boost when far behind, eased off near the rivals). Change one parameter at a time, as in the Rival Pace notes above; no teleporting.
+
+### Later, by agreement
+
+- Higher overall speed, then a deliberate handling pass with understeer/oversteer.
+- When traction limits are introduced, give both player and AI sensible corner-speed/braking rules. Keep headset motion comfortable.
+- Cockpit tachometer and gear indication are desired later, not implemented.
+- More distinct track sectors, selective coastal polish, possible useful marina services.
+- New downtown circuit inspired by the saved urban references, with its own identity.
+- Physical contact, advanced racing lines, more sophisticated opponent behavior only if wanted; not prerequisites for this current working arcade baseline.
+
+### Track and polish to-do list (agreed 22 Oct)
+
+New circuits, each an original take on an iconic track (same approach as Riviera and Sakura: own layout, own buildings, real-world feel):
+
+- **Spa-style:** forest hills with the steep uphill sweep at the bottom of the valley, long fast straight, a slow hairpin after the start, rain-cloud mood.
+- **Monza-style:** fast parkland straights through tall trees, chicanes, a long sweeping final corner, the old banked oval visible beside the track.
+- **Desert night race:** floodlit circuit in the desert, glowing grandstands and hotel, dark sky with stars (needs a night look preset and emissive lighting).
+
+Polish across all tracks:
+
+- Time-of-day variants (sunset / dusk versions of existing circuits, chosen in the circuit menu).
+- Rivals braking for hairpins (Riviera, Sakura and Nordwald Ring have corners tighter than top-speed turning).
+- Best lap saved per circuit and shown in the menu; podium/results screen.
+- Shared review of crowd density, tree counts and draw calls if any circuit dips on Quest.
+
+### Deferred browser multiplayer port
+
+A three.js port remains a future project. Thomas's other three.js game already runs from GitHub with Create Room → generated room code → friends join. Inspect and reuse that working approach where suitable before choosing networking technology.
+
+Potential first scope: two players, then more; desktop/browser VR; optional AI filling slots; initially allow cars to pass through each other. Continue Unity Quest development first. No port or multiplayer implementation was done here.
+
+## Build/setup lessons retained from earlier work
+
+- Working Meta Quest build profile may have overrides separate from base project settings. Preserve the tested profile and OpenXR setup.
+- Optional Meta All-in-One/simulator packages caused previous compiler/duplicate loader problems; do not reinstall them for an ordinary gameplay feature.
+- Earlier Gradle/build failures were resolved. Do not apply old build fixes blindly over a working installation.
+- If a Windows `.cmd` pauses with “press any key,” pressing a key commonly closes that console. Inspect its output before dismissing it, or launch from an already-open command prompt when diagnosing.
+- Make no claim of current APK compilation or measured headset FPS from assistant-side mathematical checks.
+- Patches should be concrete, small and reversible; Thomas is comfortable testing them in the headset. Do not repeatedly ask permission for an already agreed small iteration.
+
+## Suggested opening message for the next chat
+
+> Continue Polygon Racing VR from my current working Quest 2 Unity 6000.6.4f1 project (repo bootleg714/PolygonRacingVR, read POLYGON_RACING_HANDOFF3.md first). There are six circuits in the menu: Forest, Coastal, Downtown, Riviera Harbour, Sakura Hills (figure-eight with a bridge crossover and moving Ferris wheel) and Nordwald Ring (5 km forest circuit with an 18-degree banked hairpin). All have been tested on the headset and work well. Rival Pace v02 Arcade Corners is the accepted AI baseline (no curvature braking; traffic avoidance, slipstreaming and rubberbanding remain). Preserve the cockpit, seat/tracking (Seat 0,1.03,-0.53), dashboard and build settings, avoid coplanar faces, and keep Quest performance in mind. Next up is the "Track and polish to-do list" in the handoff: Spa-style, Monza-style and desert night circuits, time-of-day variants, rivals braking for hairpins, saved best laps with a podium screen, and a crowd/tree/draw-call review. I push commits to GitHub; I pull with GitHub Desktop, then commit and push the generated scene files. Downtown screenshot ideas and a three.js room-code multiplayer port are for later.
