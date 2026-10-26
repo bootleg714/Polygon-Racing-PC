@@ -440,9 +440,9 @@ namespace PolygonRacing
                     float x0=-wallOut-1+tier*6,x1=46,y0=tier*4.2f,y1=y0+4.2f;
                     var c=new Vector3((x0+x1)*.5f,0,0);
                     kit.Box(stucco3,c+Vector3.up*(y0+.5f),new Vector3(x1-x0,1,len));
-                    kit.Sleeve(glassDark,c+Vector3.up*(y0+2.4f),new Vector3(x1-x0-.8f,2.8f,len-.8f));
+                    LandmarkGlazing(kit,c,(x1-x0-.8f)*.5f,(len-.8f)*.5f,y0+1,y0+3.4f,y0+1,t);
                     kit.Box(stucco3,c+Vector3.up*(y1-.4f),new Vector3(x1-x0,.8f,len));
-                    kit.Box(cream,new Vector3(x0-.1f,y1+.5f,0),new Vector3(.12f,1,len));    // terrace rail
+                    TerraceRailing(kit,x0-.1f,y1,-len*.5f,len*.5f,cream);
                     if(tier==0)for(int k=0;k<3;k++)kit.Box(coral,new Vector3(x0+1.4f,y1+1.6f,-len*.33f+k*len*.33f),new Vector3(2.2f,.12f,2.2f));
                 }
                 kit.Box(roofTile,new Vector3((-wallOut+17+46)*.5f,4*4.2f+.4f,0),new Vector3(46-(-wallOut+17)+.6f,.8f,len+.6f));
@@ -505,7 +505,7 @@ namespace PolygonRacing
             const float x0=-27,x1=-15,len=150,h=6;
             gk.Box(stucco3,new Vector3((x0+x1)*.5f,h*.5f-1,0),new Vector3(x1-x0,h+2,len));
             gk.Box(cream,new Vector3((x0+x1)*.5f,h+.2f,0),new Vector3(x1-x0+.8f,.4f,len+.8f));
-            gk.Sleeve(glassDark,new Vector3((x0+x1)*.5f,h+1.9f,0),new Vector3(x1-x0-1,3,len-1));
+            LandmarkGlazing(gk,new Vector3((x0+x1)*.5f,0,0),(x1-x0-1)*.5f,(len-1)*.5f,h+.4f,h+3.4f,h,g);
             gk.Box(cream,new Vector3((x0+x1)*.5f,h+3.6f,0),new Vector3(x1-x0+1.6f,.4f,len+1.6f));
             var slots=new GameObject("Paddock parked car slots").transform;slots.SetParent(world,false);
             const int bays=10;float bay=len/bays;
@@ -513,6 +513,7 @@ namespace PolygonRacing
             {
                 float z=-len*.5f+bay*(i+.5f);var color=teamColors[i%teamColors.Length];
                 gk.Box(glassDark,new Vector3(x1+.1f,1.8f,z),new Vector3(.3f,4.2f,bay-2.6f));
+                gk.Box(cream,new Vector3(x1+.31f,1.8f,z),new Vector3(.16f,4.2f,.08f));
                 gk.Box(color,new Vector3(x1+.2f,4.4f,z),new Vector3(.4f,.8f,bay-.5f));
                 gk.Beam(railSteel,new Vector3(x0+1,h+3.8f,z),new Vector3(x0+1,h+11,z),.1f,.1f);
                 gk.SheetQuad(color,new Vector3(x0+1,h+10.8f,z),new Vector3(x0+1,h+10.8f,z+2.6f),new Vector3(x0+1,h+8.8f,z+2.6f),new Vector3(x0+1,h+8.6f,z));
@@ -570,8 +571,46 @@ namespace PolygonRacing
                 kit.Sheet(m,new Vector3(sign*(front-1.2f),wallTop+.6f,z0),new Vector3(sign*(front-1.2f),wallTop+.6f,z1),new Vector3(sign*(front-1.2f),wallTop,(z0+z1)*.5f));
                 kit.Beam(gold,new Vector3(sign*(front-1),0,z0),new Vector3(sign*(front-1),wallTop+.65f,z0),.14f,.14f);
             }
+            GrandstandCanopySupports(kit,sign,front,back,wallTop,length,modules);
             kit.Emit(t);
             Reserve(t,sign>0?front-2:-(back+3),sign>0?back+3:-(front-2),-length*.5f-3,length*.5f+3);
+        }
+
+        static void GrandstandCanopySupports(PolygonSceneryKit kit,int sign,float front,float back,
+            float wallTop,float length,int modules)
+        {
+            // The rear wall spans back..back+.5 and reaches wallTop. Socket columns into it;
+            // all new vertical supports stay behind the seating, inside the existing reservation.
+            float rear=back+.25f,slope=1.8f/(back+.4f-(front-1.2f));
+            float Roof(float x)=>wallTop+.6f+(x-(front-1.2f))*slope;
+            float rearY=Roof(rear);
+            CanopyRoofBeam(kit,sign,rear-.12f,rear+.12f,-length*.5f,length*.5f,Roof(rear-.12f),Roof(rear+.12f));
+            for(int i=0;i<=modules;i++)
+            {
+                float z=-length*.5f+i*length/modules;
+                kit.Beam(gold,new Vector3(sign*rear,wallTop-.12f,z),
+                    new Vector3(sign*rear,rearY-.08f,z),.22f,.22f);
+                CanopyRoofBeam(kit,sign,front-1,rear,Mathf.Max(-length*.5f,z-.07f),
+                    Mathf.Min(length*.5f,z+.07f),Roof(front-1),rearY);
+                kit.Beam(gold,new Vector3(sign*rear,wallTop+.55f,z),
+                    new Vector3(sign*(rear-1.1f),Roof(rear-1.1f)-.18f,z),.10f,.12f);
+            }
+            // The existing front-post loop omits its final boundary; close that rafter's load path.
+            kit.Beam(gold,new Vector3(sign*(front-1),0,length*.5f),
+                new Vector3(sign*(front-1),wallTop+.65f,length*.5f),.14f,.14f);
+        }
+
+        static void CanopyRoofBeam(PolygonSceneryKit kit,int sign,float x0,float x1,float z0,float z1,float y0,float y1)
+        {
+            // Roof follows this top ring exactly and supplies the top face. An open-top beam
+            // meets the fabric without a gap, a protruding cap or duplicate coplanar surfaces.
+            var top=new[]{new Vector3(sign*x0,y0,z0),new Vector3(sign*x1,y1,z0),
+                new Vector3(sign*x1,y1,z1),new Vector3(sign*x0,y0,z1)};
+            var bottom=new Vector3[4];var centre=Vector3.zero;
+            for(int i=0;i<4;i++){bottom[i]=top[i]-Vector3.up*.22f;centre+=top[i]+bottom[i];}
+            centre/=8;
+            for(int i=0;i<4;i++){int next=(i+1)%4;kit.Quad(cream,bottom[i],bottom[next],top[next],top[i],centre);}
+            kit.Quad(cream,bottom[0],bottom[1],bottom[2],bottom[3],centre);
         }
 
         // ------------------------------------------------------------ casino square
@@ -592,7 +631,11 @@ namespace PolygonRacing
             kit.Box(stucco3,new Vector3(0,6.5f,0),new Vector3(50,9,26));
             for(int k=-5;k<=5;k++)
             {
-                kit.Box(glassDark,new Vector3(k*4.2f,6.6f,-13.05f),new Vector3(2,5,.4f));
+                float bottom=k==0?2f:4.1f,top=9.1f,centreY=(bottom+top)*.5f;
+                kit.Box(glassDark,new Vector3(k*4.2f,centreY,-13.05f),new Vector3(2,top-bottom,.4f));
+                kit.Box(cream,new Vector3(k*4.2f,centreY,-13.30f),new Vector3(.12f,top-bottom,.2f));
+                foreach(int side in new[]{-1,1})
+                    kit.Box(cream,new Vector3(k*4.2f+side*.53f,6.6f,-13.30f),new Vector3(.94f,.12f,.2f));
                 kit.Box(gold,new Vector3(k*4.2f,9.4f,-13.2f),new Vector3(2.4f,.5f,.5f));
                 kit.Box(cream,new Vector3(k*4.2f+2.1f,7,-13.3f),new Vector3(.7f,8,.7f));          // pilasters
             }
@@ -610,12 +653,19 @@ namespace PolygonRacing
                 kit.Box(stucco3,b+Vector3.up*9,new Vector3(8,22,8));
                 kit.Box(cream,b+Vector3.up*20.3f,new Vector3(8.8f,.7f,8.8f));
                 kit.Box(glassDark,b+new Vector3(0,15,-4.05f),new Vector3(2.4f,6,.3f));
+                kit.Box(cream,b+new Vector3(0,15,-4.25f),new Vector3(.12f,6,.18f));
                 kit.Chamfered(verdigris,b+Vector3.up*20.6f,4.4f,4.4f,.5f,.5f,0,7,1.2f);
                 kit.Column(gold,b+Vector3.up*27.6f,.3f,.05f,2.4f,6);
             }
             // Entrance canopy and steps.
             kit.Box(gold,new Vector3(0,5.2f,-15.5f),new Vector3(12,.4f,4));
             kit.Box(cream,new Vector3(0,.2f,-15.5f),new Vector3(16,.9f,6));
+            kit.Box(cream,new Vector3(0,1,-14.2f),new Vector3(4,2,2.4f));
+            foreach(int side in new[]{-1,1})foreach(float z in new[]{0f,5f,10f})
+            {
+                kit.Box(glassDark,new Vector3(side*25.12f,6.6f,z),new Vector3(.3f,5,2));
+                kit.Box(cream,new Vector3(side*25.32f,6.6f,z),new Vector3(.18f,5,.12f));
+            }
             kit.Emit(t);
             ReserveWorld(370,456,366,430);
             // Palms round the gardens.
@@ -625,7 +675,7 @@ namespace PolygonRacing
             var hotel=new GameObject("Hotel on the square").transform;hotel.SetParent(world,false);
             hotel.localPosition=new Vector3(340,TerrainHeight(340,392),392);
             var hk=new PolygonSceneryKit("Square hotel");
-            Facade(hk,Vector3.zero,22,14,-3,24,3.6f,.45f,stucco3,glassDark);
+            ApartmentBlockBody(hk,new Vector3(0,-3,0),22,14,27,.69f,stucco3,1,8,hotel.localPosition);
             hk.Box(cream,new Vector3(0,24.5f,0),new Vector3(45,1,29));
             hk.Box(roofTile,new Vector3(0,26.2f,0),new Vector3(42,2.4f,26));
             for(int k=-4;k<=4;k++)hk.Box(coral,new Vector3(k*4.6f,3.4f,-15.2f),new Vector3(3.6f,.15f,2.4f),Quaternion.Euler(-14,0,0));
@@ -633,7 +683,8 @@ namespace PolygonRacing
             var cafe=new GameObject("Square cafe").transform;cafe.SetParent(world,false);
             cafe.localPosition=new Vector3(486,TerrainHeight(486,388),388);
             var ck=new PolygonSceneryKit("Square cafe");
-            ck.Box(stucco4,new Vector3(0,1,0),new Vector3(26,8,14));ck.Box(cream,new Vector3(0,5.2f,0),new Vector3(27,.5f,15));
+            SmallLandmarkBody(ck,new Vector3(0,-3,0),13,7,8,stucco4,cafe.localPosition);
+            ck.Box(cream,new Vector3(0,5.2f,0),new Vector3(27,.5f,15));
             for(int k=0;k<6;k++)
             {
                 var u=new Vector3(-10+k*4,0,-11);
@@ -653,20 +704,19 @@ namespace PolygonRacing
             var kit=new PolygonSceneryKit("Old palace");
             const float top=57;
             // Crenellated palace, corner towers, a domed cathedral and a few old-town houses.
-            kit.Box(stucco1,new Vector3(0,top+5,-4),new Vector3(40,10,22));
-            kit.Sleeve(glassDark,new Vector3(0,top+6,-4),new Vector3(39.2f,2.4f,21.2f));
+            SmallLandmarkBody(kit,new Vector3(0,top,-4),20,11,10,stucco1,t.localPosition);
             for(int k=-4;k<=4;k++)kit.Box(stucco1,new Vector3(k*4.4f,top+10.6f,-15),new Vector3(2,1.2f,1.2f));
             foreach(int s in new[]{-1,1})
             {
-                kit.Box(stucco3,new Vector3(s*20,top+8,-15),new Vector3(6,16,6));
+                SmallLandmarkBody(kit,new Vector3(s*20,top,-15),3,3,16,stucco3,t.localPosition);
                 for(int k=-1;k<=1;k++)kit.Box(stucco3,new Vector3(s*20+k*2.1f,top+16.6f,-18),new Vector3(1.1f,1.2f,1.1f));
             }
-            kit.Box(stucco3,new Vector3(16,top+6,12),new Vector3(12,12,18));
+            SmallLandmarkBody(kit,new Vector3(16,top,12),6,9,12,stucco3,t.localPosition);
             kit.Column(stucco3,new Vector3(16,top+12,8),3,3,6,8);kit.Column(verdigris,new Vector3(16,top+18,8),3.2f,.2f,6,8);
             for(int i=0;i<6;i++)
             {
                 var c=new Vector3(-20+(i%3)*10,top,12+(i/3)*9);
-                kit.Box(stuccos[i%stuccos.Length],c+Vector3.up*3.5f,new Vector3(8,7,7));
+                SmallLandmarkBody(kit,c,4,3.5f,7,stuccos[i%stuccos.Length],t.localPosition);
                 kit.Chamfered(roofTile,c+Vector3.up*7,4.3f,3.8f,.4f,.4f,0,2.6f,.5f);
             }
             kit.Emit(t);
@@ -739,6 +789,9 @@ namespace PolygonRacing
         // ------------------------------------------------------------ old town and hillside
         static void BuildTown(Chunks chunks)
         {
+            PolygonSceneryKit cityBlock=null;Transform cityBlockRoot=null;
+            PolygonSceneryKit nextBlock=null;Transform nextBlockRoot=null;
+            PolygonSceneryKit thirdBlock=null;Transform thirdBlockRoot=null;
             const float lot=30;
             for(float x=-300;x<=680;x+=lot)
                 for(float z=-320;z<=880;z+=lot)
@@ -759,8 +812,38 @@ namespace PolygonRacing
                     var kit=chunks.At(c);
                     var basePos=new Vector3(c.x,g-1.5f,c.z);
                     if(Hash(x,z,7)<.12f&&near>24){Cypresses(kit,c);continue;}
-                    Villa(kit,basePos,hx,hz,h+1.5f,Hash(x,z,8),near<60?2:near<180?1:0);
+                    bool reviewBlock=FirstCityBlockApartment(x,z,h+1.5f,near)&&ApartmentHasRoadFace(basePos,hx,hz);
+                    bool nextReview=NextCityBlockApartment(x,z,h+1.5f,near)&&ApartmentHasRoadFace(basePos,hx,hz,1);
+                    bool thirdReview=ThirdCityBlockApartment(x,z,h+1.5f,near)&&ApartmentHasRoadFace(basePos,hx,hz,4);
+                    if(reviewBlock&&cityBlock==null)
+                    {
+                        cityBlock=new PolygonSceneryKit("Riviera first city block apartments");
+                        cityBlockRoot=new GameObject("Riviera first city block - detailed apartments").transform;
+                        cityBlockRoot.SetParent(chunksRoot,false);
+                    }
+                    if(nextReview&&nextBlock==null)
+                    {
+                        nextBlock=new PolygonSceneryKit("Riviera next city block apartments");
+                        nextBlockRoot=new GameObject("Riviera next city block - detailed apartments").transform;
+                        nextBlockRoot.SetParent(chunksRoot,false);
+                    }
+                    if(thirdReview&&thirdBlock==null)
+                    {
+                        thirdBlock=new PolygonSceneryKit("Riviera third city block apartments");
+                        thirdBlockRoot=new GameObject("Riviera third city block - detailed apartments").transform;
+                        thirdBlockRoot.SetParent(chunksRoot,false);
+                    }
+                    int identity=((Mathf.RoundToInt(x/30)+Mathf.RoundToInt((z-10)/30))%3+3)%3;
+                    bool remaining=!reviewBlock&&!nextReview&&!thirdReview;
+                    // Keep batches spatially chunked. More distant buildings use cheaper bays.
+                    int tier=near<60?0:near<150?1:2;
+                    int style=thirdReview?4+identity:nextReview?1+identity:remaining?7+identity+tier*3:0;
+                    Villa(reviewBlock?cityBlock:nextReview?nextBlock:thirdReview?thirdBlock:kit,basePos,hx,hz,h+1.5f,Hash(x,z,8),
+                        near<60?2:near<180?1:0,true,style);
                 }
+            if(cityBlock!=null)cityBlock.Emit(cityBlockRoot);
+            if(nextBlock!=null)nextBlock.Emit(nextBlockRoot);
+            if(thirdBlock!=null)thirdBlock.Emit(thirdBlockRoot);
             // Cypress and palm planting along the hill roads.
             for(float d=20;d<PolygonCircuit.Length;d+=42)
             {
@@ -806,19 +889,19 @@ namespace PolygonRacing
 
         static void StartingStraightBuilding(Transform parent,float d,float side,int variant)
         {
-            float lateral=side*23f;
-            var point=At(d,lateral,0);
-            float ground=TerrainHeight(point.x,point.z);
-            var frame=Frame(parent,$"Riviera frontage module {d:000}m - {(side>0?"harbour":"town")}",d,lateral,ground-E(d));
             float hx=4.8f+(variant%2)*.5f,hz=9.2f+(variant%3==0?.8f:0);
+            if(!TryStartingStraightSite(parent,d,side,hx,hz,out float lateral,out float ground,out var footprint))return;
+            var frame=Frame(parent,$"Riviera frontage module {d:000}m - {(side>0?"harbour":"town")}",d,lateral,ground-E(d));
             float height=12.5f+(variant%3)*2.2f;
-            Reserve(frame,-hx-1,hx+1,-hz-1,hz+1);
+            reserved.Add(footprint);
 
             var kit=new PolygonSceneryKit("Riviera frontage");
             var wall=stuccos[variant%stuccos.Length];
             var awning=variant%2==0?coral:teal;
             float front=-side;
             float face=front*(hx-.05f);
+            // Keep every cladding row inside the same end-wall line, clear of its side face.
+            float facadeEnd=hz-.12f;
             // Set the main volume back from the street-facing plane to leave depth for reveals.
             kit.Box(wall,new Vector3(-side*.55f,height*.5f,0),new Vector3(hx*2-1.1f,height,hz*2));
             kit.Box(cream,new Vector3(-side*.15f,.34f,0),new Vector3(hx*2,.68f,hz*2+.25f));
@@ -838,21 +921,20 @@ namespace PolygonRacing
                     kit.Box(wall,new Vector3(face,y-windowHeight*.5f-.12f,z),new Vector3(.18f,.22f,2.26f));
                     kit.Box(wall,new Vector3(face,y+windowHeight*.5f+.12f,z),new Vector3(.18f,.22f,2.26f));
                     kit.Box(cream,new Vector3(face+front*.08f,y-windowHeight*.5f-.08f,z),new Vector3(.28f,.12f,2.35f));
+                    FrontageWindowDetails(kit,front,hx,y,z,(row+variant+(z<0?0:1))%3==0);
                 }
-                foreach(float z in new[]{-8.25f,-2.85f,2.85f,8.25f})
-                    kit.Box(wall,new Vector3(face,y,z),new Vector3(.18f,windowHeight+.22f,z== -8.25f||z==8.25f?3.5f:3.8f));
-                kit.Box(wall,new Vector3(face,y+1.5f,0),new Vector3(.18f,.89f,hz*2));
+                foreach(float z in new[]{-2.85f,2.85f})
+                    kit.Box(wall,new Vector3(face,y,z),new Vector3(.18f,windowHeight+.22f,3.8f));
+                foreach(float end in new[]{-1f,1f})
+                    kit.Box(wall,new Vector3(face,y,end*(6.5f+facadeEnd)*.5f),
+                        new Vector3(.18f,windowHeight+.22f,facadeEnd-6.5f));
+                kit.Box(wall,new Vector3(face,y+1.5f,0),new Vector3(.18f,.89f,facadeEnd*2));
 
                 if(row%2==0)
                 {
-                    float balconyY=y-windowHeight*.5f-.22f;
-                    float balconyX=front*(hx+.48f);
-                    kit.Box(cream,new Vector3(balconyX,balconyY,0),new Vector3(1.12f,.2f,4.1f));
-                    kit.Beam(railSteel,new Vector3(front*(hx+1.02f),balconyY+.72f,-2.02f),
-                        new Vector3(front*(hx+1.02f),balconyY+.72f,2.02f),.07f,.08f);
-                    foreach(float z in new[]{-1.9f,-.95f,0f,.95f,1.9f})
-                        kit.Beam(railSteel,new Vector3(front*(hx+1.02f),balconyY+.12f,z),
-                            new Vector3(front*(hx+1.02f),balconyY+.72f,z),.055f,.055f);
+                    FrontageBalcony(kit,front,hx,y,0,2.2f);
+                    if(row==0&&variant%2==1)
+                        FrontageBalcony(kit,front,hx,y,variant%3==0?-5.7f:5.7f,1.3f);
                 }
             }
 
@@ -878,6 +960,7 @@ namespace PolygonRacing
             foreach(float z in new[]{-2.45f,2.45f})
                 kit.Beam(navy,new Vector3(front*(hx+.15f),2.55f,z),
                     new Vector3(front*(hx+1.38f),3.36f,z),.09f,.09f);
+            FrontageStorefrontDetails(kit,front,hx,variant);
 
             // Contrasting cornice and one of three distinct rooftop silhouettes.
             kit.Box(cream,new Vector3(0,height+.16f,0),new Vector3(hx*2+.45f,.32f,hz*2+.45f));
@@ -898,6 +981,127 @@ namespace PolygonRacing
                 kit.Box(verdigris,new Vector3(-side*1.8f,height+1.1f,hz*.28f),new Vector3(2.4f,2.2f,2.6f));
             }
             kit.Emit(frame);
+        }
+
+        static void FrontageWindowDetails(PolygonSceneryKit kit,float front,float hx,float y,float z,bool shutters)
+        {
+            // Frames overlap the glazing in depth, with their visible faces well proud of it.
+            float trim=front*(hx+.20f);
+            kit.Box(cream,new Vector3(trim,y,z),new Vector3(.20f,1.65f,.075f));
+            kit.Box(cream,new Vector3(trim,y+.18f,z),new Vector3(.20f,.075f,1.55f));
+            if(!shutters)return;
+            foreach(float edge in new[]{-1f,1f})
+            {
+                float shutterZ=z+edge*1.4f;
+                kit.Box(shutterGreen,new Vector3(front*(hx+.16f),y,shutterZ),new Vector3(.18f,1.76f,.60f));
+                for(int slat=-1;slat<=1;slat++)
+                    kit.Box(navy,new Vector3(front*(hx+.30f),y+slat*.43f,shutterZ),new Vector3(.12f,.055f,.48f));
+            }
+        }
+
+        static void FrontageBalcony(PolygonSceneryKit kit,float front,float hx,float windowY,float z,float halfWidth)
+        {
+            float slab=windowY-.825f-.22f,floor=slab+.10f,outer=front*(hx+1.23f),inner=front*(hx+.02f);
+            kit.Box(cream,new Vector3(front*(hx+.58f),slab,z),new Vector3(1.36f,.20f,halfWidth*2));
+            float railY=floor+.96f;
+            kit.Beam(railSteel,new Vector3(outer,railY,z-halfWidth+.05f),
+                new Vector3(outer,railY,z+halfWidth-.05f),.075f,.075f);
+            kit.Beam(railSteel,new Vector3(outer,floor+.38f,z-halfWidth+.05f),
+                new Vector3(outer,floor+.38f,z+halfWidth-.05f),.045f,.045f);
+            int bars=Mathf.Max(4,Mathf.CeilToInt(halfWidth*2/.55f));
+            for(int i=0;i<=bars;i++)
+            {
+                float barZ=z-halfWidth+.06f+(halfWidth*2-.12f)*i/bars;
+                kit.Beam(railSteel,new Vector3(outer,floor,barZ),new Vector3(outer,railY,barZ),.055f,.055f);
+            }
+            foreach(float edge in new[]{-1f,1f})
+            {
+                float end=z+edge*(halfWidth-.05f);
+                kit.Beam(railSteel,new Vector3(inner,railY,end),new Vector3(outer,railY,end),.065f,.065f);
+                kit.Beam(railSteel,new Vector3(inner,floor,end),new Vector3(inner,railY,end),.055f,.055f);
+                kit.Beam(cream,new Vector3(front*(hx-.04f),slab-.55f,end),
+                    new Vector3(front*(hx+1.10f),slab-.10f,end),.11f,.12f);
+            }
+        }
+
+        static void FrontageStorefrontDetails(PolygonSceneryKit kit,float front,float hx,int variant)
+        {
+            int style=variant%3;
+            foreach(float z in new[]{-5.7f,5.7f})
+            {
+                // Reuse this building's awning tone so variation does not add extra colour batches.
+                var accent=style==2?shutterGreen:variant%2==0?coral:teal;
+                kit.Box(accent,new Vector3(front*(hx+.23f),3.01f,z),new Vector3(.20f,.32f,3.65f));
+                if(style==2&&z<0)
+                {
+                    // One closed shop shutter breaks up the glazed storefront rhythm.
+                    kit.Box(shutterGreen,new Vector3(front*(hx+.19f),1.65f,z),new Vector3(.16f,1.82f,3.45f));
+                    for(int i=0;i<4;i++)
+                        kit.Box(navy,new Vector3(front*(hx+.32f),1.03f+i*.40f,z),new Vector3(.12f,.055f,3.28f));
+                }
+                else
+                {
+                    foreach(float mullion in new[]{-.60f,.60f})
+                        kit.Box(cream,new Vector3(front*(hx+.20f),1.65f,z+mullion),new Vector3(.20f,1.80f,.075f));
+                    kit.Box(cream,new Vector3(front*(hx+.20f),style==0?1.32f:2.12f,z),new Vector3(.20f,.075f,3.55f));
+                    if(style==1)
+                        kit.Box(accent,new Vector3(front*(hx+.24f),.93f,z),new Vector3(.20f,.34f,3.45f));
+                }
+                if(style==0)
+                {
+                    kit.Box(accent,new Vector3(front*(hx+.74f),2.85f,z),new Vector3(1.50f,.16f,3.75f),Quaternion.Euler(0,0,-front*7f));
+                    kit.Box(cream,new Vector3(front*(hx+1.40f),2.71f,z),new Vector3(.10f,.24f,3.75f));
+                }
+            }
+            // Door pulls sit on the glass rather than sharing its plane.
+            foreach(float z in new[]{-.29f,.29f})
+                kit.Box(railSteel,new Vector3(front*(hx+.20f),1.45f,z),new Vector3(.18f,.44f,.055f));
+        }
+
+        // BuildStartArea runs first: its reservations cover the whole stands (including roofs),
+        // garages and gantry. Test the building's whole footprint, not just its centre.
+        static bool TryStartingStraightSite(Transform parent,float d,float side,float hx,float hz,
+            out float lateral,out float ground,out Rect footprint)
+        {
+            const float clearance=2f;
+            lateral=ground=0;footprint=default;
+            // Prefer a street-side gap, then try behind existing structures. Never force a lot
+            // onto the harbour water or another section of road to keep the original module count.
+            foreach(float offset in new[]{23f,35f,43f,51f})
+            {
+                var centre=At(d,side*offset,0);var right=S(d);var forward=T(d);
+                // Awning reaches hx+1.55; roof reaches hz+.30. Include both on either side.
+                float width=hx+1.65f,depth=hz+.35f;
+                var localFootprint=StartingStraightFootprint(centre,right,forward,width,depth);
+                if(localFootprint.xMin<SeaWest||localFootprint.xMax>SeaEast||localFootprint.yMin<SeaSouth||
+                    localFootprint.Overlaps(Harbour)||localFootprint.Overlaps(Channel))continue;
+                var worldFootprint=StartingStraightFootprint(parent.TransformPoint(centre),
+                    parent.TransformVector(right),parent.TransformVector(forward),width,depth);
+                bool blocked=false;
+                foreach(var occupied in reserved)
+                    if(worldFootprint.xMin<occupied.xMax+clearance&&worldFootprint.xMax>occupied.xMin-clearance&&
+                        worldFootprint.yMin<occupied.yMax+clearance&&worldFootprint.yMax>occupied.yMin-clearance)
+                    {blocked=true;break;}
+                if(blocked)continue;
+                float low=float.MaxValue,high=float.MinValue;
+                for(int x=-1;x<=1&&!blocked;x++)for(int z=-1;z<=1;z++)
+                {
+                    var sample=centre+right*(x*width)+forward*(z*depth);
+                    if(Offset(sample)<BuildingClear){blocked=true;break;}
+                    float height=TerrainHeight(sample.x,sample.z);
+                    low=Mathf.Min(low,height);high=Mathf.Max(high,height);
+                }
+                if(blocked||high-low>2f)continue;
+                lateral=side*offset;ground=low;footprint=worldFootprint;return true;
+            }
+            return false;
+        }
+
+        static Rect StartingStraightFootprint(Vector3 centre,Vector3 right,Vector3 forward,float hx,float hz)
+        {
+            float extentX=Mathf.Abs(right.x)*hx+Mathf.Abs(forward.x)*hz;
+            float extentZ=Mathf.Abs(right.z)*hx+Mathf.Abs(forward.z)*hz;
+            return Rect.MinMaxRect(centre.x-extentX,centre.z-extentZ,centre.x+extentX,centre.z+extentZ);
         }
 
         static void BuildStartStraightGratesAndEnds(PolygonSceneryKit kit)
@@ -974,10 +1178,15 @@ namespace PolygonRacing
         }
 
         // Mediterranean apartment: stucco walls, stacked shuttered windows, terracotta hip roof.
-        static void Villa(PolygonSceneryKit kit,Vector3 c,float hx,float hz,float h,float pick,int detail)
+        static void Villa(PolygonSceneryKit kit,Vector3 c,float hx,float hz,float h,float pick,int detail,bool apartmentBlock=false,int apartmentStyle=0)
         {
             var wall=stuccos[Mathf.FloorToInt(pick*stuccos.Length)%stuccos.Length];
-            if(detail==0)
+            if(apartmentBlock)
+            {
+                ApartmentBlockBody(kit,c,hx,hz,h,pick,wall,detail,apartmentStyle);
+                if(detail==2)ApartmentExistingBalconies(kit,c,hx,hz,h,apartmentStyle);
+            }
+            else if(detail==0)
             {
                 kit.Box(wall,c+Vector3.up*(h*.5f),new Vector3(hx*2,h,hz*2));
             }
@@ -1007,6 +1216,400 @@ namespace PolygonRacing
                 kit.Box(garden,c+Vector3.up*(h+1.0f),new Vector3(hx*1.2f,.3f,hz*1.2f));
                 if(detail>0)kit.Box(coral,c+new Vector3(hx*.3f,h+3,0),new Vector3(hx*.8f,.12f,hz*1.2f));
             }
+            if(apartmentBlock&&detail>0&&pick>=.78f)ApartmentTerraceDetails(kit,c,hx,hz,h);
+        }
+
+        static bool FirstCityBlockApartment(float lotX,float lotZ,float height,float near)
+        {
+            // One existing town block beyond the harbour stand/pits, wrapping the first bend.
+            // Gate by stable lot coordinates; do not move, resize or add any town building.
+            return lotX>=90&&lotX<=180&&lotZ>=10&&lotZ<=100&&height>=18&&near<95;
+        }
+
+        static bool NextCityBlockApartment(float lotX,float lotZ,float height,float near)
+        {
+            // Only the next town-side block on the rising street, beyond the accepted first block.
+            return lotX>=120&&lotX<=180&&lotZ>=130&&lotZ<=220&&height>=12&&near<95;
+        }
+
+        static bool ThirdCityBlockApartment(float lotX,float lotZ,float height,float near)
+        {
+            // One further town-side block, past the two accepted apartment groups.
+            return lotX>=120&&lotX<=180&&lotZ>=250&&lotZ<=340&&height>=12&&near<95;
+        }
+
+        static bool ApartmentRoadFace(Vector3 origin,Vector3 outward,int style=0)
+        {
+            if(style>=7)return ApartmentWorldRoadFace(origin,outward,600);
+            // Include end walls seen while approaching/rounding the corner, not only the nearest face.
+            float start=style==0?170:style<4?360:450,end=style==0?430:style<4?610:700;
+            for(float d=start;d<=end;d+=20)
+            {
+                var toRoad=P(d)-origin;toRoad.y=0;
+                float ahead=Vector3.Dot(T(d),-toRoad);
+                if(toRoad.sqrMagnitude<140*140&&ahead>4&&ahead*ahead>toRoad.sqrMagnitude*.20f&&
+                    Vector3.Dot(outward,toRoad)>8)return true;
+            }
+            return false;
+        }
+
+        static bool ApartmentWorldRoadFace(Vector3 origin,Vector3 outward,float range)
+        {
+            return ApartmentWorldFaceDetail(origin,outward,range)>0;
+        }
+
+        static int ApartmentWorldFaceDetail(Vector3 origin,Vector3 outward,float range)
+        {
+            // Find the closest track section, then inspect the driver's approach on that section.
+            float closest=DistanceAt(origin);
+            for(float offset=-200;offset<=40;offset+=20)
+            {
+                float d=closest+offset;var toRoad=P(d)-origin;toRoad.y=0;
+                float ahead=Vector3.Dot(T(d),-toRoad);
+                if(toRoad.sqrMagnitude<range*range&&ahead>4&&ahead*ahead>toRoad.sqrMagnitude*.20f&&
+                    Vector3.Dot(outward,toRoad)>8)return 2;
+            }
+            // Riviera doubles back near the hairpin and harbour. A second section can expose a
+            // face that is hidden from the nearest section; give that view a lighter facade.
+            for(float d=0;d<PolygonCircuit.Length;d+=20)
+            {
+                var toRoad=P(d)-origin;toRoad.y=0;
+                if(toRoad.sqrMagnitude>=range*range||Vector3.Dot(outward,toRoad)<=8)continue;
+                float ahead=Vector3.Dot(T(d),-toRoad);
+                if(ahead>4&&ahead*ahead>toRoad.sqrMagnitude*.20f)return 1;
+            }
+            return 0;
+        }
+
+        static bool ApartmentHasRoadFace(Vector3 c,float hx,float hz,int style=0)
+        {
+            foreach(var outward in new[]{Vector3.forward,Vector3.back,Vector3.right,Vector3.left})
+                if(ApartmentRoadFace(c+outward*(Mathf.Abs(outward.z)>.5f?hz:hx),outward,style))return true;
+            return false;
+        }
+
+        static void ApartmentPanel(PolygonSceneryKit kit,Material material,Vector3 origin,Quaternion rotation,
+            float u0,float u1,float y0,float y1,float inset,float thickness)
+        {
+            if(u1-u0<.001f||y1-y0<.001f)return;
+            kit.Box(material,origin+rotation*new Vector3((u0+u1)*.5f,(y0+y1)*.5f,inset),
+                new Vector3(u1-u0,y1-y0,thickness),rotation);
+        }
+
+        static void ApartmentBlockBody(PolygonSceneryKit kit,Vector3 c,float hx,float hz,float h,float pick,Material wall,int detail,int style=0,
+            Vector3 worldOffset=default,float floorHeight=3.3f,float forcedGround=-1,bool eastBalconies=false)
+        {
+            int appearance=style>=7?1+(style-7)%3:style>=4?style-3:style;
+            int tier=style>=13?2:style>=10?1:0;
+            float cornice=appearance==1?.24f:appearance==2?.36f:.30f,bodyH=h-cornice;
+            // Opening-sized wall patches replace the old continuous bands. The recessed core
+            // ends behind the deepest door; no old perimeter wall/glass sleeve masks a new bay.
+            kit.Box(wall,c+Vector3.up*(bodyH*.5f),new Vector3((hx-1.25f)*2,bodyH,(hz-1.25f)*2));
+            kit.Box(cream,c+Vector3.up*(h-cornice*.5f),new Vector3(hx*2,cornice,hz*2));
+            // Keep the original floor grid and projecting balcony slabs. The first upper level
+            // becomes a shop/lobby mezzanine, above the original partially buried ground plinth.
+            float groundH=forcedGround>0?forcedGround:Mathf.Max(2.2f,h-Mathf.Floor((h-2.2f)/3.3f)*3.3f)+3.3f;
+            int floors=forcedGround>0?Mathf.Max(1,Mathf.CeilToInt((bodyH-groundH)/floorHeight)):
+                Mathf.Max(1,Mathf.RoundToInt((h-groundH)/3.3f));
+            int pattern=Mathf.FloorToInt(pick*31)+(appearance==0?0:appearance*5);
+            foreach(var outward in new[]{Vector3.forward,Vector3.back,Vector3.right,Vector3.left})
+            {
+                bool alongZ=Mathf.Abs(outward.z)>.5f;
+                float half=alongZ?hx:hz,plane=alongZ?hz:hx;
+                var origin=c+outward*plane;var rotation=Quaternion.LookRotation(outward);
+                var worldOrigin=origin+worldOffset;
+                int importance=style>=7?ApartmentWorldFaceDetail(worldOrigin,outward,600):-1;
+                bool visible=style>=7?importance>0:ApartmentRoadFace(worldOrigin,outward,style);
+                if(style>=7&&!visible)
+                {
+                    // Hidden faces cannot be seen from the circuit; keep their outer silhouette.
+                    ApartmentFace(kit,wall,origin,rotation,-half,half,0,bodyH,0);
+                    continue;
+                }
+                int faceTier=style>=7&&importance==1?2:tier;
+                int faceStyle=style>=7&&importance==1?13+(style-7)%3:style;
+                float spacing=appearance==1?3.15f:appearance==2?3.85f:3.5f;
+                if(style>=7)spacing=faceTier==1?6.5f:faceTier==2?9.5f:
+                    appearance==1?3.7f:appearance==2?4.3f:4.0f;
+                int bays=Mathf.Max(2,Mathf.FloorToInt(half*2/spacing));float pitch=half*2/bays;
+                float streetFloor=Mathf.Clamp(TerrainHeight(worldOrigin.x,worldOrigin.z)-(c.y+worldOffset.y)+.08f,.15f,groundH-2);
+                for(int bay=0;bay<bays;bay++)
+                {
+                    float u0=-half+bay*pitch,u1=u0+pitch;
+                    ApartmentBay(kit,origin,rotation,wall,u0,u1,0,groundH,visible,false,true,streetFloor,pattern+bay,true,faceStyle);
+                    for(int floor=0;floor<floors;floor++)
+                    {
+                        float y=groundH+floor*floorHeight;
+                        float floorTop=Mathf.Min(bodyH,y+floorHeight);
+                        bool projected=detail==2&&(eastBalconies?outward.x>.5f:alongZ);
+                        bool stack=appearance==2?bay==pattern%bays||(bays>=5&&bay==(pattern+1)%bays):
+                            appearance==3?bay==(pattern+(floor/2)%2)%bays:bay==pattern%bays;
+                        if(style>=7)stack=bay==pattern%bays;
+                        bool fitsProjected=eastBalconies?Mathf.Abs((u0+u1)*.5f)+1.3f<13.9f:
+                            Mathf.Abs((u0+u1)*.5f)+1.3f<hx*.6f-.1f;
+                        bool balcony=visible&&(projected?(eastBalconies||floor%2==0)&&fitsProjected:stack);
+                        if(eastBalconies&&floorTop-y<2.9f)balcony=false;
+                        if(style>=7&&!(eastBalconies&&projected)&&(faceTier==2?floor!=0:floor%2!=0))balcony=false;
+                        ApartmentBay(kit,origin,rotation,wall,u0,u1,y,floorTop,visible,balcony,false,0,pattern+bay,!projected,faceStyle);
+                    }
+                }
+            }
+        }
+
+        static void ApartmentBay(PolygonSceneryKit kit,Vector3 origin,Quaternion rotation,Material wall,
+            float u0,float u1,float y0,float y1,bool visible,bool balcony,bool ground,float streetFloor,int pattern,bool guardLoggia=true,int style=0)
+        {
+            float centre=(u0+u1)*.5f,pitch=u1-u0;
+            int appearance=style>=7?1+(style-7)%3:style>=4?style-3:style;
+            bool distant=style>=13;
+            bool entrance=ground&&(appearance==2?pattern%4==0:pattern%3==0);
+            float window=appearance==1?Mathf.Min(1.45f,pitch*.48f):appearance==2?Mathf.Min(2.05f,pitch*.60f):Mathf.Min(1.7f,pitch*.52f);
+            float shop=appearance==2?Mathf.Min(3.4f,pitch*.82f):Mathf.Min(3.25f,pitch*.78f);
+            float width=balcony?Mathf.Min(2.6f,pitch*.74f):ground?shop:window;
+            if(entrance)width=Mathf.Min(appearance==1?1.35f:appearance==3?1.65f:1.55f,width);
+            float left=centre-width*.5f,right=centre+width*.5f;
+            float bottom=ground?streetFloor:y0+(balcony?.11f:.82f);
+            float top=ground?Mathf.Min(y1-.35f,bottom+4.6f):Mathf.Min(y0+(balcony?2.75f:2.55f),y1-.15f);
+            if(top<=bottom+.25f){ApartmentFace(kit,wall,origin,rotation,u0,u1,y0,y1,0);return;}
+            // Cut openings into the wall plane and give them real returns. No full wall or glass
+            // band behind a bay, and no hidden back faces on each small wall patch.
+            ApartmentFace(kit,wall,origin,rotation,u0,left,y0,y1,0);
+            ApartmentFace(kit,wall,origin,rotation,right,u1,y0,y1,0);
+            ApartmentFace(kit,wall,origin,rotation,left,right,y0,bottom,0);
+            ApartmentFace(kit,wall,origin,rotation,left,right,top,y1,0);
+            float pane=balcony?-.98f:ground?-.55f:distant?0:-.23f;
+            var glass=ground&&!entrance&&(appearance==2?pattern%4==3:pattern%3==2)?shutterGreen:glassDark;
+            if(pane<-.001f)ApartmentOpeningReturns(kit,wall,origin,rotation,left,right,bottom,top,pane);
+            bool simple=distant&&!balcony&&!ground;
+            if(simple)ApartmentFace(kit,glass,origin,rotation,left+.10f,right-.10f,bottom+.10f,top-.10f,pane);
+            else ApartmentFace(kit,glass,origin,rotation,left,right,bottom,top,pane);
+            if(!visible)return;
+            float frame=balcony?-.92f:ground?-.48f:distant?0:-.17f;
+            if(simple)ApartmentWindowFrameLite(kit,origin,rotation,left,right,bottom,top,frame);
+            else if(style>=10&&style<13&&!balcony&&!ground)
+                ApartmentWindowFrameLite(kit,origin,rotation,left,right,bottom,top,frame+.05f,true);
+            else ApartmentWindowFrame(kit,origin,rotation,left,right,bottom,top,frame);
+            if(balcony)
+            {
+                // Inset loggias retain the existing footprint and massing on every building face.
+                ApartmentPanel(kit,cream,origin,rotation,left+.04f,right-.04f,bottom-.08f,bottom+.08f,-.56f,1.04f);
+            }
+            if(balcony&&guardLoggia)
+            {
+                float railY=bottom+1.04f,railZ=-.10f;
+                Vector3 V(float u,float y,float n)=>origin+rotation*new Vector3(u,y,n);
+                ApartmentGuard(kit,V(left+.10f,railY,railZ),V(right-.10f,railY,railZ),.065f,style);
+                float barSpacing=appearance==1?.44f:appearance==2?.58f:appearance==3?.52f:.48f;
+                int bars=Mathf.Max(3,Mathf.CeilToInt((width-.2f)/barSpacing));
+                for(int bar=0;bar<=bars;bar++)
+                {
+                    float u=left+.10f+(width-.2f)*bar/bars;
+                    ApartmentGuard(kit,V(u,bottom+.08f,railZ),V(u,railY,railZ),.05f,style);
+                }
+                foreach(float u in new[]{left+.10f,right-.10f})
+                    ApartmentGuard(kit,V(u,railY,-.88f),V(u,railY,railZ),.055f,style);
+                if(appearance==2)ApartmentGuard(kit,V(left+.10f,bottom+.52f,railZ),V(right-.10f,bottom+.52f,railZ),.04f,style);
+            }
+            if(ground)
+            {
+                var accent=pattern%2==0?teal:coral;
+                if(top-bottom>3.2f)
+                {
+                    ApartmentFace(kit,cream,origin,rotation,left+.10f,centre-.035f,bottom+2.26f,bottom+2.34f,frame+.05f);
+                    ApartmentFace(kit,cream,origin,rotation,centre+.035f,right-.10f,bottom+2.26f,bottom+2.34f,frame+.05f);
+                }
+                if(!entrance)
+                {
+                    ApartmentPanel(kit,accent,origin,rotation,left,right,bottom,bottom+.34f,-.43f,.12f);
+                    if(appearance==2?pattern%2==0:pattern%3==1)
+                    {
+                        // A shallow awning inside the shop recess, clear of the original footprint.
+                        ApartmentPanel(kit,accent,origin,rotation,left+.02f,right-.02f,top-.26f,top-.14f,-.30f,.48f);
+                        ApartmentPanel(kit,cream,origin,rotation,left+.02f,right-.02f,top-.40f,top-.22f,-.09f,.08f);
+                    }
+                }
+                else
+                {
+                    ApartmentPanel(kit,railSteel,origin,rotation,centre+.20f,centre+.25f,bottom+1.0f,bottom+1.44f,-.46f,.18f);
+                    if(appearance==3)ApartmentPanel(kit,railSteel,origin,rotation,centre-.25f,centre-.20f,bottom+1.0f,bottom+1.44f,-.46f,.18f);
+                    if(appearance==1)ApartmentPanel(kit,navy,origin,rotation,left+.1f,right-.1f,top-.30f,top-.18f,-.36f,.10f);
+                }
+            }
+        }
+
+        static void ApartmentWindowFrame(PolygonSceneryKit kit,Vector3 origin,Quaternion rotation,
+            float left,float right,float bottom,float top,float inset)
+        {
+            ApartmentFace(kit,cream,origin,rotation,left,left+.10f,bottom,top,inset+.05f);
+            ApartmentFace(kit,cream,origin,rotation,right-.10f,right,bottom,top,inset+.05f);
+            ApartmentFace(kit,cream,origin,rotation,left+.10f,right-.10f,bottom,bottom+.10f,inset+.05f);
+            ApartmentFace(kit,cream,origin,rotation,left+.10f,right-.10f,top-.10f,top,inset+.05f);
+            float middle=(left+right)*.5f;
+            ApartmentFace(kit,cream,origin,rotation,middle-.035f,middle+.035f,bottom+.10f,top-.10f,inset+.05f);
+            ApartmentFace(kit,cream,origin,rotation,left+.10f,middle-.035f,top-.43f,top-.36f,inset+.05f);
+            ApartmentFace(kit,cream,origin,rotation,middle+.035f,right-.10f,top-.43f,top-.36f,inset+.05f);
+        }
+
+        static void ApartmentGuard(PolygonSceneryKit kit,Vector3 from,Vector3 to,float size,int style)
+        {
+            // The wide-area pass omits hidden rail end caps; approved block geometry stays exact.
+            if(style>=7)kit.Rail(railSteel,from,to,size);
+            else kit.Beam(railSteel,from,to,size,size);
+        }
+
+        static void ApartmentWindowFrameLite(PolygonSceneryKit kit,Vector3 origin,Quaternion rotation,
+            float left,float right,float bottom,float top,float inset,bool mullion=false)
+        {
+            // Frame strips and glazing occupy adjacent areas of the same plane: no overlapping
+            // surfaces that can shimmer at long range.
+            ApartmentFace(kit,cream,origin,rotation,left,left+.10f,bottom,top,inset);
+            ApartmentFace(kit,cream,origin,rotation,right-.10f,right,bottom,top,inset);
+            ApartmentFace(kit,cream,origin,rotation,left+.10f,right-.10f,bottom,bottom+.10f,inset);
+            ApartmentFace(kit,cream,origin,rotation,left+.10f,right-.10f,top-.10f,top,inset);
+            if(mullion)
+            {
+                float mid=(left+right)*.5f;
+                ApartmentFace(kit,cream,origin,rotation,mid-.035f,mid+.035f,bottom+.10f,top-.10f,inset);
+            }
+        }
+
+        static void ApartmentFace(PolygonSceneryKit kit,Material material,Vector3 origin,Quaternion rotation,
+            float u0,float u1,float y0,float y1,float inset)
+        {
+            if(u1-u0<.001f||y1-y0<.001f)return;
+            Vector3 V(float u,float y,float n)=>origin+rotation*new Vector3(u,y,n);
+            kit.Quad(material,V(u0,y0,inset),V(u1,y0,inset),V(u1,y1,inset),V(u0,y1,inset),V((u0+u1)*.5f,(y0+y1)*.5f,inset-.1f));
+        }
+
+        static void LandmarkGlazing(PolygonSceneryKit kit,Vector3 centre,float hx,float hz,
+            float bottom,float top,float pierBottom,Transform frame)
+        {
+            // Replaces a continuous glass sleeve with individual bays and structural piers.
+            foreach(var outward in new[]{Vector3.forward,Vector3.back,Vector3.right,Vector3.left})
+            {
+                bool alongZ=Mathf.Abs(outward.z)>.5f;
+                float half=alongZ?hx:hz,plane=alongZ?hz:hx;
+                var origin=centre+outward*plane;var rotation=Quaternion.LookRotation(outward);
+                bool visible=ApartmentWorldRoadFace(frame.TransformPoint(origin),frame.TransformVector(outward),400);
+                int count=Mathf.Max(1,Mathf.FloorToInt(half*2/4.2f));float pitch=half*2/count;
+                for(int i=0;i<=count;i++)
+                {
+                    float u=-half+i*pitch;
+                    ApartmentPanel(kit,cream,origin,rotation,Mathf.Max(-half,u-.12f),Mathf.Min(half,u+.12f),pierBottom,top,0,.20f);
+                    if(i==count)continue;
+                    float left=u+.12f,right=u+pitch-.12f;
+                    if(visible)
+                    {
+                        // Divide glass around the frame so long-distance depth precision cannot
+                        // cause z-fighting between a frame and a full glass panel behind it.
+                        float mid=(left+right)*.5f;
+                        ApartmentWindowFrame(kit,origin,rotation,left,right,bottom,top,-.05f);
+                        foreach(float[] span in new[]{new[]{left+.10f,mid-.035f},new[]{mid+.035f,right-.10f}})
+                        {
+                            ApartmentFace(kit,glassDark,origin,rotation,span[0],span[1],bottom+.10f,top-.43f,0);
+                            ApartmentFace(kit,glassDark,origin,rotation,span[0],span[1],top-.36f,top-.10f,0);
+                        }
+                    }
+                    else ApartmentFace(kit,glassDark,origin,rotation,left,right,bottom,top,0);
+                }
+            }
+        }
+
+        static void TerraceRailing(PolygonSceneryKit kit,float x,float y,float z0,float z1,Material material)
+        {
+            // Fits within the old solid rail's width and height, while exposing its supports.
+            kit.Beam(material,new Vector3(x,y+.95f,z0),new Vector3(x,y+.95f,z1),.10f,.10f);
+            int count=Mathf.Max(1,Mathf.CeilToInt((z1-z0)/1.1f));
+            for(int i=0;i<=count;i++)
+            {
+                float z=Mathf.Lerp(z0+.05f,z1-.05f,(float)i/count);
+                kit.Beam(material,new Vector3(x,y-.03f,z),new Vector3(x,y+.95f,z),.08f,.08f);
+            }
+        }
+
+        static void HotelBalconyRailing(PolygonSceneryKit kit,Vector3 c,float wallX,float slabY,float halfLength)
+        {
+            float floor=slabY+.125f,railY=floor+.96f,left=-halfLength+.05f,right=halfLength-.05f;
+            Vector3 V(float x,float y,float z)=>c+new Vector3(x,y,z);
+            kit.Beam(railSteel,V(wallX+1.65f,railY,left),V(wallX+1.65f,railY,right),.065f,.065f);
+            int bars=Mathf.CeilToInt((right-left)/.8f);
+            for(int i=0;i<=bars;i++)
+            {
+                float z=Mathf.Lerp(left,right,(float)i/bars);
+                kit.Beam(railSteel,V(wallX+1.65f,floor-.03f,z),V(wallX+1.65f,railY,z),.05f,.05f);
+            }
+            foreach(float z in new[]{left,right})
+                kit.Beam(railSteel,V(wallX+.04f,railY,z),V(wallX+1.65f,railY,z),.055f,.055f);
+        }
+
+        static void SmallLandmarkBody(PolygonSceneryKit kit,Vector3 c,float hx,float hz,float h,Material wall,Vector3 worldOffset)
+        {
+            float bodyH=h-.25f,groundH=bodyH-3;
+            kit.Box(wall,c+Vector3.up*(bodyH*.5f),new Vector3((hx-1.25f)*2,bodyH,(hz-1.25f)*2));
+            kit.Box(cream,c+Vector3.up*(h-.125f),new Vector3(hx*2,.25f,hz*2));
+            foreach(var outward in new[]{Vector3.forward,Vector3.back,Vector3.right,Vector3.left})
+            {
+                bool alongZ=Mathf.Abs(outward.z)>.5f;
+                float half=alongZ?hx:hz,plane=alongZ?hz:hx;
+                var origin=c+outward*plane;var rotation=Quaternion.LookRotation(outward);
+                var worldOrigin=origin+worldOffset;
+                bool visible=ApartmentWorldRoadFace(worldOrigin,outward,600);
+                if(!visible){ApartmentFace(kit,wall,origin,rotation,-half,half,0,bodyH,0);continue;}
+                int bays=Mathf.Max(2,Mathf.FloorToInt(half*2/4));float pitch=half*2/bays;
+                float street=Mathf.Clamp(TerrainHeight(worldOrigin.x,worldOrigin.z)-(c.y+worldOffset.y)+.08f,.15f,groundH-2);
+                for(int bay=0;bay<bays;bay++)
+                {
+                    float a=-half+bay*pitch,b=a+pitch;
+                    ApartmentBay(kit,origin,rotation,wall,a,b,0,groundH,true,false,true,street,bay,true,8);
+                    ApartmentBay(kit,origin,rotation,wall,a,b,groundH,bodyH,true,bay==bays/2,false,0,bay,true,8);
+                }
+            }
+        }
+
+        static void ApartmentOpeningReturns(PolygonSceneryKit kit,Material wall,Vector3 origin,Quaternion rotation,
+            float left,float right,float bottom,float top,float pane)
+        {
+            Vector3 V(float u,float y,float n)=>origin+rotation*new Vector3(u,y,n);
+            float u=(left+right)*.5f,y=(bottom+top)*.5f;
+            kit.Quad(wall,V(left,bottom,0),V(left,top,0),V(left,top,pane),V(left,bottom,pane),V(left-.1f,y,pane*.5f));
+            kit.Quad(wall,V(right,bottom,0),V(right,top,0),V(right,top,pane),V(right,bottom,pane),V(right+.1f,y,pane*.5f));
+            kit.Quad(wall,V(left,bottom,0),V(right,bottom,0),V(right,bottom,pane),V(left,bottom,pane),V(u,bottom-.1f,pane*.5f));
+            kit.Quad(wall,V(left,top,0),V(right,top,0),V(right,top,pane),V(left,top,pane),V(u,top+.1f,pane*.5f));
+        }
+
+        static void ApartmentExistingBalconies(PolygonSceneryKit kit,Vector3 c,float hx,float hz,float h,int style=0)
+        {
+            int appearance=style>=7?1+(style-7)%3:style>=4?style-3:style;
+            float baseH=Mathf.Max(2.2f,h-Mathf.Floor((h-2.2f)/3.3f)*3.3f);
+            for(float y=baseH+3.3f;y<h-.6f;y+=6.6f)foreach(int f in new[]{-1,1})
+            {
+                // Retain each original cantilevered slab exactly; add guards within its outline.
+                kit.Box(cream,c+new Vector3(0,y,f*(hz+.7f)),new Vector3(hx*1.2f,.22f,1.4f));
+                var outward=new Vector3(0,0,f);
+                if(!ApartmentRoadFace(c+outward*hz,outward,style))continue;
+                Vector3 V(float u,float height,float n)=>c+new Vector3(u,height,f*(hz+n));
+                float half=hx*.6f-.10f,railY=y+1.07f;
+                ApartmentGuard(kit,V(-half,railY,1.28f),V(half,railY,1.28f),.065f,style);
+                int bars=Mathf.CeilToInt(half*2/(appearance==1?.50f:appearance==2?.70f:.6f));
+                for(int i=0;i<=bars;i++)
+                {
+                    float u=-half+half*2*i/bars;
+                    ApartmentGuard(kit,V(u,y+.11f,1.28f),V(u,railY,1.28f),.05f,style);
+                }
+                foreach(float u in new[]{-half,half})
+                    ApartmentGuard(kit,V(u,railY,-.08f),V(u,railY,1.28f),.055f,style);
+            }
+        }
+
+        static void ApartmentTerraceDetails(PolygonSceneryKit kit,Vector3 c,float hx,float hz,float h)
+        {
+            // Existing flat-roof pergola remains the highest point (h+3.06). Add its posts and
+            // small services below it; hipped roofs and all original roof silhouettes are retained.
+            foreach(float x in new[]{-hx*.1f,hx*.7f})foreach(float z in new[]{-hz*.6f,hz*.6f})
+                kit.Beam(cream,c+new Vector3(x,h+.86f,z),c+new Vector3(x,h+2.96f,z),.10f,.10f);
+            var vent=c+new Vector3(-hx*.35f,h+1.35f,-hz*.20f);
+            kit.Box(verdigris,vent,new Vector3(.9f,.50f,.8f));
+            kit.Box(navy,vent+Vector3.forward*.43f,new Vector3(.65f,.22f,.08f));
         }
 
         // Alternating wall slabs and recessed glass (no overlapping surfaces; see Downtown notes).
@@ -1062,8 +1665,12 @@ namespace PolygonRacing
             for(int w=0;w<3;w++)
             {
                 var wc=new Vector3(-6+w*4,0,-34+w*34);
-                Facade(kit,wc,18,15,0,36,3.4f,.45f,stucco3,glassDark);
-                for(float y=3.4f;y<36;y+=3.4f)kit.Box(cream,wc+new Vector3(18.9f,y-.2f,0),new Vector3(1.8f,.25f,28));   // balconies
+                ApartmentBlockBody(kit,wc,18,15,36,.46f,stucco3,2,8,t.localPosition,3.4f,6.6f,true);
+                for(float y=3.4f;y<36;y+=3.4f)
+                {
+                    kit.Box(cream,wc+new Vector3(18.9f,y-.2f,0),new Vector3(1.8f,.25f,28));
+                    HotelBalconyRailing(kit,wc,18,y-.2f,14);
+                }
                 kit.Box(teal,wc+Vector3.up*36.5f,new Vector3(37,1,31));
             }
             kit.Emit(t);ReserveWorld(290,350,160,268);
