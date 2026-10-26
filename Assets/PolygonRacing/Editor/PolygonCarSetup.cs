@@ -20,7 +20,7 @@ namespace PolygonRacing.Editor
         const string BodyName="Car body - faceted",WheelName="Steering wheel - faceted",RimName="Wheel rim - faceted";
 
         // Submesh / material slots.
-        const int Red=0,Ivory=1,Carbon=2,Metal=3,Yellow=4,Mirror=5,Cockpit=6,Green=7,Screen=8,SlotCount=9;
+        const int Red=0,Ivory=1,Carbon=2,Metal=3,Yellow=4,Mirror=5,Cockpit=6,Green=7,Screen=8,Weave=9,SlotCount=10;
         const string UprightName="Wheel upright - faceted",ColumnName="Steering column - tilted";
         const float WheelTilt=15;   // degrees; top of the wheel leans away from the driver
 
@@ -62,6 +62,90 @@ namespace PolygonRacing.Editor
             }
             AssetDatabase.SaveAssets();
             if(done>0)Debug.Log("Player car rebuilt in "+done+" circuit(s). Seat, tracking, dashboard and handling are unchanged. Rivals copy the new body automatically.");
+        }
+
+        // Applies only to the currently open PC scene. The original shared car meshes and
+        // tuned materials remain untouched, so other circuits and menu 13 are independent.
+        [MenuItem("Polygon Racing/PC Visuals/Refresh PC Car Detail - Open Scene")]
+        static void RefreshPcCarDetail()
+        {
+            if(EditorApplication.isPlaying){Debug.LogWarning("Stop Play Mode before refreshing PC car detail.");return;}
+            var scene=EditorSceneManager.GetActiveScene();
+            if(!scene.IsValid()||string.IsNullOrEmpty(scene.path)){Debug.LogError("Open and save a circuit scene first.");return;}
+            if(!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())return;
+            PolygonDriver driver=null;
+            foreach(var candidate in Object.FindObjectsByType<PolygonDriver>(FindObjectsInactive.Include,FindObjectsSortMode.None))
+                if(candidate.gameObject.scene==scene){if(driver){Debug.LogError("More than one player car in the open scene.");return;}driver=candidate;}
+            if(!driver){Debug.LogError("No player car in the open scene.");return;}
+            var body=driver.transform.Find(BodyName);
+            var bodyRenderer=body?body.GetComponent<MeshRenderer>():null;
+            var bodyFilter=body?body.GetComponent<MeshFilter>():null;
+            var shader=Resources.Load<Shader>("PolygonCarbonPC");
+            var texture=Resources.Load<Texture2D>("PolygonCarbonWeave");
+            if(!bodyRenderer||!bodyFilter||bodyRenderer.sharedMaterials.Length<Weave||!bodyRenderer.sharedMaterials[Carbon]||!shader||!texture)
+            {Debug.LogError("PC car detail needs the existing faceted car, carbon material, shader and weave texture.");return;}
+            if(driver.wheels==null||driver.wheels.Length!=4){Debug.LogError("Expected four existing wheel transforms; nothing was rebuilt.");return;}
+            foreach(var tire in driver.wheels)
+                if(!tire||!tire.parent||!tire.Find(RimName)||!tire.parent.Find(UprightName))
+                {Debug.LogError("Existing wheel rim or upright missing; nothing was rebuilt.");return;}
+
+            // Protect both the current saved scene and every generated car asset before mutation.
+            string backup=Path.Combine("PolygonRacingBackups","PC_car_before_refresh_"+System.DateTime.Now.ToString("yyyyMMdd_HHmmss_fff"));
+            try
+            {
+                Directory.CreateDirectory(backup);
+                File.Copy(scene.path,Path.Combine(backup,Path.GetFileName(scene.path)),false);
+                var carBackup=Path.Combine(backup,"Car");Directory.CreateDirectory(carBackup);
+                foreach(var file in Directory.GetFiles(CarPath))File.Copy(file,Path.Combine(carBackup,Path.GetFileName(file)),false);
+            }
+            catch(System.Exception ex){Debug.LogException(ex);Debug.LogError("Car backup failed; nothing was rebuilt.");return;}
+
+            try
+            {
+                var importer=AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(texture)) as TextureImporter;
+                if(!importer)throw new System.InvalidOperationException("Could not configure the carbon texture importer.");
+                if(!importer.mipmapEnabled||importer.filterMode!=FilterMode.Trilinear||importer.anisoLevel!=8||importer.wrapMode!=TextureWrapMode.Repeat)
+                {
+                    importer.mipmapEnabled=true;importer.filterMode=FilterMode.Trilinear;importer.anisoLevel=8;
+                    importer.wrapMode=TextureWrapMode.Repeat;importer.SaveAndReimport();
+                }
+                texture=Resources.Load<Texture2D>("PolygonCarbonWeave");
+                string materialPath=CarPath+"/PR_Car PC cockpit weave.mat";
+                var woven=AssetDatabase.LoadAssetAtPath<Material>(materialPath);
+                if(!woven)
+                {
+                    woven=new Material(bodyRenderer.sharedMaterials[Carbon]){name="PR_Car PC cockpit weave"};
+                    woven.shader=shader;woven.SetTexture("_BaseMap",texture);
+                    AssetDatabase.CreateAsset(woven,materialPath);
+                }
+                else {woven.shader=shader;woven.SetTexture("_BaseMap",texture);EditorUtility.SetDirty(woven);}
+                var meshes=BuildMeshes(true);
+                SetPcMesh(bodyFilter,bodyRenderer,meshes.Body,woven);
+                foreach(var tire in driver.wheels)
+                {
+                    float side=driver.transform.InverseTransformPoint(tire.position).x<0?-1:1;
+                    bool front=driver.frontSteering!=null&&System.Array.IndexOf(driver.frontSteering,tire.parent)>=0;
+                    var rim=tire.Find(RimName);var upright=tire.parent.Find(UprightName);
+                    SetPcMesh(rim.GetComponent<MeshFilter>(),rim.GetComponent<MeshRenderer>(),side<0?meshes.RimLeft:meshes.RimRight,woven);
+                    SetPcMesh(upright.GetComponent<MeshFilter>(),upright.GetComponent<MeshRenderer>(),front?
+                        (side<0?meshes.UprightFrontLeft:meshes.UprightFrontRight):
+                        (side<0?meshes.UprightRearLeft:meshes.UprightRearRight),woven);
+                }
+                AssetDatabase.SaveAssets();EditorSceneManager.MarkSceneDirty(scene);
+                if(!EditorSceneManager.SaveScene(scene))throw new IOException("Could not save the scene.");
+                Debug.Log("PC car detail refreshed in "+scene.path+". Backup: "+backup+". Rivals copy these visuals at race start.");
+            }
+            catch(System.Exception ex){Debug.LogException(ex);Debug.LogError("PC car refresh failed; backup: "+backup);}
+        }
+
+        static void SetPcMesh(MeshFilter filter,MeshRenderer renderer,Mesh mesh,Material woven)
+        {
+            if(!filter||!renderer)throw new System.InvalidOperationException("Existing car mesh renderer is missing.");
+            var existing=renderer.sharedMaterials;
+            if(existing.Length<Weave)throw new System.InvalidOperationException("Existing car material slots are incomplete.");
+            var materials=new Material[SlotCount];System.Array.Copy(existing,materials,Weave);materials[Weave]=woven;
+            filter.sharedMesh=mesh;renderer.sharedMaterials=materials;
+            EditorUtility.SetDirty(filter);EditorUtility.SetDirty(renderer);
         }
 
         // Scenery v02: static copies of the player car parked in the coastal paddock garages.
@@ -225,22 +309,23 @@ namespace PolygonRacing.Editor
         }
 
         // ------------------------------------------------------------ meshes
-        static CarMeshes BuildMeshes()
+        static CarMeshes BuildMeshes(bool pcDetail=false)
         {
-            var body=new CarMesh();BuildBody(body);
-            var steering=new CarMesh();BuildSteering(steering);
-            var tire=new CarMesh();BuildTire(tire);
-            var rimLeft=new CarMesh();BuildRim(rimLeft,-1);
-            var rimRight=new CarMesh();BuildRim(rimRight,1);
-            var ufl=new CarMesh();BuildUpright(ufl,-1,true);
-            var ufr=new CarMesh();BuildUpright(ufr,1,true);
-            var url=new CarMesh();BuildUpright(url,-1,false);
-            var urr=new CarMesh();BuildUpright(urr,1,false);
+            var body=new CarMesh(pcDetail);BuildBody(body,pcDetail);
+            var steering=new CarMesh(pcDetail);BuildSteering(steering);
+            var tire=new CarMesh(pcDetail);BuildTire(tire);
+            var rimLeft=new CarMesh(pcDetail);BuildRim(rimLeft,-1,pcDetail);
+            var rimRight=new CarMesh(pcDetail);BuildRim(rimRight,1,pcDetail);
+            var ufl=new CarMesh(pcDetail);BuildUpright(ufl,-1,true,pcDetail);
+            var ufr=new CarMesh(pcDetail);BuildUpright(ufr,1,true,pcDetail);
+            var url=new CarMesh(pcDetail);BuildUpright(url,-1,false,pcDetail);
+            var urr=new CarMesh(pcDetail);BuildUpright(urr,1,false,pcDetail);
+            string suffix=pcDetail?" PC detail":"";
             return new CarMeshes{
-                Body=SaveMesh(body,"Car body"),Steering=SaveMesh(steering,"Steering wheel"),
-                Tire=SaveMesh(tire,"Tire"),RimLeft=SaveMesh(rimLeft,"Rim left"),RimRight=SaveMesh(rimRight,"Rim right"),
-                UprightFrontLeft=SaveMesh(ufl,"Upright front left"),UprightFrontRight=SaveMesh(ufr,"Upright front right"),
-                UprightRearLeft=SaveMesh(url,"Upright rear left"),UprightRearRight=SaveMesh(urr,"Upright rear right")};
+                Body=SaveMesh(body,"Car body"+suffix),Steering=SaveMesh(steering,"Steering wheel"+suffix),
+                Tire=SaveMesh(tire,"Tire"+suffix),RimLeft=SaveMesh(rimLeft,"Rim left"+suffix),RimRight=SaveMesh(rimRight,"Rim right"+suffix),
+                UprightFrontLeft=SaveMesh(ufl,"Upright front left"+suffix),UprightFrontRight=SaveMesh(ufr,"Upright front right"+suffix),
+                UprightRearLeft=SaveMesh(url,"Upright rear left"+suffix),UprightRearRight=SaveMesh(urr,"Upright rear right"+suffix)};
         }
 
         static Mesh SaveMesh(CarMesh source,string name)
@@ -316,7 +401,7 @@ namespace PolygonRacing.Editor
             return list;
         }
 
-        static void BuildBody(CarMesh b)
+        static void BuildBody(CarMesh b,bool pcDetail=false)
         {
             // Nose and monocoque front, from the cockpit bulkhead (z .48) to the tip (z 3.05).
             b.LoftZ(Sections(NoseRows),NoseMats,Carbon,Red,true);
@@ -324,9 +409,12 @@ namespace PolygonRacing.Editor
             // Cockpit tub side walls (open profile), floor, bulkhead and seat.
             var wall=new[]{new Vector2(.30f,.20f),new Vector2(.31f,.72f),new Vector2(.37f,.79f),
                            new Vector2(.44f,.74f),new Vector2(.46f,.45f),new Vector2(.31f,.14f)};
-            var wallMats=new[]{Cockpit,Cockpit,Red,Red,Carbon};
+            var wallMats=new[]{Cockpit,pcDetail?Weave:Cockpit,Red,Red,Carbon};
             foreach(var profile in new[]{wall,Flip(wall)})
                 b.LoftZ(new List<(float,Vector2[])>{(-1.0f,profile),(-0.2f,profile),(0.62f,profile)},wallMats,-1,-1,false);
+            if(pcDetail)
+                foreach(float side in new[]{-1f,1f})
+                    b.Tube(new Vector3(side*.305f,.718f,-.94f),new Vector3(side*.305f,.718f,.55f),.005f,Carbon);
             b.Box(new Vector3(0,.16f,-.19f),new Vector3(.62f,.04f,1.62f),Cockpit);
             b.Quad(new Vector3(-.31f,.14f,-1.0f),new Vector3(.31f,.14f,-1.0f),new Vector3(.31f,.86f,-1.0f),new Vector3(-.31f,.86f,-1.0f),Carbon);
             b.Box(new Vector3(0,.58f,-.90f),new Vector3(.56f,.62f,.08f),Carbon);
@@ -389,6 +477,14 @@ namespace PolygonRacing.Editor
                         b.FlatTube(new Vector3(s*(BodyHalfWidth(zi,.55f)-.03f),.55f,zi),upper,.032f,.011f,Carbon);
                         b.FlatTube(new Vector3(s*(BodyHalfWidth(zi,.24f)-.03f),.24f,zi),lower,.032f,.011f,Carbon);
                     }
+                    if(pcDetail)
+                    {
+                        foreach(float dz in new[]{.25f,-.25f})foreach(float y in new[]{.24f,.55f})
+                        {
+                            float zi=zc+dz, x=BodyHalfWidth(zi,y);
+                            b.Box(new Vector3(s*(x+.006f),y,zi),new Vector3(.035f,.055f,.065f),Metal);
+                        }
+                    }
                     float zp=zc-.2f;
                     b.Tube(new Vector3(s*(xw-.25f),.28f,zc-.02f),new Vector3(s*(BodyHalfWidth(zp,.58f)-.03f),.58f,zp),.016f,Metal);
                 }
@@ -397,14 +493,21 @@ namespace PolygonRacing.Editor
             foreach(float s in new[]{1f,-1f})
             {
                 b.Tube(new Vector3(s*.44f,.74f,.25f),new Vector3(s*.58f,.84f,.20f),.015f,Carbon);
-                b.Box(new Vector3(s*.64f,.86f,.19f),new Vector3(.17f,.075f,.06f),Red,Mirror);
+                if(!pcDetail)b.Box(new Vector3(s*.64f,.86f,.19f),new Vector3(.17f,.075f,.06f),Red,Mirror);
+                else
+                {
+                    float x=s*.64f;
+                    b.PrismXY(XY(x-.075f,.8225f,x+.075f,.8225f,x+.085f,.835f,x+.085f,.885f,
+                        x+.075f,.8975f,x-.075f,.8975f,x-.085f,.885f,x-.085f,.835f),.16f,.22f,Red);
+                    b.Box(new Vector3(x,.86f,.158f),new Vector3(.138f,.049f,.004f),Mirror);
+                }
             }
         }
 
         // Wheel centres (z, |x|) in car space; matches the existing wheel pivots.
         static readonly (float,float)[] WheelCentres={(1.40f,1.13f),(-1.45f,1.13f)};
 
-        static void BuildUpright(CarMesh b,float s,bool front)
+        static void BuildUpright(CarMesh b,float s,bool front,bool pcDetail=false)
         {
             // In pivot space (the wheel centre). A tapered metal block just inboard of the tyre.
             float x=-s*.25f;
@@ -416,6 +519,11 @@ namespace PolygonRacing.Editor
                 var c=new[]{new Vector3(x-.04f,y1,-w1/2-.02f),new Vector3(x+.04f,y1,-w1/2-.02f),new Vector3(x+.04f,y1,w1/2+.02f),new Vector3(x-.04f,y1,w1/2+.02f)};
                 for(int i=0;i<4;i++){int j=(i+1)%4;b.Quad(a[i],a[j],c[j],c[i],Metal);}
                 b.Poly(a,Metal);b.Poly(c,Metal);
+            }
+            if(pcDetail)
+            {
+                foreach(float y in new[]{-.13f,.13f})
+                    b.Box(new Vector3(x,y,0),new Vector3(.10f,.055f,.14f),Metal);
             }
             if(front)b.Tube(new Vector3(x,.02f,.05f),new Vector3(x-s*.07f,.02f,.16f),.014f,Metal);   // steering arm
         }
@@ -512,7 +620,7 @@ namespace PolygonRacing.Editor
 
         static Vector3 Axle(Vector2 xr,float angle)=>new Vector3(xr.x,xr.y*Mathf.Cos(angle),xr.y*Mathf.Sin(angle));
 
-        static void BuildRim(CarMesh b,float s)
+        static void BuildRim(CarMesh b,float s,bool pcDetail=false)
         {
             // Recessed dark wheel faces, five raised ivory spokes on the outer side and a metal nut.
             float x0=s*.17f;const int n=18;
@@ -524,6 +632,17 @@ namespace PolygonRacing.Editor
                 inner[k]=new Vector3(-x0,outer[k].y,outer[k].z);
             }
             b.Poly(outer,Carbon);b.Poly(inner,Carbon);
+            if(pcDetail)
+            {
+                // Inboard brake ring on the spinning wheel, clear of the dark rim face.
+                float disc=-s*.176f;
+                for(int k=0;k<n;k++)
+                {
+                    float a=k*Mathf.PI*2/n, c=(k+1)*Mathf.PI*2/n;
+                    Vector3 V(float r,float t)=>new Vector3(disc,r*Mathf.Cos(t),r*Mathf.Sin(t));
+                    b.Quad(V(.12f,a),V(.235f,a),V(.235f,c),V(.12f,c),Metal);
+                }
+            }
             for(int k=0;k<5;k++)
             {
                 float a=k*Mathf.PI*2/5;
@@ -563,12 +682,16 @@ namespace PolygonRacing.Editor
         sealed class CarMesh
         {
             readonly List<Vector3> vertices=new List<Vector3>();
+            readonly List<Vector2> uv=new List<Vector2>();
             readonly List<int>[] indices;
-            public CarMesh(){indices=new List<int>[SlotCount];for(int i=0;i<SlotCount;i++)indices[i]=new List<int>();}
+            public CarMesh(bool pcDetail=false){indices=new List<int>[pcDetail?SlotCount:Weave];for(int i=0;i<indices.Length;i++)indices[i]=new List<int>();}
 
             public void Tri(Vector3 a,Vector3 b,Vector3 c,int m)
             {
                 int n=vertices.Count;vertices.Add(a);vertices.Add(b);vertices.Add(c);
+                // Longitudinal and sloped cross-section distances keep the rail weave square.
+                Vector2 UV(Vector3 p)=>m==Weave?new Vector2(p.z/ .02f,(Mathf.Abs(p.x)+p.y)*.70710678f/ .02f):Vector2.zero;
+                uv.Add(UV(a));uv.Add(UV(b));uv.Add(UV(c));
                 indices[m].Add(n);indices[m].Add(n+1);indices[m].Add(n+2);
             }
             public void Quad(Vector3 a,Vector3 b,Vector3 c,Vector3 d,int m){Tri(a,b,c,m);Tri(a,c,d,m);}
@@ -675,8 +798,9 @@ namespace PolygonRacing.Editor
                 mesh.Clear();
                 if(vertices.Count>65000)mesh.indexFormat=IndexFormat.UInt32;
                 mesh.SetVertices(vertices);
-                mesh.subMeshCount=SlotCount;
-                for(int i=0;i<SlotCount;i++)mesh.SetTriangles(indices[i],i);
+                mesh.SetUVs(0,uv);
+                mesh.subMeshCount=indices.Length;
+                for(int i=0;i<indices.Length;i++)mesh.SetTriangles(indices[i],i);
                 mesh.RecalculateNormals();mesh.RecalculateBounds();
             }
         }

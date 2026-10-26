@@ -143,6 +143,7 @@ namespace PolygonRacing.Editor
         static void ConvertSceneMaterials(bool configureRendererShadows = true)
         {
             var shader = Resources.Load<Shader>("PolygonFlatPC");
+            var carbonShader = Resources.Load<Shader>("PolygonCarbonPC");
             var clones = new Dictionary<Material, Material>();
             var refreshed = new HashSet<Material>();
             var scene = EditorSceneManager.GetActiveScene();
@@ -157,7 +158,7 @@ namespace PolygonRacing.Editor
                 {
                     var source = materials[i];
                     if (!source || !source.shader) continue;
-                    if (source.shader == shader)
+                    if (source.shader == shader || (carbonShader && source.shader == carbonShader))
                     {
                         // Already converted: refresh profile fill without resetting any surface tuning.
                         if (refreshed.Add(source))
