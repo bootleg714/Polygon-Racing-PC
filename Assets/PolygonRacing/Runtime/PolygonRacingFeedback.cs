@@ -18,6 +18,9 @@ namespace PolygonRacing
         }
         PolygonDriver player;
         AudioSource tires,gravel;
+        bool recordedSkid,skidActive;
+        float skidOnsetTime;
+        const float SkidStart=.50f,SkidRelease=.30f,SkidOnsetDelay=.08f;
         readonly List<RivalVoice> voices=new List<RivalVoice>();
         readonly List<GameObject> emitters=new List<GameObject>();
         readonly List<AudioClip> clips=new List<AudioClip>();
@@ -48,10 +51,13 @@ namespace PolygonRacing
         {
             player=UnityEngine.Object.FindFirstObjectByType<PolygonDriver>();
             if(!player){enabled=false;return;}
-            var tireClip=MakeClip("Procedural tire scrub",0);
+            var tireClip=Resources.Load<AudioClip>("PolygonSkid");
+            recordedSkid=tireClip;
+            if(!tireClip)tireClip=MakeClip("Procedural tire scrub",0);
             var gravelClip=MakeClip("Procedural gravel rumble",1);
             var engineClip=MakeClip("Procedural rival engine",2);
-            tires=MakeSource("Tire scrub",player.transform,tireClip,false);
+            tires=MakeSource("Tire scrub",player.transform,tireClip,false,!recordedSkid);
+            if(recordedSkid)tires.loop=true;
             gravel=MakeSource("Off-road rumble",player.transform,gravelClip,false);
             var rivals=UnityEngine.Object.FindObjectsByType<PolygonRival>(FindObjectsSortMode.None);
             foreach(var car in rivals)
@@ -61,14 +67,14 @@ namespace PolygonRacing
             }
             previousForward=player.transform.forward;resetSerial=player.ResetSerial;
         }
-        AudioSource MakeSource(string name,Transform parent,AudioClip clip,bool spatial)
+        AudioSource MakeSource(string name,Transform parent,AudioClip clip,bool spatial,bool loop=true)
         {
             var go=new GameObject(name);go.transform.SetParent(parent,false);emitters.Add(go);
-            var source=go.AddComponent<AudioSource>();source.playOnAwake=false;source.loop=true;
+            var source=go.AddComponent<AudioSource>();source.playOnAwake=false;source.loop=loop;
             source.clip=clip;source.volume=0;source.spatialBlend=spatial?1:0;
             source.dopplerLevel=spatial ? .65f : 0;source.minDistance=4;source.maxDistance=65;
             source.rolloffMode=AudioRolloffMode.Linear;source.priority=spatial?160:100;
-            source.Play();return source;
+            if(loop)source.Play();return source;
         }
         void LateUpdate()
         {
@@ -85,9 +91,12 @@ namespace PolygonRacing
             if(PolygonMarinaPit.TrySample(player.transform.position,offset,out _,out float pitOffset,out _)){offset=pitOffset;surfaceWidth=PolygonMarinaPit.HalfWidth;}
             float roughness=Mathf.SmoothStep(0,1,Mathf.InverseLerp(surfaceWidth-.1f,surfaceWidth+1,offset));
             float scrub=Mathf.InverseLerp(3.5f,10,speed*yaw)*Mathf.InverseLerp(7,16,speed)*(1-roughness);
-            float tireTarget=silent?0:scrub*.16f;
+            if(recordedSkid)UpdateRecordedSkid(scrub,dt,silent);
+            float tireTarget=silent||(recordedSkid&&!skidActive)?0:
+                recordedSkid?RecordedSkidVolume(speed,yaw,roughness,player.steeringAngle):scrub*.16f;
             float gravelTarget=silent?0:roughness*Mathf.InverseLerp(1,14,speed)*.2f;
             tires.volume=silent?0:Mathf.MoveTowards(tires.volume,tireTarget,dt*.45f);
+            if(recordedSkid&&!skidActive&&tires.volume<=.0001f)tires.Stop();
             gravel.volume=silent?0:Mathf.MoveTowards(gravel.volume,gravelTarget,dt*.65f);
             tires.pitch=Mathf.Lerp(.85f,1.12f,Mathf.Clamp01(speed/42));
             gravel.pitch=Mathf.Lerp(.65f,1.1f,Mathf.Clamp01(speed/14));
@@ -113,6 +122,33 @@ namespace PolygonRacing
                 Pulse(left,strength);Pulse(right,strength*.85f);
             }
         }
+        static float RecordedSkidVolume(float speed,float yaw,float roughness,float steeringAngle)
+        {
+            // Read the driver's existing steering envelope without changing it. A fixed
+            // demand cap saturates early at racing speed, even with modest steering.
+            float lockRadians=steeringAngle/(1+speed*.065f)*Mathf.Deg2Rad;
+            float fullLockDemand=speed*speed/2.85f*Mathf.Tan(lockRadians);
+            float intensity=Mathf.InverseLerp(3.5f,Mathf.Max(16.5f,fullLockDemand),speed*yaw);
+            float response=intensity*(.20f+.80f*intensity);
+            return .08f*response*Mathf.InverseLerp(7,16,speed)*(1-roughness);
+        }
+        void UpdateRecordedSkid(float scrub,float dt,bool silent)
+        {
+            if(silent){tires.Stop();skidActive=false;skidOnsetTime=0;return;}
+            if(skidActive)
+            {
+                if(scrub<SkidRelease)skidActive=false;
+                return;
+            }
+            // Reject small steering corrections and brief cornering spikes. Release
+            // below a separate threshold so a sustained corner does not chatter.
+            skidOnsetTime=scrub>=SkidStart?skidOnsetTime+dt:0;
+            if(skidOnsetTime>=SkidOnsetDelay)
+            {
+                skidActive=true;skidOnsetTime=0;
+                if(!tires.isPlaying)tires.Play();
+            }
+        }
         static void Pulse(UnityEngine.XR.InputDevice device,float amplitude)
         {
             if(device.isValid&&device.TryGetHapticCapabilities(out var caps)&&caps.supportsImpulse&&caps.numChannels>0)
@@ -124,6 +160,7 @@ namespace PolygonRacing
         void Mute()
         {
             if(tires)tires.volume=0;if(gravel)gravel.volume=0;
+            if(recordedSkid&&tires){tires.Stop();skidActive=false;skidOnsetTime=0;}
             foreach(var voice in voices)if(voice.source)voice.source.volume=0;
             StopHaptics();
         }
