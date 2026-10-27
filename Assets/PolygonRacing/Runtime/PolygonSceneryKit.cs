@@ -20,6 +20,10 @@ namespace PolygonRacing
         readonly List<Material> order=new List<Material>();
         readonly string label;
         public PolygonSceneryKit(string label){this.label=label;}
+        // Optional: split any per-material mesh above this many vertices into several 16-bit
+        // meshes (0 = never split, the original behaviour). Very large 32-bit-index meshes were
+        // not drawn reliably with the PC renderer's GPU Resident Drawer (Downtown, Oct 27).
+        public int MaxVerticesPerMesh;
 
         Part For(Material m)
         {
@@ -181,17 +185,35 @@ namespace PolygonRacing
             foreach(var m in order)
             {
                 var part=parts[m];if(part.Indices.Count==0)continue;
-                var mesh=new Mesh{name=label+" "+m.name};
-                if(part.Vertices.Count>65000)mesh.indexFormat=IndexFormat.UInt32;
-                mesh.SetVertices(part.Vertices);mesh.SetTriangles(part.Indices,0);
-                mesh.RecalculateNormals();mesh.RecalculateBounds();
-                var go=new GameObject(label+" - "+m.name,typeof(MeshFilter),typeof(MeshRenderer));
-                go.transform.SetParent(parent,false);
-                go.GetComponent<MeshFilter>().sharedMesh=mesh;
-                var renderer=go.GetComponent<MeshRenderer>();renderer.sharedMaterial=m;
-                renderer.shadowCastingMode=ShadowCastingMode.Off;renderer.receiveShadows=false;
+                if(MaxVerticesPerMesh>=3&&part.Vertices.Count>MaxVerticesPerMesh)
+                {
+                    // Every triangle owns its three vertices (indices run 0,1,2,3...), so the
+                    // part splits cleanly on triangle boundaries.
+                    int step=MaxVerticesPerMesh/3*3,piece=0;
+                    for(int start=0;start<part.Vertices.Count;start+=step,piece++)
+                    {
+                        int count=Mathf.Min(step,part.Vertices.Count-start);
+                        var indices=new List<int>(count);for(int i=0;i<count;i++)indices.Add(i);
+                        EmitMesh(parent,m,part.Vertices.GetRange(start,count),indices," part "+(piece+1));
+                    }
+                    continue;
+                }
+                EmitMesh(parent,m,part.Vertices,part.Indices,"");
             }
             parts.Clear();order.Clear();
+        }
+
+        void EmitMesh(Transform parent,Material m,List<Vector3> vertices,List<int> indices,string suffix)
+        {
+            var mesh=new Mesh{name=label+" "+m.name+suffix};
+            if(vertices.Count>65000)mesh.indexFormat=IndexFormat.UInt32;
+            mesh.SetVertices(vertices);mesh.SetTriangles(indices,0);
+            mesh.RecalculateNormals();mesh.RecalculateBounds();
+            var go=new GameObject(label+" - "+m.name+suffix,typeof(MeshFilter),typeof(MeshRenderer));
+            go.transform.SetParent(parent,false);
+            go.GetComponent<MeshFilter>().sharedMesh=mesh;
+            var renderer=go.GetComponent<MeshRenderer>();renderer.sharedMaterial=m;
+            renderer.shadowCastingMode=ShadowCastingMode.Off;renderer.receiveShadows=false;
         }
     }
 }

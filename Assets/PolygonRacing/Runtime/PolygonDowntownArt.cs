@@ -20,7 +20,8 @@ namespace PolygonRacing
 
         static Material asphalt,runoff,line,kerbRed,checkDark,wall,fence,walk,ground,stone,stoneDark,
             glassBlue,glassTeal,glassGold,glassDark,cream,teal,coral,navy,ochre,plum,lime,brick,steel,leaf,bark,
-            distant,distantDark,harbor,skinLight,skinTan,skinDeep,hair,lamp;
+            distant,distantDark,harbor,skinLight,skinTan,skinDeep,hair,lamp,
+            windowWarm,windowCool,asphaltPatch,asphaltSeal,crownTeal,crownAmber,aviation,billboardBack,hoarding,craneYellow;
         static Material[] teamColors,shirts,skins,facades;
 
         sealed class Chunks
@@ -29,7 +30,11 @@ namespace PolygonRacing
             public PolygonSceneryKit At(Vector3 p)
             {
                 var key=new Vector2Int(Mathf.FloorToInt(p.x/ChunkSize),Mathf.FloorToInt(p.z/ChunkSize));
-                if(!kits.TryGetValue(key,out var kit)){kit=new PolygonSceneryKit("Downtown "+key.x+"_"+key.y);kits.Add(key,kit);}
+                if(!kits.TryGetValue(key,out var kit))
+                {
+                    kit=new PolygonSceneryKit("Downtown "+key.x+"_"+key.y){MaxVerticesPerMesh=60000};
+                    kits.Add(key,kit);
+                }
                 return kit;
             }
             public void Emit(Transform root)
@@ -45,6 +50,10 @@ namespace PolygonRacing
         }
 
         static Material Mat(string name,Color color)=>PolygonWorld.Paint("DT "+name,color);
+        static Material Glow(string name,Color color,Color emission)
+        {
+            var m=Mat(name,color);m.SetColor("_EmissionColor",emission);return m;
+        }
 
         static void CreatePalette()
         {
@@ -82,6 +91,18 @@ namespace PolygonRacing
             skinDeep=Mat("Crowd skin deep",new Color(.45f,.30f,.20f));
             hair=Mat("Crowd hair",new Color(.16f,.11f,.08f));
             lamp=Mat("Lamp glow",new Color(1,.93f,.75f));
+            // PC detail v01: emissive city lights (bloom picks these up on PC), patched street asphalt.
+            lamp.SetColor("_EmissionColor",new Color(.85f,.62f,.35f));
+            windowWarm=Glow("Window lit warm",new Color(1,.84f,.60f),new Color(.95f,.62f,.30f));
+            windowCool=Glow("Window lit office",new Color(.80f,.90f,1),new Color(.42f,.56f,.72f));
+            crownTeal=Glow("Crown light teal",new Color(.35f,.95f,.95f),new Color(.12f,.80f,.86f));
+            crownAmber=Glow("Crown light amber",new Color(1,.78f,.40f),new Color(1,.56f,.18f));
+            aviation=Glow("Aviation light red",new Color(1,.12f,.08f),new Color(1.6f,.08f,.05f));
+            asphaltPatch=Mat("Street asphalt patch",new Color(.19f,.205f,.235f));
+            asphaltSeal=Mat("Street asphalt seal",new Color(.115f,.13f,.155f));
+            billboardBack=Mat("Billboard frame",new Color(.18f,.19f,.22f));
+            hoarding=Mat("Site hoarding",new Color(.20f,.36f,.30f));
+            craneYellow=Mat("Crane yellow",new Color(1,.78f,.10f));
             teamColors=new[]{coral,teal,ochre,navy,plum,lime};
             shirts=new[]{coral,teal,ochre,navy,plum,lime,cream,glassBlue};
             skins=new[]{skinLight,skinTan,skinDeep};
@@ -132,7 +153,7 @@ namespace PolygonRacing
         {
             if(PolygonCircuit.Layout!=PolygonCircuitLayout.Downtown)
                 throw new System.InvalidOperationException("Select the Downtown layout before building its scenery.");
-            CreatePalette();reserved.Clear();
+            CreatePalette();reserved.Clear();PrepareTrackSamples();cranes=0;billboards=0;footbridges=0;
             var world=new GameObject(SceneryName).transform;world.SetParent(circuitRoot,false);
             var chunks=new Chunks();
             BuildGroundAndHarbor(chunks);
@@ -143,13 +164,15 @@ namespace PolygonRacing
             BuildGrandstands(world);
             BuildTeamGarages(world);
             BuildMonorail(world,chunks);
+            BuildFootbridges(world);
             BuildStreetFurniture(chunks);
             BuildCornerBoards(world);
             BuildCity(chunks);
             BuildSkyline(chunks);
             chunks.Emit(world);
             AttachHarbor(world);
-            reserved.Clear();
+            Debug.Log($"Downtown PC detail v01: {footbridges} footbridges, {cranes} tower cranes, {billboards} rooftop billboards.");
+            reserved.Clear();trackSamples=null;
             return world;
         }
 
@@ -225,10 +248,20 @@ namespace PolygonRacing
                     d0=checkerEnd;
                 }
                 bool dash=(i/3)%2==0&&!corner;
-                Ribbon(kit,asphalt,d0,d1,-9.6f,-.12f,.025f);
+                // Street-circuit patchwork: lane-wide repairs and sealed strips replace the plain
+                // asphalt in place (separate ribbons, never an overlay).
+                Ribbon(kit,StreetSurface(i,0),d0,d1,-9.6f,-4.8f,.025f);
+                Ribbon(kit,StreetSurface(i,1),d0,d1,-4.8f,-.12f,.025f);
                 Ribbon(kit,dash?line:asphalt,d0,d1,-.12f,.12f,.025f);
-                Ribbon(kit,asphalt,d0,d1,.12f,9.6f,.025f);
+                Ribbon(kit,StreetSurface(i,2),d0,d1,.12f,4.8f,.025f);
+                Ribbon(kit,StreetSurface(i,3),d0,d1,4.8f,9.6f,.025f);
             }
+        }
+        static Material StreetSurface(int segment,int lane)
+        {
+            if(Hash(segment/4,lane,11)<.10f)return asphaltPatch;
+            if(Hash(segment/7,lane,12)<.08f)return asphaltSeal;
+            return asphalt;
         }
         static void Band(PolygonSceneryKit kit,float side,float d0,float d1,float a,float b,Material m)
         {
@@ -612,6 +645,8 @@ namespace PolygonRacing
                     int detail=near<150?2:near<380?1:0;
                     if(detail==0&&Hash(x,z,7)<.25f)continue;
                     if(h<34&&Hash(x,z,8)<.12f&&detail>0){Plaza(chunks.At(c),c,hx,hz);continue;}
+                    if(cranes<MaxCranes&&near>40&&near<220&&Hash(x,z,10)<.08f&&ConstructionSite(chunks.At(c),c,hx,hz,h,Hash(x,z,9)))
+                        continue;
                     Building(chunks.At(c),c,hx,hz,h,detail,Hash(x,z,9));
                 }
         }
@@ -682,11 +717,14 @@ namespace PolygonRacing
             kit.Box(stoneDark,c+Vector3.up*1.7f,new Vector3(hx*2+3,3.4f,hz*2+3));
             kit.Sleeve(glassDark,c+Vector3.up*4.5f,new Vector3(hx*2+3-Recess*2,2.2f,hz*2+3-Recess*2));
             kit.Box(stoneDark,c+Vector3.up*5.8f,new Vector3(hx*2+3,.4f,hz*2+3));
-            // Curtain wall: glass shaft with proud floor bands.
-            kit.Box(glass,c+Vector3.up*(6+(h-6)*.5f),new Vector3(hx*2-1.2f,h-6,hz*2-1.2f));
-            float spacing=detail==2?6.3f:12.6f;
-            for(float y=6+spacing;y<h-2;y+=spacing)
-                kit.Box(frame,c+Vector3.up*y,new Vector3(hx*2,.55f,hz*2));
+            if(detail==2)CurtainWall(kit,c,hx,hz,h,glass,frame);
+            else
+            {
+                // Curtain wall: glass shaft with proud floor bands.
+                kit.Box(glass,c+Vector3.up*(6+(h-6)*.5f),new Vector3(hx*2-1.2f,h-6,hz*2-1.2f));
+                for(float y=6+12.6f;y<h-2;y+=12.6f)
+                    kit.Box(frame,c+Vector3.up*y,new Vector3(hx*2,.55f,hz*2));
+            }
             // Corner fins, well proud of the glass.
             foreach(int sx in new[]{-1,1})foreach(int sz in new[]{-1,1})
                 kit.Box(frame,c+new Vector3(sx*(hx-.2f),6+(h-6)*.5f,sz*(hz-.2f)),new Vector3(1.0f,h-6,1.0f));
@@ -694,6 +732,14 @@ namespace PolygonRacing
             kit.Box(glassDark,c+Vector3.up*(h+3),new Vector3(hx*1.3f,6,hz*1.3f));
             kit.Box(frame,c+Vector3.up*(h+6.4f),new Vector3(hx*1.5f,.8f,hz*1.5f));
             if(h>140)kit.Column(steel,c+Vector3.up*(h+6.8f),.6f,.15f,h*.18f,6);
+            if(detail==2)
+            {
+                // Glowing crown band under the cornice ring, and red aviation lights.
+                kit.Box(pick<.5f?crownTeal:crownAmber,c+Vector3.up*(h+5.35f),new Vector3(hx*1.3f+.5f,.5f,hz*1.3f+.5f));
+                if(h>140)kit.Box(aviation,c+Vector3.up*(h+6.8f+h*.18f+.2f),Vector3.one*.6f);
+                foreach(int sx in new[]{-1,1})foreach(int sz in new[]{-1,1})
+                    kit.Box(aviation,c+new Vector3(sx*hx*.68f,h+7.02f,sz*hz*.68f),Vector3.one*.45f);
+            }
         }
 
         static void SteppedTower(PolygonSceneryKit kit,Vector3 c,float hx,float hz,float h,int detail,float pick)
@@ -717,6 +763,7 @@ namespace PolygonRacing
                 y0=y1+.7f;
             }
             kit.Chamfered(trim,c+Vector3.up*(h+.7f),hx*.35f,hz*.35f,.3f,.3f,0,h*.12f,hx*.1f);
+            if(detail==2)kit.Box(aviation,c+Vector3.up*(h+.7f+h*.12f+.25f),Vector3.one*.5f);
         }
 
         static void RoundTower(PolygonSceneryKit kit,Vector3 c,float r,float h,int detail,float pick)
@@ -732,6 +779,11 @@ namespace PolygonRacing
             }
             kit.Column(cream,c+Vector3.up*h,r*.92f+.8f,r*.5f,4,8);
             kit.Column(steel,c+Vector3.up*(h+4),1,.12f,h*.15f,6);
+            if(detail==2)
+            {
+                kit.Column(pick<.85f?crownAmber:crownTeal,c+Vector3.up*(h-2.2f),r*.92f+.35f,r*.92f+.35f,1.2f,8);
+                kit.Box(aviation,c+Vector3.up*(h+4+h*.15f+.2f),Vector3.one*.5f);
+            }
         }
 
         static void Apartment(PolygonSceneryKit kit,Vector3 c,float hx,float hz,float h,int detail,float pick)
@@ -740,8 +792,10 @@ namespace PolygonRacing
             var band=body==cream||body==stone?navy:cream;
             // Recessed shop glass at street level, then stacked floors of wall and window.
             kit.Sleeve(glassDark,c+Vector3.up*1.5f,new Vector3(hx*2-Recess*2,3,hz*2-Recess*2));
-            Facade(kit,c,hx,hz,3,h,detail==2?3.6f:7.2f,.42f,body,glassDark);
+            if(detail==2)WindowBayFacade(kit,c,hx,hz,3,h,3.6f,.46f,body,glassDark);
+            else Facade(kit,c,hx,hz,3,h,7.2f,.42f,body,glassDark);
             kit.Box(band,c+Vector3.up*(h+.4f),new Vector3(hx*2+.6f,.8f,hz*2+.6f));
+            bool billboard=detail==2&&h<80&&Hash(c.x,c.z,31)<.3f&&RooftopBillboard(kit,c,hx,hz,h,pick);
             if(detail==2)
             {
                 var toTrack=ToTrack(c);var awning=teamColors[Mathf.FloorToInt(pick*97)%teamColors.Length];
@@ -755,10 +809,13 @@ namespace PolygonRacing
                     float sz=Mathf.Sign(toTrack.z);
                     kit.Box(awning,c+new Vector3(0,3.3f,sz*(hz+1.1f)),new Vector3(hx*1.6f,.15f,2.2f),Quaternion.Euler(sz*12,0,0));
                 }
-                // Roof clutter: water tank and plant room.
-                kit.Column(brick,c+new Vector3(hx*.4f,h+.8f,hz*.3f),1.4f,1.4f,2.6f,6);
-                kit.Chamfered(brick,c+new Vector3(hx*.4f,h+3.4f,hz*.3f),1.5f,1.5f,.2f,.2f,0,1.2f,.5f);
-                kit.Box(steel,c+new Vector3(-hx*.35f,h+1.6f,-hz*.3f),new Vector3(hx*.6f,2.4f,hz*.5f));
+                // Roof clutter: water tank and plant room (the tank gives way to a billboard).
+                if(!billboard)
+                {
+                    kit.Column(brick,c+new Vector3(hx*.4f,h+.8f,hz*.3f),1.4f,1.4f,2.6f,6);
+                    kit.Chamfered(brick,c+new Vector3(hx*.4f,h+3.4f,hz*.3f),1.5f,1.5f,.2f,.2f,0,1.2f,.5f);
+                    kit.Box(steel,c+new Vector3(-hx*.35f,h+1.6f,-hz*.3f),new Vector3(hx*.6f,2.4f,hz*.5f));
+                }
             }
         }
 
@@ -775,6 +832,370 @@ namespace PolygonRacing
         {
             float lap=PolygonCircuit.ProjectLap(c,out _);
             var p=PolygonCircuit.AtDistance(lap*PolygonCircuit.Length);var d=p-c;d.y=0;return d;
+        }
+
+        // ------------------------------------------------------------ PC detail v01
+        // Everything below is editor-time geometry baked into the existing chunks: no runtime
+        // updates, colliders or lights. Lit windows and crowns are emissive materials (bloom on PC).
+        static Vector3[] trackSamples;
+        static int cranes,billboards,footbridges;
+        const int MaxCranes=5;
+        const float PierHalf=.28f,CornerPier=.9f;
+
+        static void PrepareTrackSamples()
+        {
+            int n=Mathf.CeilToInt(PolygonCircuit.Length/15);trackSamples=new Vector3[n];
+            for(int i=0;i<n;i++)trackSamples[i]=P(i*PolygonCircuit.Length/n);
+        }
+
+        // True when some part of the circuit within range lies in front of this face.
+        static bool FaceSeen(Vector3 faceCentre,Vector3 outward,float range)
+        {
+            float r2=range*range;
+            foreach(var p in trackSamples)
+            {
+                var to=p-faceCentre;to.y=0;
+                if(to.sqrMagnitude<r2&&Vector3.Dot(outward,to)>6)return true;
+            }
+            return false;
+        }
+
+        static readonly Vector3[] FaceDirections={Vector3.forward,Vector3.back,Vector3.right,Vector3.left};
+
+        // Face-local point: u along the face (r), y up, d along the outward normal (n).
+        static Vector3 FV(Vector3 o,Vector3 r,Vector3 n,float u,float y,float d)=>o+r*u+Vector3.up*y+n*d;
+
+        // Single-sided quad in a face plane at depth d, facing outward.
+        static void FaceQuad(PolygonSceneryKit kit,Material m,Vector3 o,Vector3 r,Vector3 n,float u0,float u1,float y0,float y1,float d)
+        {
+            if(u1-u0<.001f||y1-y0<.001f)return;
+            kit.Quad(m,FV(o,r,n,u0,y0,d),FV(o,r,n,u1,y0,d),FV(o,r,n,u1,y1,d),FV(o,r,n,u0,y1,d),FV(o,r,n,(u0+u1)*.5f,(y0+y1)*.5f,d-1));
+        }
+
+        // Front plus two side faces of a vertical strip standing from depth -depth to 0. Top,
+        // bottom and back are always covered by neighbouring geometry, so they are omitted.
+        static void Pier(PolygonSceneryKit kit,Material m,Vector3 o,Vector3 r,Vector3 n,float u0,float u1,float y0,float y1,float depth)
+        {
+            FaceQuad(kit,m,o,r,n,u0,u1,y0,y1,0);
+            float ym=(y0+y1)*.5f;
+            kit.Quad(m,FV(o,r,n,u0,y0,0),FV(o,r,n,u0,y1,0),FV(o,r,n,u0,y1,-depth),FV(o,r,n,u0,y0,-depth),FV(o,r,n,u0+1,ym,-depth*.5f));
+            kit.Quad(m,FV(o,r,n,u1,y0,0),FV(o,r,n,u1,y1,0),FV(o,r,n,u1,y1,-depth),FV(o,r,n,u1,y0,-depth),FV(o,r,n,u1-1,ym,-depth*.5f));
+        }
+
+        // Inward-facing reveal closing the end of a recessed band at u (side = +1 faces -r).
+        static void Reveal(PolygonSceneryKit kit,Material m,Vector3 o,Vector3 r,Vector3 n,float u,float side,float y0,float y1,float depth)
+        {
+            float ym=(y0+y1)*.5f;
+            kit.Quad(m,FV(o,r,n,u,y0,0),FV(o,r,n,u,y1,0),FV(o,r,n,u,y1,-depth),FV(o,r,n,u,y0,-depth),FV(o,r,n,u+side,ym,-depth*.5f));
+        }
+
+        // Near-track glass towers: the plain shaft becomes a curtain wall of individual panels
+        // between proud mullions and thin floor spandrels, with scattered lit offices. Faces the
+        // circuit never shows keep one panel per face.
+        static void CurtainWall(PolygonSceneryKit kit,Vector3 c,float hx,float hz,float h,Material glass,Material frame)
+        {
+            const float floorH=4.2f,column=3.0f,mullionDepth=.35f,mullionHalf=.12f;
+            float px=hx-.6f,pz=hz-.6f,top=h-.5f;
+            var alt=glass==glassDark?glassBlue:glassDark;
+            kit.Box(stoneDark,c+Vector3.up*(h-.25f),new Vector3(px*2,.5f,pz*2));
+            int rows=Mathf.Max(1,Mathf.CeilToInt((top-6)/floorH));
+            for(int f=0;f<4;f++)
+            {
+                var n=FaceDirections[f];bool alongZ=Mathf.Abs(n.z)>.5f;
+                float half=alongZ?px:pz,plane=alongZ?pz:px;
+                var o=c+n*plane;var r=Vector3.Cross(Vector3.up,n);
+                if(!FaceSeen(o+Vector3.up*30,n,450)){FaceQuad(kit,glass,o,r,n,-half,half,6,top,0);continue;}
+                int cols=Mathf.Max(3,Mathf.RoundToInt(half*2/column));float pitch=half*2/cols;
+                for(int row=0;row<rows;row++)
+                {
+                    float y0=6+row*floorH,y1=Mathf.Min(y0+floorH,top);
+                    if(y1-y0<.2f)break;
+                    bool litFloor=Hash(c.x+row*3.1f,c.z+f,21)<.07f;
+                    for(int col=0;col<cols;col++)
+                    {
+                        float u0=-half+col*pitch;
+                        float v=Hash(o.x+u0*1.7f+row,o.z+y0,17+f);
+                        var m=litFloor?(v<.75f?windowCool:glass):v<.08f?windowCool:v<.10f?windowWarm:v<.22f?alt:glass;
+                        FaceQuad(kit,m,o,r,n,u0,u0+pitch,y0,y1,0);
+                    }
+                }
+                // Mullions stand proud of the glass; the corner fins already cover the corners.
+                for(int col=1;col<cols;col++)
+                {
+                    float u=-half+col*pitch;
+                    Pier(kit,frame,o+n*mullionDepth,r,n,u-mullionHalf,u+mullionHalf,6,top,mullionDepth);
+                }
+            }
+            // Thin spandrel ledge at every floor (proud of the glass, inside the mullion depth).
+            for(int row=1;row<rows;row++)
+                kit.Box(frame,c+Vector3.up*(6+row*floorH),new Vector3(px*2+.24f,.3f,pz*2+.24f));
+        }
+
+        // Near-track apartments: the continuous recessed glass bands are split into individual
+        // windows by wall piers, so every floor reads as a row of real windows; some are lit.
+        // Wall slabs and recess depth are the accepted anti-flicker construction (no coplanar faces).
+        static void WindowBayFacade(PolygonSceneryKit kit,Vector3 c,float hx,float hz,float y0,float y1,float step,float glassShare,Material wall,Material glass)
+        {
+            var seen=new bool[4];
+            for(int f=0;f<4;f++)
+            {
+                var n=FaceDirections[f];float plane=Mathf.Abs(n.z)>.5f?hz:hx;
+                seen[f]=FaceSeen(c+n*plane+Vector3.up*15,n,320);
+            }
+            bool Seen(Vector3 dir){for(int f=0;f<4;f++)if(Vector3.Dot(FaceDirections[f],dir)>.5f)return seen[f];return false;}
+            float y=y0;int floor=0;
+            while(y+step<=y1+.01f)
+            {
+                float g=step*glassShare,b0=y+step-g,b1=y+step;
+                kit.Box(wall,c+Vector3.up*(y+(step-g)*.5f),new Vector3(hx*2,step-g,hz*2));
+                for(int f=0;f<4;f++)
+                {
+                    var n=FaceDirections[f];bool alongZ=Mathf.Abs(n.z)>.5f;
+                    float half=alongZ?hx:hz,plane=alongZ?hz:hx,edge=half-Recess;
+                    var o=c+n*plane;var r=Vector3.Cross(Vector3.up,n);
+                    if(!alongZ)
+                    {
+                        // Close the band ends where the neighbouring face has a solid corner pier.
+                        if(Seen(r))Reveal(kit,wall,o,r,n,edge,1,b0,b1,Recess);
+                        if(Seen(-r))Reveal(kit,wall,o,r,n,-edge,-1,b0,b1,Recess);
+                    }
+                    if(!seen[f]){FaceQuad(kit,glass,o,r,n,-edge,edge,b0,b1,-Recess);continue;}
+                    float inner=-edge,outer=edge;
+                    if(alongZ)
+                    {
+                        Pier(kit,wall,o,r,n,-half,-half+CornerPier,b0,b1,Recess);
+                        Pier(kit,wall,o,r,n,half-CornerPier,half,b0,b1,Recess);
+                        inner=-half+CornerPier;outer=half-CornerPier;
+                    }
+                    int bays=Mathf.Max(2,Mathf.RoundToInt((outer-inner)/3.2f));float pitch=(outer-inner)/bays;
+                    for(int k=0;k<bays;k++)
+                    {
+                        float u0=inner+k*pitch,u1=u0+pitch;
+                        if(k>0)Pier(kit,wall,o,r,n,u0-PierHalf,u0+PierHalf,b0,b1,Recess);
+                        float p0=k==0?u0:u0+PierHalf,p1=k==bays-1?u1:u1-PierHalf;
+                        float v=Hash(o.x+u0*1.3f,o.z+b0+floor,23+f);
+                        FaceQuad(kit,v<.13f?windowWarm:v<.17f?windowCool:glass,o,r,n,p0,p1,b0,b1,-Recess);
+                    }
+                }
+                y+=step;floor++;
+            }
+            if(y1-y>.05f)kit.Box(wall,c+Vector3.up*((y+y1)*.5f),new Vector3(hx*2,y1-y,hz*2));
+        }
+
+        // Rooftop advertising hoarding facing the circuit: original abstract graphics only.
+        static bool RooftopBillboard(PolygonSceneryKit kit,Vector3 c,float hx,float hz,float h,float pick)
+        {
+            var to=ToTrack(c);to.y=0;
+            if(to.sqrMagnitude<1)return false;
+            var f=to.normalized;var r=Vector3.Cross(Vector3.up,f);var rot=Quaternion.LookRotation(f);
+            float w=Mathf.Clamp(Mathf.Min(hx,hz)*1.5f,8,15),bh=w*.42f,roof=h+.8f,legs=2.2f;
+            var p=c+f*(Mathf.Min(hx,hz)*.3f);p.y=c.y;
+            Vector3 L(float u,float y,float d)=>p+r*u+Vector3.up*y+f*d;
+            foreach(float u in new[]{-w*.38f,0,w*.38f})
+            {
+                kit.Beam(steel,L(u,roof,-.1f),L(u,roof+legs+bh,-.1f),.25f,.25f);
+                kit.Beam(steel,L(u,roof,-2.6f),L(u,roof+legs+bh*.75f,-.25f),.16f,.16f);
+            }
+            float cy=roof+legs+bh*.5f;
+            kit.Box(billboardBack,L(0,cy,.2f),new Vector3(w+.5f,bh+.5f,.35f),rot);
+            var a=teamColors[Mathf.FloorToInt(pick*61)%teamColors.Length];
+            var b=teamColors[(Mathf.FloorToInt(pick*61)+2)%teamColors.Length];
+            kit.Box(a,L(0,cy,.45f),new Vector3(w,bh,.15f),rot);
+            float front=.62f;
+            int design=Mathf.FloorToInt(pick*97)%3;
+            if(design==0)
+            {
+                // Bold chevron with a light band.
+                kit.Sheet(b,L(-w*.45f,cy+bh*.42f,front),L(-w*.05f,cy,front),L(-w*.45f,cy-bh*.42f,front));
+                kit.Sheet(b,L(-w*.25f,cy+bh*.42f,front),L(w*.15f,cy,front),L(-w*.25f,cy-bh*.42f,front));
+                kit.Box(cream,L(w*.28f,cy,.6f),new Vector3(w*.36f,bh*.22f,.12f),rot);
+            }
+            else if(design==1)
+            {
+                // Faceted polygon emblem and two stripes.
+                for(int i=0;i<6;i++)
+                {
+                    float t0=i*Mathf.PI/3,t1=(i+1)*Mathf.PI/3,rad=bh*.36f;
+                    kit.Sheet(i%2==0?cream:b,L(-w*.28f,cy,front),L(-w*.28f+Mathf.Cos(t0)*rad,cy+Mathf.Sin(t0)*rad,front),
+                        L(-w*.28f+Mathf.Cos(t1)*rad,cy+Mathf.Sin(t1)*rad,front));
+                }
+                kit.Box(cream,L(w*.18f,cy+bh*.16f,.6f),new Vector3(w*.44f,bh*.14f,.12f),rot);
+                kit.Box(b,L(w*.12f,cy-bh*.16f,.6f),new Vector3(w*.32f,bh*.14f,.12f),rot);
+            }
+            else
+            {
+                // Diagonal split with a checkered race strip.
+                kit.Sheet(b,L(w*.5f,cy+bh*.5f,front),L(w*.5f,cy-bh*.5f,front),L(-w*.1f,cy-bh*.5f,front));
+                for(int k=0;k<8;k++)
+                    kit.Box(k%2==0?cream:checkDark,L(-w*.45f+k*w*.075f,cy+bh*.28f,.6f),new Vector3(w*.075f,bh*.16f,.12f),rot);
+            }
+            // Lamp bar along the top edge lighting the face.
+            kit.Box(steel,L(0,cy+bh*.5f+.35f,.9f),new Vector3(w*.9f,.18f,.8f),rot);
+            kit.Box(lamp,L(0,cy+bh*.5f+.22f,1.15f),new Vector3(w*.85f,.1f,.25f),rot);
+            billboards++;
+            return true;
+        }
+
+        // Half-built tower with concrete core, slabs, columns, hoarding and a tower crane.
+        static bool ConstructionSite(PolygonSceneryKit kit,Vector3 c,float hx,float hz,float h,float pick)
+        {
+            float built=Mathf.Clamp(h*.5f,20,80),floorH=4f;
+            int floors=Mathf.FloorToInt(built/floorH);built=floors*floorH;
+            // The crane stands beside the building, away from the circuit.
+            var away=-ToTrack(c);away.y=0;away=away.sqrMagnitude>1?away.normalized:Vector3.forward;
+            var side=Mathf.Abs(away.x)>Mathf.Abs(away.z)?new Vector3(Mathf.Sign(away.x),0,0):new Vector3(0,0,Mathf.Sign(away.z));
+            var foot=c+side*((Mathf.Abs(side.x)>.5f?hx:hz)+4.5f);
+            float craneH=built+24+pick*14,jib=42;
+            // The mast stays well off the street; the jib points as far from the circuit as it can
+            // (at 60 m+ it may still swing over a road, as real city cranes do).
+            if(Offset(foot)<32)return false;
+            float yaw=0,best=-1;
+            for(int k=0;k<8;k++)
+            {
+                float a=k*45+pick*20;var dir=Quaternion.Euler(0,a,0)*Vector3.forward;
+                float clear=Mathf.Min(Offset(foot+dir*jib),Offset(foot+dir*jib*.5f));
+                if(clear>best){best=clear;yaw=a;}
+            }
+            cranes++;
+            kit.Box(stone,c+Vector3.up*((built+6)*.5f),new Vector3(Mathf.Min(hx,hz)*.8f,built+6,Mathf.Min(hx,hz)*.6f));
+            for(int i=1;i<=floors;i++)
+                kit.Box(i==floors?stoneDark:wall,c+Vector3.up*(i*floorH),new Vector3(hx*2,.35f,hz*2));
+            int nx=Mathf.Max(2,Mathf.RoundToInt(hx*2/7)),nz=Mathf.Max(2,Mathf.RoundToInt(hz*2/7));
+            for(int i=0;i<=nx;i++)for(int j=0;j<=nz;j++)
+            {
+                if(i>0&&i<nx&&j>0&&j<nz)continue;
+                kit.Box(stone,c+new Vector3(-hx+.5f+i*(hx*2-1)/nx,built*.5f,-hz+.5f+j*(hz*2-1)/nz),new Vector3(.7f,built,.7f));
+            }
+            // Cladding on the lower third, safety netting band at the working floor.
+            int clad=Mathf.Max(1,floors/3);
+            kit.Box(stoneDark,c+Vector3.up*.25f,new Vector3(hx*2-.6f,.5f,hz*2-.6f));
+            for(int i=0;i<clad;i++)
+                kit.Sleeve(i%2==0?glassTeal:glassDark,c+Vector3.up*(i*floorH+floorH*.5f+.09f),new Vector3(hx*2-.8f,floorH-.18f,hz*2-.8f));
+            kit.Sleeve(hoarding,c+Vector3.up*(built-1.4f),new Vector3(hx*2+.8f,2.4f,hz*2+.8f));
+            // Site hoarding at street level.
+            foreach(int s in new[]{-1,1})
+            {
+                kit.Box(hoarding,c+new Vector3(s*(hx+1.8f),1.1f,0),new Vector3(.2f,2.2f,hz*2+3.6f));
+                kit.Box(hoarding,c+new Vector3(0,1.1f,s*(hz+1.8f)),new Vector3(hx*2+3.6f,2.2f,.2f));
+            }
+            TowerCrane(kit,foot,craneH,yaw,jib);
+            return true;
+        }
+
+        static void TowerCrane(PolygonSceneryKit kit,Vector3 foot,float height,float yaw,float jib)
+        {
+            // Members are sized to read at a few hundred metres (thin lattices vanished).
+            var paint=craneYellow;const float s=1.3f,seg=3f;
+            kit.Box(stoneDark,foot+Vector3.up*.6f,new Vector3(5,1.2f,5));
+            var corners=new[]{new Vector3(-s,0,-s),new Vector3(s,0,-s),new Vector3(s,0,s),new Vector3(-s,0,s)};
+            foreach(var k in corners)kit.Beam(paint,foot+k+Vector3.up*1.2f,foot+k+Vector3.up*height,.42f,.42f);
+            int levels=Mathf.FloorToInt((height-1.2f)/seg);
+            for(int l=0;l<levels;l++)
+            {
+                float y0=1.2f+l*seg,y1=y0+seg;
+                for(int i=0;i<4;i++)
+                {
+                    var a=corners[i];var b=corners[(i+1)%4];
+                    kit.Beam(paint,foot+a+Vector3.up*y1,foot+b+Vector3.up*y1,.22f,.22f);
+                    if((l+i)%2==0)kit.Beam(paint,foot+a+Vector3.up*y0,foot+b+Vector3.up*y1,.17f,.17f);
+                    else kit.Beam(paint,foot+b+Vector3.up*y0,foot+a+Vector3.up*y1,.17f,.17f);
+                }
+            }
+            var rot=Quaternion.Euler(0,yaw,0);var dir=rot*Vector3.forward;var across=rot*Vector3.right;
+            float top=height;
+            kit.Box(steel,foot+Vector3.up*(top+.6f),new Vector3(2.6f,1.2f,2.6f),rot);
+            kit.Box(cream,foot+dir*1.6f+across*1.6f+Vector3.up*(top-.4f),new Vector3(1.6f,1.8f,2.0f),rot);
+            kit.Box(glassDark,foot+dir*2.45f+across*1.6f+Vector3.up*(top-.2f),new Vector3(1.3f,1.0f,.3f),rot);
+            // Jib: triangular truss.
+            float jb=top+1.2f,jt=top+3.0f;
+            var l0=foot-across*.8f+Vector3.up*jb;var r0=foot+across*.8f+Vector3.up*jb;var t0=foot+Vector3.up*jt;
+            kit.Beam(paint,l0,l0+dir*jib,.32f,.32f);kit.Beam(paint,r0,r0+dir*jib,.32f,.32f);kit.Beam(paint,t0,t0+dir*(jib-1),.32f,.32f);
+            for(float d=0;d<jib-1;d+=3)
+            {
+                kit.Beam(paint,l0+dir*d,t0+dir*(d+1.5f),.15f,.15f);kit.Beam(paint,r0+dir*d,t0+dir*(d+1.5f),.15f,.15f);
+                kit.Beam(paint,l0+dir*d,r0+dir*(d+3),.12f,.12f);
+            }
+            // Counter-jib, counterweights, A-frame and pendant ties.
+            kit.Box(paint,foot-dir*7+Vector3.up*(jb+.25f),new Vector3(1.8f,.5f,14),rot);
+            kit.Box(stone,foot-dir*12.5f+Vector3.up*(jb-1.0f),new Vector3(2.4f,2.4f,2.6f),rot);
+            var apex=foot+Vector3.up*(top+9);
+            foreach(var k in new[]{-1f,1f})kit.Beam(paint,foot+across*k*.9f+Vector3.up*(top+1.2f),apex,.32f,.32f);
+            kit.Beam(steel,apex,t0+dir*(jib*.7f),.1f,.1f);
+            kit.Beam(steel,apex,foot-dir*13+Vector3.up*(jb+.5f),.1f,.1f);
+            kit.Box(aviation,apex+Vector3.up*.3f,Vector3.one*.5f);
+            kit.Box(aviation,t0+dir*(jib-1)+Vector3.up*.3f,Vector3.one*.4f);
+            // Trolley, hoist line and a load of steel.
+            var trolley=foot+dir*(jib*.55f)+Vector3.up*jb;
+            kit.Box(steel,trolley+Vector3.down*.3f,new Vector3(1.4f,.5f,1.4f),rot);
+            float drop=Mathf.Min(height*.45f,24);
+            kit.Beam(steel,trolley+Vector3.down*.55f,trolley+Vector3.down*drop,.08f,.08f);
+            kit.Box(coral,trolley+Vector3.down*(drop+.4f),new Vector3(.5f,.8f,.5f),rot);
+            kit.Box(navy,trolley+Vector3.down*(drop+1.3f),new Vector3(.6f,.6f,7),rot);
+        }
+
+        // Footbridges over the circuit on long straights: classic street-race framing overhead.
+        static void BuildFootbridges(Transform world)
+        {
+            float length=PolygonCircuit.Length;var picks=new List<float>();
+            for(float d=240;d<length-260&&picks.Count<3;d+=10)
+            {
+                if(picks.Count>0&&d-picks[picks.Count-1]<length*.15f)continue;
+                bool straight=true;
+                for(float e=-60;e<=200&&straight;e+=10)if(Mathf.Abs(PolygonCircuit.Curvature(d+e))>1/400f)straight=false;
+                if(!straight)continue;
+                var a=At(d,-23,0);var b=At(d,23,0);var mid=P(d);
+                if(Mathf.Abs(mid.x-100)<70&&mid.z>400)continue; // keep clear of the monorail crossing
+                if(Reserved(new Vector2(a.x,a.z),9)||Reserved(new Vector2(b.x,b.z),9)||Reserved(new Vector2(mid.x,mid.z),9))continue;
+                picks.Add(d);
+            }
+            for(int i=0;i<picks.Count;i++)Footbridge(world,picks[i],i);
+            footbridges=picks.Count;
+        }
+
+        static void Footbridge(Transform world,float d,int index)
+        {
+            var t=Frame(world,"City footbridge "+(index+1),d,0);
+            var kit=new PolygonSceneryKit("Footbridge "+(index+1));
+            const float tower=22.2f,deckY=7.0f,span=44.4f;
+            // Stair/lift towers on the sidewalks, outside the wall and fence.
+            foreach(int s in new[]{-1,1})
+            {
+                kit.Box(stoneDark,new Vector3(s*tower,.4f,0),new Vector3(5.0f,.8f,6.4f));
+                kit.Box(teal,new Vector3(s*tower,(deckY+3.65f+.8f)*.5f,0),new Vector3(4.4f,deckY+3.65f-.8f,5.6f));
+                kit.Box(glassTeal,new Vector3(s*tower,5.0f,0),new Vector3(3.4f,6.6f,6.0f));
+                kit.Box(cream,new Vector3(s*tower,deckY+3.9f,0),new Vector3(5.2f,.5f,6.6f));
+            }
+            // Deck, glazed side screens, roof and an under-deck truss.
+            kit.Box(cream,new Vector3(0,deckY,0),new Vector3(span-4.4f,.8f,4.4f));
+            foreach(int z in new[]{-1,1})
+            {
+                kit.Box(glassBlue,new Vector3(0,deckY+1.75f,z*2.0f),new Vector3(span-4.6f,2.7f,.16f));
+                kit.Box(steel,new Vector3(0,deckY+3.2f,z*2.05f),new Vector3(span-4.4f,.22f,.3f));
+                for(int k=0;k<=12;k++)
+                {
+                    float x=-(span-4.4f)*.5f+k*(span-4.4f)/12;
+                    kit.Box(steel,new Vector3(x,deckY+1.75f,z*2.12f),new Vector3(.14f,2.7f,.12f));
+                    if(k<12)kit.Beam(steel,new Vector3(x,deckY-.4f,z*2.0f),new Vector3(x+(span-4.4f)/12,deckY-1.5f,z*2.0f),.14f,.14f);
+                }
+                kit.Beam(steel,new Vector3(-(span-4.4f)*.5f,deckY-1.5f,z*2.0f),new Vector3((span-4.4f)*.5f,deckY-1.5f,z*2.0f),.2f,.2f);
+            }
+            // Bright roof and a glowing strip under the deck so the bridge reads from far down the straight.
+            kit.Box(coral,new Vector3(0,deckY+3.5f,0),new Vector3(span+1,.35f,5.4f));
+            kit.Box(cream,new Vector3(0,deckY+3.8f,0),new Vector3(span+1.4f,.25f,5.8f));
+            foreach(int z in new[]{-1,1})kit.Box(lamp,new Vector3(0,deckY-.47f,z*1.4f),new Vector3(span-6,.12f,.35f));
+            // Event banners on both faces, with checkered ends and a team-colour stripe.
+            var color=teamColors[(index*2+1)%teamColors.Length];var stripe=teamColors[(index*2+4)%teamColors.Length];
+            if(color==navy)color=coral;
+            foreach(int z in new[]{-1,1})
+            {
+                kit.Box(color,new Vector3(0,deckY-.15f,z*2.5f),new Vector3(30,1.7f,.2f));
+                kit.Box(stripe,new Vector3(0,deckY-.65f,z*2.66f),new Vector3(28,.35f,.12f));
+                kit.Box(cream,new Vector3(0,deckY+.25f,z*2.66f),new Vector3(14,.5f,.12f));
+                foreach(int s in new[]{-1,1})for(int row=0;row<2;row++)for(int col=0;col<3;col++)
+                    kit.Box((row+col)%2==0?cream:checkDark,new Vector3(s*(15.6f+col*.8f),deckY-.55f+row*.8f,z*2.5f),new Vector3(.8f,.8f,.2f));
+            }
+            kit.Emit(t);
+            Reserve(t,-27,27,-5,5);
         }
 
         // ------------------------------------------------------------ distant skyline
