@@ -50,7 +50,8 @@ namespace PolygonRacing
             Application.targetFrameRate=72;
             var scenery=transform.parent.Find("Circuit - editable scenery");
             if(scenery)StaticBatchingUtility.Combine(scenery.gameObject);
-            engine=gameObject.AddComponent<PolygonEngineSound>();
+            engine=GetComponent<PolygonEngineSound>();
+            if(!engine)engine=gameObject.AddComponent<PolygonEngineSound>();
         }
         void OnEnable() { Application.onBeforeRender+=TrackHead; }
         void OnDisable() { Application.onBeforeRender-=TrackHead; }

@@ -1,0 +1,8 @@
+# PC player engine recording sources
+
+- `Rotary_int_*.wav`: unmodified copies of the interior idle, low, medium and high on/off WAVs from **Rotary x8 - Free Engine Sound Pack**, Skril Studio, imported by the user from the Unity Asset Store: https://assetstore.unity.com/packages/audio/sound-fx/transportation/rotary-x8-free-engine-sound-pack-106119 . The listing specifies the Standard Unity Asset Store EULA, not CC0. The copies are in Resources so the player can load them at runtime; the imported package is retained intact.
+
+- `PolygonEngineHigh.wav`: derived from `F1_indy_acceleration.wav` supplied in the project root. Its embedded title, duration and format match [F-1raceCar-IdleAndRaceStartDemo.wav by Ears68](https://freesound.org/people/Ears68/sounds/181187/), recorded at Sydney Motorsport Park in 2013. The Freesound listing identifies it as Creative Commons 0 (CC0). The game loop takes 14.0–14.6 seconds, mixes stereo to mono, removes DC offset, crossfades the seam and adjusts level.
+- `PolygonEngineIdle.wav`: derived from `Idle_loop_1.wav` supplied in the project root. Its embedded title is “start up car with seat belt warning beep”. The likely source is [racing car engine sound loops by domasx2](https://opengameart.org/content/racing-car-engine-sound-loops), listed as CC0; that page says the loops were edited from the public-domain pdsounds recording of that title. The exact provenance of the supplied renamed file has not been independently verified. The game loop removes DC offset, crossfades the seam and adjusts level.
+
+CC0 dedication: https://creativecommons.org/publicdomain/zero/1.0/ . Original user-supplied files are retained in the project root, outside Unity's Assets folder.
