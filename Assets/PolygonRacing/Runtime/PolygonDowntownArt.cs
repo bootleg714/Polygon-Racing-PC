@@ -622,6 +622,7 @@ namespace PolygonRacing
         static void BuildCity(Chunks chunks)
         {
             const float lot=52;
+            var siteLots=PickConstructionLots(lot);
             for(float x=-900;x<=1340;x+=lot)
                 for(float z=-560;z<=SeaWallZ-30;z+=lot)
                 {
@@ -644,11 +645,47 @@ namespace PolygonRacing
                     h=Mathf.Clamp(h,12,260);
                     int detail=near<150?2:near<380?1:0;
                     if(detail==0&&Hash(x,z,7)<.25f)continue;
+                    if(siteLots.Contains(new Vector2(x,z))&&ConstructionSite(chunks.At(c),c,hx,hz,h,Hash(x,z,9)))continue;
                     if(h<34&&Hash(x,z,8)<.12f&&detail>0){Plaza(chunks.At(c),c,hx,hz);continue;}
-                    if(cranes<MaxCranes&&near>40&&near<220&&Hash(x,z,10)<.08f&&ConstructionSite(chunks.At(c),c,hx,hz,h,Hash(x,z,9)))
-                        continue;
                     Building(chunks.At(c),c,hx,hz,h,detail,Hash(x,z,9));
                 }
+        }
+
+        // Construction sites are chosen up front: lots in the first row or two behind the circuit
+        // (40-95 m from the racing line), spread around the lap so a crane comes into view
+        // regularly from the cockpit. Uses the same lot filters as BuildCity.
+        static HashSet<Vector2> PickConstructionLots(float lot)
+        {
+            var candidates=new List<(Vector2 key,float near,float lap)>();
+            for(float x=-900;x<=1340;x+=lot)
+                for(float z=-560;z<=SeaWallZ-30;z+=lot)
+                {
+                    float jx=(Hash(x,z,1)-.5f)*8,jz=(Hash(x,z,2)-.5f)*8;
+                    var c=new Vector3(x+jx,Base,z+jz);
+                    float hx=10+Hash(x,z,3)*11,hz=10+Hash(x,z,4)*11;
+                    if(c.z+hz>SeaWallZ-14)continue;
+                    if(Reserved(new Vector2(c.x,c.z),Mathf.Max(hx,hz)+2))continue;
+                    float near=MinOffset(c,hx+2.5f,hz+2.5f);
+                    if(near<40||near>95)continue;
+                    candidates.Add((new Vector2(x,z),near+Hash(x,z,10)*25,DistanceAt(c)));
+                }
+            candidates.Sort((a,b)=>a.near.CompareTo(b.near));
+            var picked=new HashSet<Vector2>();var laps=new List<float>();
+            float length=PolygonCircuit.Length,spacing=length/(MaxCranes+2);
+            foreach(var cand in candidates)
+            {
+                if(picked.Count>=MaxCranes+2)break; // a spare or two in case a crane does not fit
+                bool clear=true;
+                foreach(float d in laps)
+                {
+                    float gap=Mathf.Abs(cand.lap-d);gap=Mathf.Min(gap,length-gap);
+                    if(gap<spacing){clear=false;break;}
+                }
+                if(cand.lap<120||cand.lap>length-60)clear=false; // keep the start area clean
+                if(!clear)continue;
+                picked.Add(cand.key);laps.Add(cand.lap);
+            }
+            return picked;
         }
 
         static float MinOffset(Vector3 c,float hx,float hz)
@@ -839,7 +876,7 @@ namespace PolygonRacing
         // updates, colliders or lights. Lit windows and crowns are emissive materials (bloom on PC).
         static Vector3[] trackSamples;
         static int cranes,billboards,footbridges;
-        const int MaxCranes=5;
+        const int MaxCranes=6;
         const float PierHalf=.28f,CornerPier=.9f;
 
         static void PrepareTrackSamples()
@@ -1039,6 +1076,7 @@ namespace PolygonRacing
         // Half-built tower with concrete core, slabs, columns, hoarding and a tower crane.
         static bool ConstructionSite(PolygonSceneryKit kit,Vector3 c,float hx,float hz,float h,float pick)
         {
+            if(cranes>=MaxCranes)return false;
             float built=Mathf.Clamp(h*.5f,20,80),floorH=4f;
             int floors=Mathf.FloorToInt(built/floorH);built=floors*floorH;
             // The crane stands beside the building, away from the circuit.
