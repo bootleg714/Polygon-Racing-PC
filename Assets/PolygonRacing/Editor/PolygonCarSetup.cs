@@ -121,6 +121,8 @@ namespace PolygonRacing.Editor
                 }
                 else {woven.shader=shader;woven.SetTexture("_BaseMap",texture);EditorUtility.SetDirty(woven);}
                 var meshes=BuildMeshes(true);
+                if(!driver.GetComponent<PolygonPCMirrors>())driver.gameObject.AddComponent<PolygonPCMirrors>();
+                EditorUtility.SetDirty(driver.gameObject);
                 if(!driver.steeringWheel.GetComponent<PolygonCarInstruments>())
                     driver.steeringWheel.gameObject.AddComponent<PolygonCarInstruments>();
                 EditorUtility.SetDirty(driver.steeringWheel.gameObject);
