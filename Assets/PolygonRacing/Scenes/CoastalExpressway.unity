@@ -3963,6 +3963,8 @@ MonoBehaviour:
   acceleration: 13
   braking: 24
   steeringAngle: 28
+  cornerGrip: 60
+  maxSlipAngle: 5
 --- !u!114 &54466183
 MonoBehaviour:
   m_ObjectHideFlags: 0

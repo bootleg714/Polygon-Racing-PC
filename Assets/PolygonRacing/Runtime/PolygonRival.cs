@@ -117,7 +117,7 @@ namespace PolygonRacing
             AddDriver();traffic.Add(this);
             var last=PolygonWorld.Point(0);
             for(int i=1;i<=Samples;i++){var p=PolygonWorld.Point(i*Mathf.PI*2/Samples);arc[i]=arc[i-1]+Vector3.Distance(last,p);last=p;}
-            totalLength=arc[Samples];plan=PolygonRivalPlan.For(player.steeringAngle,BrakeDeceleration);ResetRival();
+            totalLength=arc[Samples];plan=PolygonRivalPlan.For(player.steeringAngle,BrakeDeceleration,player.cornerGrip);ResetRival();
         }
         void CopyBranch(Transform original,Transform parent)
         {
@@ -191,7 +191,7 @@ namespace PolygonRacing
                 }
             }
             SetSlipstreamStrength(slipstream.Advance(draft,dt));
-            if(plan==null||!Mathf.Approximately(plan.Length,PolygonCircuit.Length))plan=PolygonRivalPlan.For(player.steeringAngle,BrakeDeceleration);
+            if(plan==null||!Mathf.Approximately(plan.Length,PolygonCircuit.Length))plan=PolygonRivalPlan.For(player.steeringAngle,BrakeDeceleration,player.cornerGrip);
             raceTime+=dt;
             var me=Me;
             float lim=plan.LaneLimit;

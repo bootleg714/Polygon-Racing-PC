@@ -23,14 +23,14 @@ namespace PolygonRacing
         static PolygonRivalPlan cached;
         static string cachedKey;
 
-        public static PolygonRivalPlan For(float steeringAngle,float brakingDeceleration)
+        public static PolygonRivalPlan For(float steeringAngle,float brakingDeceleration,float cornerGrip)
         {
-            string key=PolygonCircuit.LayoutId+"|"+PolygonCircuit.Length.ToString("F2")+"|"+PolygonCircuit.RoadHalfWidth+"|"+steeringAngle+"|"+brakingDeceleration;
-            if(cached==null||cachedKey!=key){cached=new PolygonRivalPlan(steeringAngle,brakingDeceleration);cachedKey=key;}
+            string key=PolygonCircuit.LayoutId+"|"+PolygonCircuit.Length.ToString("F2")+"|"+PolygonCircuit.RoadHalfWidth+"|"+steeringAngle+"|"+brakingDeceleration+"|"+cornerGrip;
+            if(cached==null||cachedKey!=key){cached=new PolygonRivalPlan(steeringAngle,brakingDeceleration,cornerGrip);cachedKey=key;}
             return cached;
         }
 
-        PolygonRivalPlan(float steeringAngle,float brakingDeceleration)
+        PolygonRivalPlan(float steeringAngle,float brakingDeceleration,float cornerGrip)
         {
             Length=PolygonCircuit.Length;
             int n=Mathf.Max(16,Mathf.CeilToInt(Length/StationSpacing));
@@ -73,16 +73,16 @@ namespace PolygonRacing
                 float angle=Mathf.Atan2(cross,Vector2.Dot(a,b));
                 lineCurvature[i]=angle/Mathf.Max(.001f,(a.magnitude+b.magnitude)*.5f);
             }
-            envelopeLow=Envelope(LowLockUse,steeringAngle,brakingDeceleration);
-            envelopeHigh=Envelope(HighLockUse,steeringAngle,brakingDeceleration);
+            envelopeLow=Envelope(LowLockUse,steeringAngle,brakingDeceleration,cornerGrip);
+            envelopeHigh=Envelope(HighLockUse,steeringAngle,brakingDeceleration,cornerGrip);
         }
 
         // Highest speed at each station that the player's steering can hold on the racing line,
         // with braking zones worked backwards from each corner.
-        float[] Envelope(float lockUse,float steeringAngle,float deceleration)
+        float[] Envelope(float lockUse,float steeringAngle,float deceleration,float cornerGrip)
         {
             int n=Count;var v=new float[n];
-            for(int i=0;i<n;i++)v[i]=CornerSpeed(lineCurvature[i],lockUse,steeringAngle);
+            for(int i=0;i<n;i++)v[i]=CornerSpeed(lineCurvature[i],lockUse,steeringAngle,cornerGrip);
             for(int pass=0;pass<2;pass++)
                 for(int i=n-1;i>=0;i--)
                     v[i]=Mathf.Min(v[i],Mathf.Sqrt(v[(i+1)%n]*v[(i+1)%n]+2*deceleration*Spacing));
@@ -92,14 +92,17 @@ namespace PolygonRacing
         public static float MaxCurvature(float speed,float steeringAngle)
             =>Mathf.Tan(steeringAngle/(1+Mathf.Max(0,speed)*LockFade)*Mathf.Deg2Rad)/Wheelbase;
 
-        static float CornerSpeed(float curvature,float lockUse,float steeringAngle)
+        static float CornerSpeed(float curvature,float lockUse,float steeringAngle,float cornerGrip)
         {
             const float cap=90;curvature=Mathf.Abs(curvature);
-            if(MaxCurvature(cap,steeringAngle)*lockUse>=curvature)return cap;
+            if(AvailableCurvature(cap,steeringAngle,lockUse,cornerGrip)>=curvature)return cap;
             float lo=0,hi=cap;
-            for(int i=0;i<24;i++){float m=(lo+hi)*.5f;if(MaxCurvature(m,steeringAngle)*lockUse>=curvature)lo=m;else hi=m;}
+            for(int i=0;i<24;i++){float m=(lo+hi)*.5f;if(AvailableCurvature(m,steeringAngle,lockUse,cornerGrip)>=curvature)lo=m;else hi=m;}
             return lo;
         }
+
+        static float AvailableCurvature(float speed,float steeringAngle,float lockUse,float cornerGrip)
+            =>Mathf.Min(MaxCurvature(speed,steeringAngle),Mathf.Max(1f,cornerGrip)/Mathf.Max(.01f,speed*speed))*lockUse;
 
         float Sample(float[] values,float meters)
         {

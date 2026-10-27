@@ -1753,6 +1753,8 @@ MonoBehaviour:
   acceleration: 13
   braking: 24
   steeringAngle: 28
+  cornerGrip: 60
+  maxSlipAngle: 5
 --- !u!1 &4827785872348282601
 GameObject:
   m_ObjectHideFlags: 0

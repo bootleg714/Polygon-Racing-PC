@@ -19,8 +19,14 @@ namespace PolygonRacing
         [Range(5,25)] public float acceleration = 13f;
         [Range(10,40)] public float braking = 24f;
         [Range(10,40)] public float steeringAngle = 28f;
+        [Header("Experimental corner grip")]
+        [Tooltip("Lateral acceleration available to turn the direction of travel, in metres per second squared. Higher values give more grip.")]
+        [Range(1,60)] public float cornerGrip = 60f;
+        [Tooltip("Maximum difference in degrees between the car's heading and its direction of travel.")]
+        [Range(0,12)] public float maxSlipAngle = 5f;
         public float SpeedKmh => speed * 3.6f;
         public float SpeedMph => speed * 2.23693629f;
+        public float CornerSlip { get; private set; }
         public bool IsPaused => paused;
         public bool UsingGamepad { get; private set; }
         public bool ShowDesktopDebug { get; private set; }
@@ -31,10 +37,12 @@ namespace PolygonRacing
         public int ResetSerial { get; private set; }
         public bool RaceManaged { get; set; }
         public bool RaceLocked { get; private set; }
-        public void SetRaceLock(bool locked){if(locked&&!RaceLocked)Drivetrain.Reset();RaceLocked=locked;if(locked){speed=0;SetSlipstreamStrength(0);}}
+        public void SetRaceLock(bool locked){if(locked&&!RaceLocked)Drivetrain.Reset();RaceLocked=locked;if(locked){speed=0;CornerSlip=0;SetSlipstreamStrength(0);}}
         public void SetSlipstreamStrength(float strength){slipstreamStrength=Mathf.Clamp01(strength);}
         public void RestartRace(){ResetCar();paused=false;}
         float speed, steering, wheelSpin, lapTime, bestTime, lastLap, slipstreamStrength;
+        float travelHeading;
+        bool travelHeadingValid;
         int lap=1, nextCheckpoint=1;
         bool paused, centered, wasReset, wasRecenter, wasPause, xrActive;
         float nextStatus;
@@ -141,7 +149,16 @@ namespace PolygonRacing
                 // Steering stays in the horizontal route plane; bank roll is applied below.
                 var flatForward=transform.forward;flatForward.y=0;flatForward.Normalize();
                 float heading=Mathf.Atan2(flatForward.x,flatForward.z)*Mathf.Rad2Deg+yaw*dt;
-                transform.rotation=Quaternion.Euler(0,heading,0);transform.position+=transform.forward*speed*dt;
+                if(!travelHeadingValid || speed<1f){travelHeading=heading;travelHeadingValid=true;}
+                float maxTravelTurn=Mathf.Max(1f,cornerGrip)/Mathf.Max(speed,1f)*Mathf.Rad2Deg*dt;
+                travelHeading=Mathf.MoveTowardsAngle(travelHeading,heading,maxTravelTurn);
+                // Limit body-to-travel slip by restraining the body heading, rather than
+                // pulling travel into the turn beyond the available grip.
+                float slip=Mathf.Clamp(Mathf.DeltaAngle(heading,travelHeading),-Mathf.Max(0,maxSlipAngle),Mathf.Max(0,maxSlipAngle));
+                CornerSlip=maxSlipAngle>0.01f?Mathf.Clamp01(Mathf.Abs(slip)/maxSlipAngle):0;
+                heading=travelHeading-slip;
+                transform.rotation=Quaternion.Euler(0,heading,0);
+                transform.position+=Quaternion.Euler(0,travelHeading,0)*Vector3.forward*speed*dt;
                 NearestPoint(transform.position,out float after);
                 bool afterPit=PolygonMarinaPit.TrySample(transform.position,after,out var pitCenter,out float pitAfter,out _);
                 if(afterPit)after=pitAfter;
@@ -187,7 +204,7 @@ namespace PolygonRacing
         }
         void ResetCar()
         {
-            transform.SetPositionAndRotation(startPosition,startRotation);Drivetrain.Reset();HudSessionTime=0;speed=steering=slipstreamStrength=0;IsOnPitLane=false;lapTime=0;nextCheckpoint=1;lap=1;lastLap=0;ResetSerial++;
+            transform.SetPositionAndRotation(startPosition,startRotation);travelHeadingValid=false;CornerSlip=0;Drivetrain.Reset();HudSessionTime=0;speed=steering=slipstreamStrength=0;IsOnPitLane=false;lapTime=0;nextCheckpoint=1;lap=1;lastLap=0;ResetSerial++;
             status="RESTARTED";nextStatus=Time.time+3;
         }
         void OnApplicationFocus(bool focus){        if(!focus){paused=true;status="PAUSED - START / X / P to resume";nextStatus=float.PositiveInfinity;}}

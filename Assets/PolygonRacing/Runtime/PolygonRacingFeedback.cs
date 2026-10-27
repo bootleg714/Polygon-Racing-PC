@@ -20,11 +20,10 @@ namespace PolygonRacing
         AudioSource tires,gravel;
         bool recordedSkid,skidActive;
         float skidOnsetTime;
-        const float SkidStart=.50f,SkidRelease=.30f,SkidOnsetDelay=.08f;
+        const float SkidStart=.35f,SkidRelease=.30f,SkidOnsetDelay=.02f;
         readonly List<RivalVoice> voices=new List<RivalVoice>();
         readonly List<GameObject> emitters=new List<GameObject>();
         readonly List<AudioClip> clips=new List<AudioClip>();
-        Vector3 previousForward;
         int resetSerial;
         float nextPulse;
         bool focused=true;
@@ -65,7 +64,7 @@ namespace PolygonRacing
                 var source=MakeSource("Passing engine",car.transform,engineClip,true);
                 voices.Add(new RivalVoice{car=car,source=source,previous=car.transform.position});
             }
-            previousForward=player.transform.forward;resetSerial=player.ResetSerial;
+            resetSerial=player.ResetSerial;
         }
         AudioSource MakeSource(string name,Transform parent,AudioClip clip,bool spatial,bool loop=true)
         {
@@ -84,16 +83,14 @@ namespace PolygonRacing
             bool silent=!focused||player.IsPaused||player.RaceLocked||reset||dt<=0||dt>.15f;
             resetSerial=player.ResetSerial;
             float speed=player.SpeedKmh/3.6f;
-            float yaw=dt>0?Mathf.Abs(Vector3.SignedAngle(previousForward,player.transform.forward,Vector3.up))*Mathf.Deg2Rad/dt:0;
-            previousForward=player.transform.forward;
             PolygonCircuit.ProjectLap(player.transform.position,out float offset);
             float surfaceWidth=PolygonWorld.RoadHalfWidth;
             if(PolygonMarinaPit.TrySample(player.transform.position,offset,out _,out float pitOffset,out _)){offset=pitOffset;surfaceWidth=PolygonMarinaPit.HalfWidth;}
             float roughness=Mathf.SmoothStep(0,1,Mathf.InverseLerp(surfaceWidth-.1f,surfaceWidth+1,offset));
-            float scrub=Mathf.InverseLerp(3.5f,10,speed*yaw)*Mathf.InverseLerp(7,16,speed)*(1-roughness);
+            float scrub=player.CornerSlip*Mathf.InverseLerp(7,16,speed)*(1-roughness);
             if(recordedSkid)UpdateRecordedSkid(scrub,dt,silent);
             float tireTarget=silent||(recordedSkid&&!skidActive)?0:
-                recordedSkid?RecordedSkidVolume(speed,yaw,roughness,player.steeringAngle):scrub*.16f;
+                recordedSkid?RecordedSkidVolume(scrub):scrub*.16f;
             float gravelTarget=silent?0:roughness*Mathf.InverseLerp(1,14,speed)*.2f;
             tires.volume=silent?0:Mathf.MoveTowards(tires.volume,tireTarget,dt*.45f);
             if(recordedSkid&&!skidActive&&tires.volume<=.0001f)tires.Stop();
@@ -122,15 +119,10 @@ namespace PolygonRacing
                 Pulse(left,strength);Pulse(right,strength*.85f);
             }
         }
-        static float RecordedSkidVolume(float speed,float yaw,float roughness,float steeringAngle)
+        static float RecordedSkidVolume(float scrub)
         {
-            // Read the driver's existing steering envelope without changing it. A fixed
-            // demand cap saturates early at racing speed, even with modest steering.
-            float lockRadians=steeringAngle/(1+speed*.065f)*Mathf.Deg2Rad;
-            float fullLockDemand=speed*speed/2.85f*Mathf.Tan(lockRadians);
-            float intensity=Mathf.InverseLerp(3.5f,Mathf.Max(16.5f,fullLockDemand),speed*yaw);
-            float response=intensity*(.20f+.80f*intensity);
-            return .08f*response*Mathf.InverseLerp(7,16,speed)*(1-roughness);
+            float intensity=Mathf.Clamp01(scrub);
+            return .08f*intensity*(.20f+.80f*intensity);
         }
         void UpdateRecordedSkid(float scrub,float dt,bool silent)
         {
