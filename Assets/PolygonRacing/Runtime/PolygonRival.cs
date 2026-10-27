@@ -90,7 +90,7 @@ namespace PolygonRacing
         }
         void CopyBranch(Transform original,Transform parent)
         {
-            if(original==player.trackingSpace||original.GetComponent<Camera>()||original.GetComponent<TextMesh>()
+            if(original.name==PolygonCarInstruments.RuntimeRootName||original==player.trackingSpace||original.GetComponent<Camera>()||original.GetComponent<TextMesh>()
                 ||original.name=="Dashboard"||original.name=="Countdown and results - cockpit panel")return;
             var node=new GameObject(original.name);var t=node.transform;t.SetParent(parent,false);
             t.localPosition=original.localPosition;t.localRotation=original.localRotation;t.localScale=original.localScale;

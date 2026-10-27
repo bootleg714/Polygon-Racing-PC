@@ -21,11 +21,12 @@ namespace PolygonRacing
         [Range(10,40)] public float steeringAngle = 28f;
         public float SpeedKmh => speed * 3.6f;
         public bool IsPaused => paused;
+        public PolygonDrivetrain Drivetrain { get; } = new PolygonDrivetrain();
         public bool IsOnPitLane { get; private set; }
         public int ResetSerial { get; private set; }
         public bool RaceManaged { get; set; }
         public bool RaceLocked { get; private set; }
-        public void SetRaceLock(bool locked){RaceLocked=locked;if(locked){speed=0;SetSlipstreamStrength(0);}}
+        public void SetRaceLock(bool locked){if(locked&&!RaceLocked)Drivetrain.Reset();RaceLocked=locked;if(locked){speed=0;SetSlipstreamStrength(0);}}
         public void SetSlipstreamStrength(float strength){slipstreamStrength=Mathf.Clamp01(strength);}
         public void RestartRace(){ResetCar();paused=false;}
         float speed, steering, wheelSpin, lapTime, bestTime, lastLap, slipstreamStrength;
@@ -154,7 +155,8 @@ namespace PolygonRacing
                 if(wheels!=null)foreach(var w in wheels)if(w)w.localRotation=Quaternion.Euler(wheelSpin,0,0);
                 if(steeringWheel)steeringWheel.localRotation=Quaternion.Euler(0,0,-steering*85);
             }
-            if(engine)engine.SetDriving(paused||RaceLocked?0:speed/topSpeed,paused||RaceLocked?0:throttle);
+            if(!paused&&!RaceLocked)Drivetrain.Step(speed,throttle,Mathf.Min(Time.deltaTime,.05f));
+            if(engine)engine.SetDriving(Drivetrain.Rpm,Drivetrain.Throttle,paused||RaceLocked);
             if(dashboard)dashboard.text=$"{SpeedKmh:000} KM/H\n{(paused?"PAUSED":"LAP "+lap)}  {FormatTime(lapTime)}";
         }
         public static string FormatTime(float seconds) => $"{(int)(seconds/60):00}:{seconds%60:00.0}";
@@ -170,7 +172,7 @@ namespace PolygonRacing
         }
         void ResetCar()
         {
-            transform.SetPositionAndRotation(startPosition,startRotation);speed=steering=slipstreamStrength=0;IsOnPitLane=false;lapTime=0;nextCheckpoint=1;lap=1;lastLap=0;ResetSerial++;
+            transform.SetPositionAndRotation(startPosition,startRotation);Drivetrain.Reset();speed=steering=slipstreamStrength=0;IsOnPitLane=false;lapTime=0;nextCheckpoint=1;lap=1;lastLap=0;ResetSerial++;
             status="RESTARTED";nextStatus=Time.time+3;
         }
         void OnApplicationFocus(bool focus){        if(!focus){paused=true;status="PAUSED - START / X / P to resume";nextStatus=float.PositiveInfinity;}}

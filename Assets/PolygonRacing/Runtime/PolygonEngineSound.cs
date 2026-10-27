@@ -11,7 +11,12 @@ namespace PolygonRacing
         float frequency=48, gain;
         int sampleRate;
         AudioClip carrier;
-        public void SetDriving(float speed,float throttle){targetFrequency=48+speed*150+throttle*18;targetGain=.025f+throttle*.045f+speed*.025f;}
+        public void SetDriving(float rpm,float throttle,bool silent)
+        {
+            // Four-cylinder firing frequency: pitch and load use the authoritative drivetrain.
+            targetFrequency=Mathf.Max(PolygonDrivetrain.IdleRpm,rpm)*(2f/60f);
+            targetGain=silent?0:.025f+Mathf.Clamp01(throttle)*.045f;
+        }
         void Awake()
         {
             sampleRate=AudioSettings.outputSampleRate;

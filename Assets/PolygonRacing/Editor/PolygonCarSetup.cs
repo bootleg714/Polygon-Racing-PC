@@ -84,6 +84,7 @@ namespace PolygonRacing.Editor
             var texture=Resources.Load<Texture2D>("PolygonCarbonWeave");
             if(!bodyRenderer||!bodyFilter||bodyRenderer.sharedMaterials.Length<Weave||!bodyRenderer.sharedMaterials[Carbon]||!shader||!texture)
             {Debug.LogError("PC car detail needs the existing faceted car, carbon material, shader and weave texture.");return;}
+            if(!driver.steeringWheel){Debug.LogError("Existing steering wheel is missing; nothing was rebuilt.");return;}
             if(driver.wheels==null||driver.wheels.Length!=4){Debug.LogError("Expected four existing wheel transforms; nothing was rebuilt.");return;}
             foreach(var tire in driver.wheels)
                 if(!tire||!tire.parent||!tire.Find(RimName)||!tire.parent.Find(UprightName))
@@ -120,6 +121,9 @@ namespace PolygonRacing.Editor
                 }
                 else {woven.shader=shader;woven.SetTexture("_BaseMap",texture);EditorUtility.SetDirty(woven);}
                 var meshes=BuildMeshes(true);
+                if(!driver.steeringWheel.GetComponent<PolygonCarInstruments>())
+                    driver.steeringWheel.gameObject.AddComponent<PolygonCarInstruments>();
+                EditorUtility.SetDirty(driver.steeringWheel.gameObject);
                 SetPcMesh(bodyFilter,bodyRenderer,meshes.Body,woven);
                 foreach(var tire in driver.wheels)
                 {
