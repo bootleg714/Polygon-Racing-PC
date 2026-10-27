@@ -421,6 +421,7 @@ namespace PolygonRacing.Editor
             if(pcDetail)
                 foreach(float side in new[]{-1f,1f})
                     b.Tube(new Vector3(side*.305f,.718f,-.94f),new Vector3(side*.305f,.718f,.55f),.005f,Carbon);
+            if(pcDetail)BuildCockpitRailConnector(b,wall,wallMats);
             b.Box(new Vector3(0,.16f,-.19f),new Vector3(.62f,.04f,1.62f),Cockpit);
             b.Quad(new Vector3(-.31f,.14f,-1.0f),new Vector3(.31f,.14f,-1.0f),new Vector3(.31f,.86f,-1.0f),new Vector3(-.31f,.86f,-1.0f),Carbon);
             b.Box(new Vector3(0,.58f,-.90f),new Vector3(.56f,.62f,.08f),Carbon);
@@ -507,6 +508,35 @@ namespace PolygonRacing.Editor
                         x+.075f,.8975f,x-.075f,.8975f,x-.085f,.885f,x-.085f,.835f),.16f,.22f,Red);
                     b.Box(new Vector3(x,.86f,.158f),new Vector3(.138f,.049f,.004f),Mirror);
                 }
+            }
+        }
+
+        // Continue the existing rail/wall profile around the open front. The first
+        // and last sections exactly match its left/right ends at z .62, without
+        // placing an additional rim on top of the rails.
+        static void BuildCockpitRailConnector(CarMesh b,Vector2[] profile,int[] materials)
+        {
+            const int sections=12;
+            Vector3[] previous=null;
+            Vector3 previousCenter=Vector3.zero;
+            float distance=0;
+            for(int i=0;i<=sections;i++)
+            {
+                float angle=Mathf.PI*i/sections;
+                var center=new Vector3(-.37f*Mathf.Cos(angle),0,.62f+.34f*Mathf.Sin(angle));
+                var outward=new Vector3(-Mathf.Cos(angle)/.37f,0,Mathf.Sin(angle)/.34f).normalized;
+                var current=new Vector3[profile.Length];
+                for(int j=0;j<profile.Length;j++)
+                    current[j]=center+outward*(profile[j].x-.37f)+Vector3.up*profile[j].y;
+                if(previous!=null)
+                {
+                    float nextDistance=distance+Vector3.Distance(previousCenter,center);
+                    for(int j=0;j<profile.Length-1;j++)
+                        b.QuadMapped(previous[j],previous[j+1],current[j+1],current[j],materials[j],
+                            distance/.02f,nextDistance/.02f,Vector2.Distance(profile[j],profile[j+1])/.02f);
+                    distance=nextDistance;
+                }
+                previous=current;previousCenter=center;
             }
         }
 
@@ -772,6 +802,14 @@ namespace PolygonRacing.Editor
                     a[k]=from+offset;b[k]=to+offset;
                 }
                 for(int k=0;k<sides;k++){int j=(k+1)%sides;Quad(a[k],a[j],b[j],b[k],m);}
+            }
+
+            // Explicit surface distances keep the new curved rail weave at its original scale.
+            public void QuadMapped(Vector3 a,Vector3 b,Vector3 c,Vector3 d,int m,float u0,float u1,float across)
+            {
+                void Add(Vector3 p,Vector2 tex){int n=vertices.Count;vertices.Add(p);uv.Add(tex);indices[m].Add(n);}
+                Add(a,new Vector2(u0,0));Add(b,new Vector2(u0,across));Add(c,new Vector2(u1,across));
+                Add(a,new Vector2(u0,0));Add(c,new Vector2(u1,across));Add(d,new Vector2(u1,0));
             }
 
             // Polygon in the XY plane extruded from z0 to z1 (both faces capped).
