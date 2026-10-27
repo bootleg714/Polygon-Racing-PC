@@ -8,7 +8,7 @@ namespace PolygonRacing
         public const float WheelRadius = .39f, FinalDrive = 5.2f;
         public const float IdleRpm = 1100f, RedlineRpm = 9000f, UpshiftRpm = 7600f, DownshiftRpm = 3500f;
         public const float MinimumShiftInterval = .55f;
-        static readonly float[] Ratios = { 4.3f, 3.3f, 2.6f, 2.1f, 1.75f, 1.5f };
+        static readonly float[] Ratios = { 2.6933f, 2.0669f, 1.6285f, 1.3153f, 1.0961f, .9395f };
         public int Gear { get; private set; } = 1;
         public float Rpm { get; private set; } = IdleRpm;
         public float Throttle { get; private set; }

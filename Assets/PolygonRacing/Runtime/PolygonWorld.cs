@@ -462,7 +462,7 @@ namespace PolygonRacing
                 Box("Suspension arm",car.transform,new Vector3(side*.73f,.35f,z),new Vector3(.8f,.055f,.075f),metal);wi++;
             }
             var dash=Box("Dashboard",car.transform,new Vector3(0,.8f,.43f),new Vector3(.78f,.34f,.1f),dark);
-            drive.dashboard=Label("Live instruments",car.transform,"0 KM/H\nLAP 1   00:00.0",new Vector3(0,.81f,.365f),.031f,new Color(.4f,1,.7f));
+            drive.dashboard=Label("Live instruments",car.transform,"0 MPH\nLAP 1   00:00.0",new Vector3(0,.81f,.365f),.031f,new Color(.4f,1,.7f));
             var wheel=new GameObject("Steering wheel").transform;wheel.SetParent(car.transform,false);wheel.localPosition=new Vector3(0,.68f,.03f);drive.steeringWheel=wheel;
             Box("Wheel top",wheel,new Vector3(0,.13f,0),new Vector3(.43f,.055f,.065f),dark);Box("Wheel lower",wheel,new Vector3(0,-.13f,0),new Vector3(.43f,.055f,.065f),dark);
             foreach(int side in new[]{-1,1})Box("Wheel grip",wheel,new Vector3(side*.21f,0,0),new Vector3(.065f,.3f,.075f),dark);

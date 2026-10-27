@@ -15,11 +15,12 @@ namespace PolygonRacing
         public Transform trackingSpace, steeringWheel;
         public Transform[] frontSteering, wheels;
         public TextMesh dashboard;
-        [Range(10,60)] public float topSpeed = 42f;
+        [Range(10,80)] public float topSpeed = 67.056f;
         [Range(5,25)] public float acceleration = 13f;
         [Range(10,40)] public float braking = 24f;
         [Range(10,40)] public float steeringAngle = 28f;
         public float SpeedKmh => speed * 3.6f;
+        public float SpeedMph => speed * 2.23693629f;
         public bool IsPaused => paused;
         public bool UsingGamepad { get; private set; }
         public bool ShowDesktopDebug { get; private set; }
@@ -170,7 +171,7 @@ namespace PolygonRacing
             }
             if(!paused&&!RaceLocked)Drivetrain.Step(speed,throttle,Mathf.Min(Time.deltaTime,.05f));
             if(engine)engine.SetDriving(Drivetrain.Rpm,Drivetrain.Throttle,paused||RaceLocked);
-            if(dashboard)dashboard.text=$"{SpeedKmh:000} KM/H\n{(paused?"PAUSED":"LAP "+lap)}  {FormatTime(lapTime)}";
+            if(dashboard)dashboard.text=$"{SpeedMph:000} MPH\n{(paused?"PAUSED":"LAP "+lap)}  {FormatTime(lapTime)}";
         }
         public void ResumeFromPause(){paused=false;status="DRIVE";nextStatus=Time.time+3;}
         public static string FormatTime(float seconds) => $"{(int)(seconds/60):00}:{seconds%60:00.0}";

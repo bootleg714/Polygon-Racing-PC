@@ -254,9 +254,9 @@ namespace PolygonRacing
                 Dashboard("GET READY","","",mode==Mode.Race?"3 LAP RACE":"TIME TRIAL");return;
             }
             if(phase==Phase.Finished){Dashboard("FINISH",finalPlace+"/"+FieldSize,"","R / A: RESTART");return;}
-            string speed=$"{player.SpeedKmh:000} KM/H";
+            string speed=$"{player.SpeedMph:000} MPH";
             if(mode==Mode.TimeTrial)
-                Dashboard(speed,"L "+DashboardTime(elapsed-lapStarted),"B "+(trialBest>0?DashboardTime(trialBest):"--:--.-"),player.IsOnPitLane?"PIT 80 KM/H":"TIME TRIAL");
+                Dashboard(speed,"L "+DashboardTime(elapsed-lapStarted),"B "+(trialBest>0?DashboardTime(trialBest):"--:--.-"),player.IsOnPitLane?"PIT 50 MPH":"TIME TRIAL");
             else
             {
                 float leader=progress.LapsTravelled;int finished=0;
@@ -296,7 +296,7 @@ namespace PolygonRacing
         }
         string DraftIndicator()
         {
-            if(player.IsOnPitLane)return "PIT 80 KM/H";
+            if(player.IsOnPitLane)return "PIT 50 MPH";
             int bars=Mathf.Clamp(Mathf.CeilToInt(playerSlipstream.Buildup*6),0,6);
             string gauge=new string('|',bars)+new string('.',6-bars);
             return playerSlipstream.Strength>=.65f?$"BOOST [{gauge}]":$"DRAFT [{gauge}]";

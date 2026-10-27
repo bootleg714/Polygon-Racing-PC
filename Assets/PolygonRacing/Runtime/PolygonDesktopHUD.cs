@@ -53,7 +53,7 @@ namespace PolygonRacing
             float y=safe.width<540*s?help.yMax+8*s:race.yMax+8*s;
             var r=new Rect(race.x,y,race.width,Mathf.Min(66*s,Mathf.Max(0,safe.yMax-y-12*s)));
             if(r.height<=0)return;Panel(r);
-            string value=$"DEBUG  ?  F3 TO HIDE\n{fps:0} FPS   {player.SpeedKmh:0} KM/H\nGEAR {player.Drivetrain.Gear}   {player.Drivetrain.Rpm:0} RPM";
+            string value=$"DEBUG  ?  F3 TO HIDE\n{fps:0} FPS   {player.SpeedMph:0} MPH\nGEAR {player.Drivetrain.Gear}   {player.Drivetrain.Rpm:0} RPM";
             Label(new Rect(r.x+10*s,r.y+5*s,r.width-20*s,r.height-10*s),value,Mathf.Max(10,Mathf.RoundToInt(12*s)),TextAnchor.UpperLeft);
         }
         public static string ControlText(bool gamepad,bool includeMenu)
