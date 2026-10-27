@@ -21,6 +21,10 @@ namespace PolygonRacing
         [Range(10,40)] public float steeringAngle = 28f;
         public float SpeedKmh => speed * 3.6f;
         public bool IsPaused => paused;
+        public bool UsingGamepad { get; private set; }
+        public bool ShowDesktopDebug { get; private set; }
+        public float HudSessionTime { get; private set; }
+        public float HudFps { get; private set; }
         public PolygonDrivetrain Drivetrain { get; } = new PolygonDrivetrain();
         public bool IsOnPitLane { get; private set; }
         public int ResetSerial { get; private set; }
@@ -90,9 +94,15 @@ namespace PolygonRacing
                 recenter|=gamepad.buttonEast.isPressed;
                 pause|=gamepad.startButton.isPressed;
             }
+            if(gamepad!=null&&gamepad.wasUpdatedThisFrame&&(gamepad.buttonSouth.wasPressedThisFrame||gamepad.buttonNorth.wasPressedThisFrame||
+                gamepad.buttonEast.wasPressedThisFrame||gamepad.startButton.wasPressedThisFrame||
+                gamepad.leftStick.ReadValue().sqrMagnitude>.04f||gamepad.dpad.ReadValue().sqrMagnitude>.04f||
+                gamepad.rightTrigger.ReadValue()>.1f||gamepad.leftTrigger.ReadValue()>.1f))UsingGamepad=true;
             var k=Keyboard.current;
             if(k!=null)
             {
+                if(k.anyKey.wasPressedThisFrame)UsingGamepad=false;
+                if(k.f3Key.wasPressedThisFrame)ShowDesktopDebug=!ShowDesktopDebug;
                 if(k.wKey.isPressed||k.upArrowKey.isPressed)throttle=1;
                 if(k.sKey.isPressed||k.downArrowKey.isPressed||k.spaceKey.isPressed)brake=1;
                 turn+= (k.dKey.isPressed||k.rightArrowKey.isPressed?1:0)-(k.aKey.isPressed||k.leftArrowKey.isPressed?1:0);
@@ -106,8 +116,10 @@ namespace PolygonRacing
                 trackingSpace.localPosition=Seat;trackingSpace.localRotation=Quaternion.identity;
                 view.transform.localPosition=Vector3.zero;view.transform.localRotation=Quaternion.identity;
             }
+            if(Time.unscaledDeltaTime>0)HudFps=Mathf.Lerp(HudFps,1f/Time.unscaledDeltaTime,.05f);
             if(!paused && !RaceLocked)
             {
+                HudSessionTime+=Time.deltaTime;
                 float dt=Mathf.Min(Time.deltaTime,.05f);
                 steering=Mathf.MoveTowards(steering,Mathf.Clamp(turn,-1,1),dt*3.8f);
                 int nearest=NearestPoint(transform.position,out float distance);
@@ -159,6 +171,7 @@ namespace PolygonRacing
             if(engine)engine.SetDriving(Drivetrain.Rpm,Drivetrain.Throttle,paused||RaceLocked);
             if(dashboard)dashboard.text=$"{SpeedKmh:000} KM/H\n{(paused?"PAUSED":"LAP "+lap)}  {FormatTime(lapTime)}";
         }
+        public void ResumeFromPause(){paused=false;status="DRIVE";nextStatus=Time.time+3;}
         public static string FormatTime(float seconds) => $"{(int)(seconds/60):00}:{seconds%60:00.0}";
         static int NearestPoint(Vector3 p,out float distance)
         {
@@ -172,19 +185,28 @@ namespace PolygonRacing
         }
         void ResetCar()
         {
-            transform.SetPositionAndRotation(startPosition,startRotation);Drivetrain.Reset();speed=steering=slipstreamStrength=0;IsOnPitLane=false;lapTime=0;nextCheckpoint=1;lap=1;lastLap=0;ResetSerial++;
+            transform.SetPositionAndRotation(startPosition,startRotation);Drivetrain.Reset();HudSessionTime=0;speed=steering=slipstreamStrength=0;IsOnPitLane=false;lapTime=0;nextCheckpoint=1;lap=1;lastLap=0;ResetSerial++;
             status="RESTARTED";nextStatus=Time.time+3;
         }
         void OnApplicationFocus(bool focus){        if(!focus){paused=true;status="PAUSED - START / X / P to resume";nextStatus=float.PositiveInfinity;}}
         void OnGUI()
         {
-            // Desktop help only. VR instruments are world-space dashboard text.
+            // Fallback when no race manager is active; the cockpit display remains unchanged.
             if(xrActive||RaceManaged)return;
-            float s=Mathf.Clamp(Screen.width/1200f,.7f,1.6f);var old=GUI.matrix;GUI.matrix=Matrix4x4.Scale(Vector3.one*s);
-            var style=new GUIStyle(GUI.skin.box){fontSize=17,alignment=TextAnchor.MiddleLeft};
-            GUI.Box(new Rect(20,20,490,116),$"  POLYGON RACING - PC\n  {SpeedKmh:000} km/h    LAP {lap}    {FormatTime(lapTime)}\n  BEST {(bestTime>0?FormatTime(bestTime):"--:--.-")}    LAST {(lastLap>0?FormatTime(lastLap):"--:--.-")}\n  {(paused?"PAUSED - P to resume":Time.time<nextStatus?status:PolygonCircuit.LayoutName+" / desktop mode")}",style);
-            GUI.Box(new Rect(20,Screen.height/s-82,700,62),"  W / arrows: accelerate     S / Space: brake     A / D: steer\n  Gamepad: left stick / triggers     A: restart     Start: pause",style);
-            GUI.matrix=old;
+            var safe=PolygonDesktopHUD.SafeArea;float scale=PolygonDesktopHUD.Scale(safe);
+            var race=PolygonDesktopHUD.RaceRect(safe,scale);var help=PolygonDesktopHUD.HelpRect(safe,scale,paused);
+            PolygonDesktopHUD.Race(race,scale,"SESSION","LAP "+lap,FormatTime(lapTime),bestTime>0?FormatTime(bestTime):"--:--.-");
+            if(paused)
+            {
+                PolygonDesktopHUD.Help(help,scale,UsingGamepad,true,false);
+                float y=help.y+Mathf.Min(104*scale,Mathf.Max(0,help.height-32*scale)),w=(help.width-30*scale)*.5f;
+                if(GUI.Button(new Rect(help.x+10*scale,y,w,27*scale),"RESUME"))ResumeFromPause();
+                if(GUI.Button(new Rect(help.x+20*scale+w,y,w,27*scale),"RESTART"))RestartRace();
+            }
+            else if(HudSessionTime<8)
+                PolygonDesktopHUD.Help(help,scale,UsingGamepad,false,false,Mathf.Clamp01((8-HudSessionTime)/2));
+            if(ShowDesktopDebug)PolygonDesktopHUD.Debug(safe,race,help,scale,HudFps,this);
         }
+
     }
 }

@@ -32,6 +32,10 @@ namespace PolygonRacing
         {
             SceneManager.sceneLoaded-=SceneLoaded;SceneManager.sceneLoaded+=SceneLoaded;
         }
+        // Fast Enter Play Mode may reuse the open scene without a sceneLoaded event.
+        // This idempotent check also leaves normal scene switching on the existing callback.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        static void EnsureInitialScene(){SceneLoaded(SceneManager.GetActiveScene(),LoadSceneMode.Single);}
         static void SceneLoaded(Scene scene,LoadSceneMode mode)
         {
             var driver=UnityEngine.Object.FindFirstObjectByType<PolygonDriver>();

@@ -14,6 +14,7 @@ namespace PolygonRacing
         const int RaceLaps=3;
         PolygonDriver player;
         PolygonStartLights startLights;
+        PolygonDashboardFit dashboardFit;
         PolygonRival[] rivals;
         Phase phase;
         Mode mode;
@@ -56,6 +57,10 @@ namespace PolygonRacing
         }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         static void Register(){SceneManager.sceneLoaded-=SceneLoaded;SceneManager.sceneLoaded+=SceneLoaded;}
+        // Fast Enter Play Mode may reuse the open scene without a sceneLoaded event.
+        // This idempotent check also leaves normal scene switching on the existing callback.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        static void EnsureInitialScene(){SceneLoaded(SceneManager.GetActiveScene(),LoadSceneMode.Single);}
         static void SceneLoaded(Scene scene,LoadSceneMode loadMode)
         {
             var driver=Object.FindFirstObjectByType<PolygonDriver>();
@@ -69,6 +74,13 @@ namespace PolygonRacing
             rivals=Object.FindObjectsByType<PolygonRival>(FindObjectsSortMode.None);
             System.Array.Sort(rivals,(a,b)=>a.GridSlot.CompareTo(b.GridSlot));
             if(!player){enabled=false;return;}
+            if(player.dashboard)
+            {
+                var fitter=GetComponent<PolygonDashboardFit>();
+                if(!fitter)fitter=gameObject.AddComponent<PolygonDashboardFit>();
+                fitter.Configure(player.dashboard,player.transform.Find("Dashboard"));
+                dashboardFit=fitter;
+            }
             finishTimes=new float[rivals.Length];previousRivalLaps=new float[rivals.Length];
             CreateBoard();ShowMenu();
             if(pendingLaunch)
@@ -214,20 +226,39 @@ namespace PolygonRacing
         void LateUpdate()
         {
             if(!player||!player.dashboard||rivals==null)return;
-            if(player.IsPaused){player.dashboard.text="PAUSED\nSTART / X / P TO RESUME";return;}
-            if(phase==Phase.Menu){DrawMenu();player.dashboard.text="CHOOSE A MODE\nA / ENTER: SELECT  Y / M: MENU";return;}
-            if(phase==Phase.Countdown){SetBoard(Mathf.Max(1,Mathf.CeilToInt(countdown))+"\nGET READY",!startLights);player.dashboard.text=mode==Mode.Race?"GET READY\n3 LAP RACE":"GET READY\nTIME TRIAL";return;}
-            if(phase==Phase.Finished){player.dashboard.text=$"FINISH {finalPlace}/{FieldSize}\nA: RESTART  Y: MENU";return;}
+            if(player.IsPaused){Dashboard("PAUSED","","","P / START");return;}
+            if(phase==Phase.Menu){DrawMenu();Dashboard("SELECT MODE","","","");return;}
+            if(phase==Phase.Countdown)
+            {
+                SetBoard(Mathf.Max(1,Mathf.CeilToInt(countdown))+"\nGET READY",!startLights);
+                Dashboard("GET READY","","",mode==Mode.Race?"3 LAP RACE":"TIME TRIAL");return;
+            }
+            if(phase==Phase.Finished){Dashboard("FINISH",finalPlace+"/"+FieldSize,"","R / A: RESTART");return;}
+            string speed=$"{player.SpeedKmh:000} KM/H";
             if(mode==Mode.TimeTrial)
-                player.dashboard.text=$"{player.SpeedKmh:000} KM/H  TT\n{PolygonDriver.FormatTime(elapsed-lapStarted)} BEST {(trialBest>0?PolygonDriver.FormatTime(trialBest):"--:--.-")}"+(player.IsOnPitLane?"\nMARINA PIT 80 KM/H":"");
+                Dashboard(speed,"L "+DashboardTime(elapsed-lapStarted),"B "+(trialBest>0?DashboardTime(trialBest):"--:--.-"),player.IsOnPitLane?"PIT 80 KM/H":"TIME TRIAL");
             else
             {
                 float leader=progress.LapsTravelled;int finished=0;
                 for(int i=0;i<rivals.Length;i++){leader=Mathf.Max(leader,rivals[i].RaceDistance/PolygonCircuit.Length);if(finishTimes[i]>=0)finished++;}
                 int lapGap=Mathf.FloorToInt(Mathf.Max(0,leader-progress.LapsTravelled));
                 string gap=finished>0?" "+finished+" FIN":lapGap>0?" +"+lapGap+"L":"";
-                player.dashboard.text=$"{player.SpeedKmh:000} KM/H {place}/{FieldSize}{gap}\nLAP {Mathf.Min(RaceLaps,progress.Laps+1)}/{RaceLaps} {PolygonDriver.FormatTime(elapsed-lapStarted)}\n{DraftIndicator()}";
+                Dashboard(speed,"P"+place+"/"+FieldSize+gap,"L"+Mathf.Min(RaceLaps,progress.Laps+1)+"/"+RaceLaps+" "+DashboardTime(elapsed-lapStarted),DraftIndicator());
             }
+        }
+        void Dashboard(string main,string left,string right,string status)
+        {
+            if(dashboardFit&&dashboardFit.Ready)dashboardFit.SetRows(main,left,right,status);
+            else player.dashboard.text=main+"\n"+left+" "+right+"\n"+status;
+        }
+        // Keep long sessions bounded on the small physical screen; the desktop HUD and
+        // saved lap records retain their original full-precision timing and formatting.
+        static string DashboardTime(float seconds)
+        {
+            if(seconds<6000)return PolygonDriver.FormatTime(seconds);
+            if(seconds>=360000)return ">99H";
+            int totalMinutes=Mathf.FloorToInt(seconds/60);
+            return $"{totalMinutes/60:00}H{totalMinutes%60:00}";
         }
         void UpdatePlayerSlipstream(float deltaTime)
         {
@@ -245,10 +276,10 @@ namespace PolygonRacing
         }
         string DraftIndicator()
         {
-            if(player.IsOnPitLane)return "MARINA PIT  80 KM/H";
+            if(player.IsOnPitLane)return "PIT 80 KM/H";
             int bars=Mathf.Clamp(Mathf.CeilToInt(playerSlipstream.Buildup*6),0,6);
             string gauge=new string('|',bars)+new string('.',6-bars);
-            return playerSlipstream.Strength>=.65f?$"DRAFT BOOST [{gauge}]":$"DRAFT [{gauge}]";
+            return playerSlipstream.Strength>=.65f?$"BOOST [{gauge}]":$"DRAFT [{gauge}]";
         }
         void ClearSlipstream()
         {
@@ -277,30 +308,58 @@ namespace PolygonRacing
         void OnGUI()
         {
             if(!player||rivals==null||!player.view||player.view.stereoEnabled)return;
-            float scale=Mathf.Clamp(Screen.width/1200f,.7f,1.6f);var old=GUI.matrix;GUI.matrix=Matrix4x4.Scale(Vector3.one*scale);
-            var style=new GUIStyle(GUI.skin.box){fontSize=17,alignment=TextAnchor.MiddleLeft};
-            string status=phase==Phase.Menu?"CHOOSE A MODE":mode==Mode.TimeTrial?"TIME TRIAL":"POSITION "+place+" / "+FieldSize;
-            GUI.Box(new Rect(20,20,530,100),"  POLYGON RACING\n  "+status+"\n  Y / M: menu    A / R: restart    START / X / P: pause",style);
+            var safe=PolygonDesktopHUD.SafeArea;float scale=PolygonDesktopHUD.Scale(safe);
             if(phase==Phase.Menu)
             {
-                if(selectingCircuit)
-                {
-                    if(GUI.Button(new Rect(20,130,280,42),"FOREST CIRCUIT"))LoadCircuit(PolygonCircuitLayout.Forest);
-                    if(GUI.Button(new Rect(20,180,280,42),"COASTAL EXPRESSWAY"))LoadCircuit(PolygonCircuitLayout.CoastalExpressway);
-                    if(GUI.Button(new Rect(20,230,280,42),"DOWNTOWN STREETS"))LoadCircuit(PolygonCircuitLayout.Downtown);
-                    if(GUI.Button(new Rect(20,280,280,42),"RIVIERA HARBOUR"))LoadCircuit(PolygonCircuitLayout.Riviera);
-                    if(GUI.Button(new Rect(20,330,280,42),"SAKURA HILLS"))LoadCircuit(PolygonCircuitLayout.Sakura);
-                    if(GUI.Button(new Rect(20,380,280,42),"NORDWALD RING"))LoadCircuit(PolygonCircuitLayout.Nordwald);
-                    if(GUI.Button(new Rect(20,430,280,42),"BACK")){selectingCircuit=false;selection=menuMode==Mode.Race?0:1;DrawMenu();}
-                }
-                else
-                {
-                    if(GUI.Button(new Rect(20,130,280,42),"START RACE")){menuMode=Mode.Race;selectingCircuit=true;selection=0;DrawMenu();}
-                    if(GUI.Button(new Rect(20,180,280,42),"TIME TRIAL")){menuMode=Mode.TimeTrial;selectingCircuit=true;selection=0;DrawMenu();}
-                    if(GUI.Button(new Rect(20,230,280,42),"RESTART CURRENT MODE"))Begin(mode);
-                }
+                DrawDesktopMenu(safe,scale);
+                return;
             }
-            GUI.matrix=old;
+            var race=PolygonDesktopHUD.RaceRect(safe,scale);
+            var help=PolygonDesktopHUD.HelpRect(safe,scale,player.IsPaused);
+            string heading=mode==Mode.TimeTrial?"TIME TRIAL":"POSITION  "+place+" / "+FieldSize;
+            string lap=mode==Mode.TimeTrial?"LAP  "+Mathf.Max(1,progress.Laps+1):"LAP  "+Mathf.Min(RaceLaps,progress.Laps+1)+" / "+RaceLaps;
+            float current=phase==Phase.Finished?lastLap:Mathf.Max(0,elapsed-lapStarted);
+            float best=mode==Mode.TimeTrial?trialBest:bestLap;
+            PolygonDesktopHUD.Race(race,scale,heading,lap,PolygonDriver.FormatTime(current),best>0?PolygonDriver.FormatTime(best):"--:--.-");
+            if(player.IsPaused)
+            {
+                PolygonDesktopHUD.Help(help,scale,player.UsingGamepad,true,true);
+                float y=help.y+Mathf.Min(104*scale,Mathf.Max(0,help.height-32*scale)),w=(help.width-40*scale)/3;
+                if(GUI.Button(new Rect(help.x+10*scale,y,w,27*scale),"RESUME"))player.ResumeFromPause();
+                if(GUI.Button(new Rect(help.x+20*scale+w,y,w,27*scale),"RESTART"))Begin(mode);
+                if(GUI.Button(new Rect(help.x+30*scale+2*w,y,w,27*scale),"MENU"))ShowMenu();
+            }
+            else if(phase==Phase.Driving&&elapsed<8)
+                PolygonDesktopHUD.Help(help,scale,player.UsingGamepad,false,true,Mathf.Clamp01((8-elapsed)/2));
+            if(player.ShowDesktopDebug)PolygonDesktopHUD.Debug(safe,race,help,scale,player.HudFps,player);
+        }
+        void DrawDesktopMenu(Rect safe,float scale)
+        {
+            int count=selectingCircuit?7:3;
+            float width=Mathf.Min(240*scale,safe.width-24*scale);
+            float step=Mathf.Min(42*scale,(safe.height-55*scale)/count);
+            float x=safe.x+12*scale,y=safe.y+12*scale;
+            PolygonDesktopHUD.Panel(new Rect(x,y,width,Mathf.Min(safe.height-24*scale,35*scale+step*count)));
+            PolygonDesktopHUD.Label(new Rect(x+10*scale,y+5*scale,width-20*scale,23*scale),
+                selectingCircuit?"SELECT CIRCUIT":"SELECT MODE",Mathf.Max(12,Mathf.RoundToInt(15*scale)),TextAnchor.MiddleLeft);
+            var style=new GUIStyle(GUI.skin.button){fontSize=Mathf.Max(10,Mathf.RoundToInt(13*scale))};
+            bool ButtonAt(int i,string label)=>GUI.Button(new Rect(x+8*scale,y+31*scale+i*step,width-16*scale,Mathf.Max(1,step-5*scale)),label,style);
+            if(selectingCircuit)
+            {
+                if(ButtonAt(0,"FOREST CIRCUIT"))LoadCircuit(PolygonCircuitLayout.Forest);
+                if(ButtonAt(1,"COASTAL EXPRESSWAY"))LoadCircuit(PolygonCircuitLayout.CoastalExpressway);
+                if(ButtonAt(2,"DOWNTOWN STREETS"))LoadCircuit(PolygonCircuitLayout.Downtown);
+                if(ButtonAt(3,"RIVIERA HARBOUR"))LoadCircuit(PolygonCircuitLayout.Riviera);
+                if(ButtonAt(4,"SAKURA HILLS"))LoadCircuit(PolygonCircuitLayout.Sakura);
+                if(ButtonAt(5,"NORDWALD RING"))LoadCircuit(PolygonCircuitLayout.Nordwald);
+                if(ButtonAt(6,"BACK")){selectingCircuit=false;selection=menuMode==Mode.Race?0:1;DrawMenu();}
+            }
+            else
+            {
+                if(ButtonAt(0,"START RACE")){menuMode=Mode.Race;selectingCircuit=true;selection=0;DrawMenu();}
+                if(ButtonAt(1,"TIME TRIAL")){menuMode=Mode.TimeTrial;selectingCircuit=true;selection=0;DrawMenu();}
+                if(ButtonAt(2,"RESTART CURRENT MODE"))Begin(mode);
+            }
         }
         void OnDestroy()
         {
