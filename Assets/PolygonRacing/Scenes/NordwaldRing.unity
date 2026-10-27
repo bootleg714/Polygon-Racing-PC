@@ -4119,6 +4119,7 @@ GameObject:
   m_Component:
   - component: {fileID: 54466181}
   - component: {fileID: 54466182}
+  - component: {fileID: 54466183}
   m_Layer: 0
   m_Name: Player car - editable polygon model
   m_TagString: Untagged
@@ -4178,6 +4179,25 @@ MonoBehaviour:
   acceleration: 13
   braking: 24
   steeringAngle: 28
+--- !u!114 &54466183
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 54466180}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e196d52e4d69443bb173dbfb11d063df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PolygonRacing.PolygonPCMirrors
+  textureWidth: 256
+  textureHeight: 86
+  updatesPerSecond: 30
+  verticalFieldOfView: 36
+  outwardAngle: 10
+  viewDistance: 300
+  mirrorShadows: 0
 --- !u!1 &55189350
 GameObject:
   m_ObjectHideFlags: 0
@@ -9475,6 +9495,7 @@ MeshRenderer:
   - {fileID: 2100000, guid: 3ac47d443dcca334886bd57671c21b50, type: 2}
   - {fileID: 2100000, guid: f043a3a707b2c9d4789dd093ec2a775e, type: 2}
   - {fileID: 2100000, guid: f29b439ab345bb246b8f3013fb1b6680, type: 2}
+  - {fileID: 2100000, guid: 045ddcc187fad0c468a58c864f039288, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -9505,7 +9526,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 123986087}
-  m_Mesh: {fileID: 4300000, guid: 1e13c85859381f049a3d51856b3bdafd, type: 2}
+  m_Mesh: {fileID: 4300000, guid: e4c46051c58320b41acd0f66499ca599, type: 2}
 --- !u!1 &127573284
 GameObject:
   m_ObjectHideFlags: 0
@@ -30166,6 +30187,7 @@ MeshRenderer:
   - {fileID: 2100000, guid: 3ac47d443dcca334886bd57671c21b50, type: 2}
   - {fileID: 2100000, guid: f043a3a707b2c9d4789dd093ec2a775e, type: 2}
   - {fileID: 2100000, guid: f29b439ab345bb246b8f3013fb1b6680, type: 2}
+  - {fileID: 2100000, guid: 045ddcc187fad0c468a58c864f039288, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -30196,7 +30218,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 392571966}
-  m_Mesh: {fileID: 4300000, guid: b3df6971224e6d3459c97ef32ab7c09a, type: 2}
+  m_Mesh: {fileID: 4300000, guid: b54c64568be7edc4e98ffaa401fc8370, type: 2}
 --- !u!1 &393078358
 GameObject:
   m_ObjectHideFlags: 0
@@ -45579,6 +45601,7 @@ MeshRenderer:
   - {fileID: 2100000, guid: 3ac47d443dcca334886bd57671c21b50, type: 2}
   - {fileID: 2100000, guid: f043a3a707b2c9d4789dd093ec2a775e, type: 2}
   - {fileID: 2100000, guid: f29b439ab345bb246b8f3013fb1b6680, type: 2}
+  - {fileID: 2100000, guid: 045ddcc187fad0c468a58c864f039288, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -45609,7 +45632,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 566373289}
-  m_Mesh: {fileID: 4300000, guid: 9b8474431e00f9649a4d1d309cf259f1, type: 2}
+  m_Mesh: {fileID: 4300000, guid: 7aa8c74fc218eb846adb4377cea54dc2, type: 2}
 --- !u!1 &566447652
 GameObject:
   m_ObjectHideFlags: 0
@@ -56446,6 +56469,7 @@ MeshRenderer:
   - {fileID: 2100000, guid: 3ac47d443dcca334886bd57671c21b50, type: 2}
   - {fileID: 2100000, guid: f043a3a707b2c9d4789dd093ec2a775e, type: 2}
   - {fileID: 2100000, guid: f29b439ab345bb246b8f3013fb1b6680, type: 2}
+  - {fileID: 2100000, guid: 045ddcc187fad0c468a58c864f039288, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -56476,7 +56500,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 683167240}
-  m_Mesh: {fileID: 4300000, guid: 7ac26721b7814384985d4389dafa6862, type: 2}
+  m_Mesh: {fileID: 4300000, guid: 62e9fc96c6f9d6546b87ab7973d24149, type: 2}
 --- !u!1 &686745850
 GameObject:
   m_ObjectHideFlags: 0
@@ -101377,6 +101401,7 @@ MeshRenderer:
   - {fileID: 2100000, guid: 3ac47d443dcca334886bd57671c21b50, type: 2}
   - {fileID: 2100000, guid: f043a3a707b2c9d4789dd093ec2a775e, type: 2}
   - {fileID: 2100000, guid: f29b439ab345bb246b8f3013fb1b6680, type: 2}
+  - {fileID: 2100000, guid: 045ddcc187fad0c468a58c864f039288, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -101407,7 +101432,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1273031063}
-  m_Mesh: {fileID: 4300000, guid: 7ac26721b7814384985d4389dafa6862, type: 2}
+  m_Mesh: {fileID: 4300000, guid: 62e9fc96c6f9d6546b87ab7973d24149, type: 2}
 --- !u!1 &1275076208
 GameObject:
   m_ObjectHideFlags: 0
@@ -112756,6 +112781,7 @@ MeshRenderer:
   - {fileID: 2100000, guid: 3ac47d443dcca334886bd57671c21b50, type: 2}
   - {fileID: 2100000, guid: f043a3a707b2c9d4789dd093ec2a775e, type: 2}
   - {fileID: 2100000, guid: f29b439ab345bb246b8f3013fb1b6680, type: 2}
+  - {fileID: 2100000, guid: 045ddcc187fad0c468a58c864f039288, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -112786,7 +112812,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1395462479}
-  m_Mesh: {fileID: 4300000, guid: f3a4e5d35b1a78442b255c113fe8cd9a, type: 2}
+  m_Mesh: {fileID: 4300000, guid: cb964849b177f144b9629b23f7870ae0, type: 2}
 --- !u!1 &1397043745
 GameObject:
   m_ObjectHideFlags: 0
@@ -133593,6 +133619,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1660558440}
+  - component: {fileID: 1660558441}
   m_Layer: 0
   m_Name: Steering wheel
   m_TagString: Untagged
@@ -133616,6 +133643,18 @@ Transform:
   - {fileID: 1675067363}
   m_Father: {fileID: 916995731}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1660558441
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1660558439}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fcb11f91a964c44a5487b9c0c56ecd7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PolygonRacing.PolygonCarInstruments
 --- !u!1 &1663348970
 GameObject:
   m_ObjectHideFlags: 0
@@ -134223,6 +134262,7 @@ MeshRenderer:
   - {fileID: 2100000, guid: 3ac47d443dcca334886bd57671c21b50, type: 2}
   - {fileID: 2100000, guid: f043a3a707b2c9d4789dd093ec2a775e, type: 2}
   - {fileID: 2100000, guid: f29b439ab345bb246b8f3013fb1b6680, type: 2}
+  - {fileID: 2100000, guid: 045ddcc187fad0c468a58c864f039288, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -134253,7 +134293,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1669526005}
-  m_Mesh: {fileID: 4300000, guid: 1e13c85859381f049a3d51856b3bdafd, type: 2}
+  m_Mesh: {fileID: 4300000, guid: e4c46051c58320b41acd0f66499ca599, type: 2}
 --- !u!1 &1675067362
 GameObject:
   m_ObjectHideFlags: 0
@@ -151734,6 +151774,7 @@ MeshRenderer:
   - {fileID: 2100000, guid: 3ac47d443dcca334886bd57671c21b50, type: 2}
   - {fileID: 2100000, guid: f043a3a707b2c9d4789dd093ec2a775e, type: 2}
   - {fileID: 2100000, guid: f29b439ab345bb246b8f3013fb1b6680, type: 2}
+  - {fileID: 2100000, guid: 045ddcc187fad0c468a58c864f039288, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -151764,7 +151805,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1883770002}
-  m_Mesh: {fileID: 4300000, guid: 70fb3bde8d3ef0248a58e884774cc4fe, type: 2}
+  m_Mesh: {fileID: 4300000, guid: 3cbfbd4978073794e9fe2f29a3e9ecaa, type: 2}
 --- !u!1 &1883902554
 GameObject:
   m_ObjectHideFlags: 0
@@ -168860,6 +168901,7 @@ MeshRenderer:
   - {fileID: 2100000, guid: 3ac47d443dcca334886bd57671c21b50, type: 2}
   - {fileID: 2100000, guid: f043a3a707b2c9d4789dd093ec2a775e, type: 2}
   - {fileID: 2100000, guid: f29b439ab345bb246b8f3013fb1b6680, type: 2}
+  - {fileID: 2100000, guid: 045ddcc187fad0c468a58c864f039288, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -168890,7 +168932,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2071740645}
-  m_Mesh: {fileID: 4300000, guid: 489e8342e6130ce4b987f9a082026b4c, type: 2}
+  m_Mesh: {fileID: 4300000, guid: 92c61f0ab9f4a614592442fd9638598f, type: 2}
 --- !u!1 &2071873596
 GameObject:
   m_ObjectHideFlags: 0

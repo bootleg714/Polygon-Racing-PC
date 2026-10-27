@@ -3903,6 +3903,7 @@ GameObject:
   m_Component:
   - component: {fileID: 54466181}
   - component: {fileID: 54466182}
+  - component: {fileID: 54466183}
   m_Layer: 0
   m_Name: Player car - editable polygon model
   m_TagString: Untagged
@@ -3962,6 +3963,25 @@ MonoBehaviour:
   acceleration: 13
   braking: 24
   steeringAngle: 28
+--- !u!114 &54466183
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 54466180}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e196d52e4d69443bb173dbfb11d063df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PolygonRacing.PolygonPCMirrors
+  textureWidth: 256
+  textureHeight: 86
+  updatesPerSecond: 30
+  verticalFieldOfView: 36
+  outwardAngle: 10
+  viewDistance: 300
+  mirrorShadows: 0
 --- !u!1 &55737536
 GameObject:
   m_ObjectHideFlags: 0
@@ -113195,6 +113215,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1660558440}
+  - component: {fileID: 1660558441}
   m_Layer: 0
   m_Name: Steering wheel
   m_TagString: Untagged
@@ -113218,6 +113239,18 @@ Transform:
   - {fileID: 1675067363}
   m_Father: {fileID: 916995731}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1660558441
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1660558439}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fcb11f91a964c44a5487b9c0c56ecd7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PolygonRacing.PolygonCarInstruments
 --- !u!1 &1660952026
 GameObject:
   m_ObjectHideFlags: 0
