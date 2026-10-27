@@ -28,7 +28,19 @@ namespace PolygonRacing
         readonly List<bool> previousHidden=new List<bool>();
         Mesh surfaceMesh;
         int nextSide;
-        bool subscribed,hiding;
+        bool subscribed,hiding,sunsetLighting;
+
+        // Sunset uses the same long shadows in both camera views; restore the chosen
+        // mirror quality when returning to Daytime.
+        public void SetSunsetLighting(bool enabled)
+        {
+            sunsetLighting=enabled;
+            foreach(var cam in cameras)if(cam)
+            {
+                var data=cam.GetComponent<UniversalAdditionalCameraData>();
+                if(data)data.renderShadows=mirrorShadows||sunsetLighting;
+            }
+        }
 
         void OnEnable()
         {
@@ -74,7 +86,7 @@ namespace PolygonRacing
                     int uiLayer=LayerMask.NameToLayer("UI");cam.cullingMask=driver.view.cullingMask;
                     if(uiLayer>=0)cam.cullingMask &= ~(1<<uiLayer);
                     var data=go.AddComponent<UniversalAdditionalCameraData>();
-                    data.renderPostProcessing=false;data.renderShadows=mirrorShadows;
+                    data.renderPostProcessing=false;data.renderShadows=mirrorShadows||sunsetLighting;
                     data.requiresDepthTexture=false;data.requiresColorTexture=false;
                 }
                 RenderPipelineManager.beginCameraRendering+=BeforeCamera;

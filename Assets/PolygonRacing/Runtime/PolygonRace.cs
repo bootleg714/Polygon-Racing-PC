@@ -22,13 +22,15 @@ namespace PolygonRacing
         float countdown,elapsed,lapStarted,bestLap,lastLap,goUntil,trialBest;
         float[] finishTimes,previousRivalLaps;
         int resetSerial,place,finalPlace,selection;
-        bool selectingCircuit,wasConfirm,wasMenu,navLatched;
+        bool selectingCircuit,selectingRivieraLighting,wasConfirm,wasMenu,navLatched;
+        PolygonRivieraTimeOfDay rivieraLighting=PolygonRivieraTimeOfDay.Daytime;
         UnityEngine.XR.InputDevice left,right;
         readonly Progress progress=new Progress();
         readonly PolygonSlipstream.Charge playerSlipstream=new PolygonSlipstream.Charge();
         static bool pendingLaunch;
         static PolygonCircuitLayout pendingLayout;
         static Mode pendingMode;
+        static PolygonRivieraTimeOfDay pendingRivieraLighting=PolygonRivieraTimeOfDay.Daytime;
         string BestKey=>"PolygonRacing."+PolygonCircuit.LayoutId+".TimeTrialBest";
         int FieldSize=>rivals.Length+1;
         GameObject board;
@@ -86,6 +88,7 @@ namespace PolygonRacing
             if(pendingLaunch)
             {
                 pendingLaunch=false;
+                rivieraLighting=pendingRivieraLighting;
                 if(PolygonCircuit.Layout==pendingLayout)Begin(pendingMode);
                 else Debug.LogError("The requested circuit scene loaded with the wrong circuit layout.");
             }
@@ -105,11 +108,16 @@ namespace PolygonRacing
             ClearSlipstream();
             phase=Phase.Menu;player.RaceManaged=true;player.RestartRace();player.SetRaceLock(true);resetSerial=player.ResetSerial;
             foreach(var car in rivals){car.RaceManaged=true;car.SetRaceLock(true);}
-            selectingCircuit=false;selection=0;navLatched=false;DrawMenu();
+            selectingCircuit=false;selectingRivieraLighting=false;selection=0;navLatched=false;DrawMenu();
         }
         void DrawMenu()
         {
             string restart=mode==Mode.TimeTrial?"RESTART TIME TRIAL":"RESTART RACE";
+            if(selectingRivieraLighting)
+            {
+                SetBoard("RIVIERA LIGHTING\n"+(selection==0?"> ":"  ")+"DAYTIME\n"+(selection==1?"> ":"  ")+"SUNSET\n"+(selection==2?"> ":"  ")+"BACK\nSTICK / D-PAD / ARROWS: MOVE\nA / ENTER: SELECT  Y / M: MENU",true);
+                return;
+            }
             if(selectingCircuit)
             {
                 SetBoard("SELECT CIRCUIT\n"+(selection==0?"> ":"  ")+"FOREST CIRCUIT\n"+(selection==1?"> ":"  ")+"COASTAL EXPRESSWAY\n"+(selection==2?"> ":"  ")+"DOWNTOWN STREETS\n"+(selection==3?"> ":"  ")+"RIVIERA HARBOUR\n"+(selection==4?"> ":"  ")+"SAKURA HILLS\n"+(selection==5?"> ":"  ")+"NORDWALD RING\n"+(selection==6?"> ":"  ")+"BACK\nSTICK / D-PAD / ARROWS: MOVE\nA / ENTER: SELECT  Y / M: MENU",true);
@@ -120,7 +128,14 @@ namespace PolygonRacing
         void Begin(Mode selected)
         {
             ClearSlipstream();
-            mode=selected;player.RestartRace();player.RaceManaged=true;player.SetRaceLock(true);resetSerial=player.ResetSerial;
+            mode=selected;
+            if(PolygonCircuit.Layout==PolygonCircuitLayout.Riviera)
+            {
+                var lighting=player.GetComponent<PolygonRivieraLighting>();
+                if(!lighting&&rivieraLighting==PolygonRivieraTimeOfDay.Sunset)lighting=player.gameObject.AddComponent<PolygonRivieraLighting>();
+                if(lighting)lighting.Apply(rivieraLighting);
+            }
+            player.RestartRace();player.RaceManaged=true;player.SetRaceLock(true);resetSerial=player.ResetSerial;
             trialBest=PlayerPrefs.GetFloat(BestKey,0);
             foreach(var car in rivals){car.RestartRace();car.RaceManaged=true;car.SetParticipating(mode==Mode.Race);car.SetRaceLock(true);}
             for(int i=0;i<finishTimes.Length;i++){finishTimes[i]=-1;previousRivalLaps[i]=rivals[i].RaceDistance/PolygonCircuit.Length;}
@@ -153,12 +168,17 @@ namespace PolygonRacing
                 }
                 if(keyboard!=null){if(keyboard.upArrowKey.isPressed)y=1;if(keyboard.downArrowKey.isPressed)y=-1;}
                 bool held=Mathf.Abs(y)>.6f;
-                int options=selectingCircuit?7:3;
+                int options=selectingRivieraLighting?3:selectingCircuit?7:3;
                 if(held&&!navLatched){selection=(selection+(y>0?options-1:1))%options;DrawMenu();}
                 navLatched=held;
                 if(confirmPressed)
                 {
-                    if(selectingCircuit)
+                    if(selectingRivieraLighting)
+                    {
+                        if(selection==2)BackToCircuits();
+                        else SelectRivieraLighting(selection==0?PolygonRivieraTimeOfDay.Daytime:PolygonRivieraTimeOfDay.Sunset);
+                    }
+                    else if(selectingCircuit)
                     {
                         if(selection==6){selectingCircuit=false;selection=menuMode==Mode.Race?0:1;DrawMenu();}
                         else LoadCircuit(selection==0?PolygonCircuitLayout.Forest:selection==1?PolygonCircuitLayout.CoastalExpressway:selection==2?PolygonCircuitLayout.Downtown:selection==3?PolygonCircuitLayout.Riviera:selection==4?PolygonCircuitLayout.Sakura:PolygonCircuitLayout.Nordwald);
@@ -295,15 +315,33 @@ namespace PolygonRacing
         }
         void LoadCircuit(PolygonCircuitLayout layout)
         {
+            if(layout==PolygonCircuitLayout.Riviera)
+            {
+                selectingCircuit=false;selectingRivieraLighting=true;selection=0;DrawMenu();return;
+            }
+            StartCircuit(layout);
+        }
+        void SelectRivieraLighting(PolygonRivieraTimeOfDay preset)
+        {
+            rivieraLighting=preset;
+            if(StartCircuit(PolygonCircuitLayout.Riviera))selectingRivieraLighting=false;
+        }
+        void BackToCircuits()
+        {
+            selectingRivieraLighting=false;selectingCircuit=true;selection=3;DrawMenu();
+        }
+        bool StartCircuit(PolygonCircuitLayout layout)
+        {
             string sceneName=layout==PolygonCircuitLayout.Forest?"ForestCircuit":layout==PolygonCircuitLayout.Downtown?"DowntownCircuit":layout==PolygonCircuitLayout.Riviera?"RivieraHarbour":layout==PolygonCircuitLayout.Sakura?"SakuraHills":layout==PolygonCircuitLayout.Nordwald?"NordwaldRing":"CoastalExpressway";
-            if(PolygonCircuit.Layout==layout){Begin(menuMode);return;}
+            if(PolygonCircuit.Layout==layout){Begin(menuMode);return true;}
             if(!Application.CanStreamedLevelBeLoaded(sceneName))
             {
                 Debug.LogError($"Cannot load {sceneName}. Add its scene to the active build profile before selecting this circuit.");
-                return;
+                return false;
             }
             pendingLaunch=true;pendingLayout=layout;pendingMode=menuMode;
-            SceneManager.LoadScene(sceneName);
+            pendingRivieraLighting=layout==PolygonCircuitLayout.Riviera?rivieraLighting:PolygonRivieraTimeOfDay.Daytime;
+            SceneManager.LoadScene(sceneName);return true;
         }
         void OnGUI()
         {
@@ -335,16 +373,22 @@ namespace PolygonRacing
         }
         void DrawDesktopMenu(Rect safe,float scale)
         {
-            int count=selectingCircuit?7:3;
+            int count=selectingRivieraLighting?3:selectingCircuit?7:3;
             float width=Mathf.Min(240*scale,safe.width-24*scale);
             float step=Mathf.Min(42*scale,(safe.height-55*scale)/count);
             float x=safe.x+12*scale,y=safe.y+12*scale;
             PolygonDesktopHUD.Panel(new Rect(x,y,width,Mathf.Min(safe.height-24*scale,35*scale+step*count)));
             PolygonDesktopHUD.Label(new Rect(x+10*scale,y+5*scale,width-20*scale,23*scale),
-                selectingCircuit?"SELECT CIRCUIT":"SELECT MODE",Mathf.Max(12,Mathf.RoundToInt(15*scale)),TextAnchor.MiddleLeft);
+                selectingRivieraLighting?"RIVIERA LIGHTING":selectingCircuit?"SELECT CIRCUIT":"SELECT MODE",Mathf.Max(12,Mathf.RoundToInt(15*scale)),TextAnchor.MiddleLeft);
             var style=new GUIStyle(GUI.skin.button){fontSize=Mathf.Max(10,Mathf.RoundToInt(13*scale))};
             bool ButtonAt(int i,string label)=>GUI.Button(new Rect(x+8*scale,y+31*scale+i*step,width-16*scale,Mathf.Max(1,step-5*scale)),label,style);
-            if(selectingCircuit)
+            if(selectingRivieraLighting)
+            {
+                if(ButtonAt(0,"DAYTIME"))SelectRivieraLighting(PolygonRivieraTimeOfDay.Daytime);
+                if(ButtonAt(1,"SUNSET"))SelectRivieraLighting(PolygonRivieraTimeOfDay.Sunset);
+                if(ButtonAt(2,"BACK"))BackToCircuits();
+            }
+            else if(selectingCircuit)
             {
                 if(ButtonAt(0,"FOREST CIRCUIT"))LoadCircuit(PolygonCircuitLayout.Forest);
                 if(ButtonAt(1,"COASTAL EXPRESSWAY"))LoadCircuit(PolygonCircuitLayout.CoastalExpressway);

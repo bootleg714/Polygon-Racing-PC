@@ -14,6 +14,7 @@ Shader "Polygon Racing/PC Carbon Weave"
         _Metallic("Metallic", Range(0,1)) = 0
         _Smoothness("Smoothness", Range(0,1)) = 0.18
         _ReflectionStrength("Environment reflection", Range(0,1)) = 0.35
+        _SunsetSheen("Sunset rail sheen", Range(0,0.2)) = 0
         [Enum(UnityEngine.Rendering.CullMode)] _Cull("Cull", Float) = 2
     }
     SubShader
@@ -35,6 +36,7 @@ Shader "Polygon Racing/PC Carbon Weave"
             half _Metallic;
             half _Smoothness;
             half _ReflectionStrength;
+            half _SunsetSheen;
             half _Cull;
         CBUFFER_END
         ENDHLSL
@@ -118,7 +120,8 @@ Shader "Polygon Racing/PC Carbon Weave"
 
                 half metallic = saturate(_Metallic);
                 half smoothness = saturate(_Smoothness);
-                half3 albedo = _BaseColor.rgb * SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv).rgb;
+                half3 weave = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv).rgb;
+                half3 albedo = _BaseColor.rgb * weave;
                 half contact = 1 - _GroundShade * (1 - saturate(faceNormal.y))
                     * (1 - saturate(input.heightWS / 1.6));
                 half3 color = albedo * (hemisphere + sun.color * diffuse * sun.shadowAttenuation)
@@ -134,6 +137,14 @@ Shader "Polygon Racing/PC Carbon Weave"
                 half directSpecular = pow(saturate(dot(faceNormal, halfDir)), specPower)
                     * sun.shadowAttenuation * smoothness;
                 color += sun.color * directSpecular * (f0 + (1 - f0) * fresnel);
+                // A broad, low-intensity directional sheen only when the Sunset profile
+                // enables it. Uses the same faceted normal, light, shadows and weave.
+                if (_SunsetSheen > 0.0001h)
+                {
+                    half sheen = pow(saturate(dot(faceNormal, halfDir)), 12) * saturate(ndl)
+                        * sun.shadowAttenuation * _SunsetSheen;
+                    color += sun.color * sheen * (0.75h + 0.25h * weave);
+                }
 
                 half3 reflectionDir = reflect(-viewDir, faceNormal);
                 half3 environment = GlossyEnvironmentReflection(reflectionDir, input.positionWS,
