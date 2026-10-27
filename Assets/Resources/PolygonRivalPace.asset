@@ -14,10 +14,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PolygonRacing.PolygonRivalPaceSettings
   topSpeedFactor: 1.01
   accelerationFactor: 0.98
+  mistakeFrequency: 1
+  aggression: 1
   cornerGrip: 10.6
   rubberBanding: 1
+  neutralGapSeconds: 0.5
+  fullGapSeconds: 2.5
+  catchUpBoost: 0.02
+  leaderEase: 0.12
   neutralGapMeters: 40
   fullAdjustmentGapMeters: 220
   maximumCatchup: 0.08
   maximumLeaderEase: 0.04
-  responseSeconds: 4
+  responseSeconds: 3
