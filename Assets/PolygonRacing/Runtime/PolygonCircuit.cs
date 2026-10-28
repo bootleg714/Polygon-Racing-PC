@@ -12,7 +12,8 @@ namespace PolygonRacing
         Nordwald,
         NeonMeridian,
         IonRift=7,
-        AuroraForge=8
+        AuroraForge=8,
+        StarfallPort=9
     }
 
     // Shared geometry for scenery, race position and AI routes.
@@ -119,6 +120,19 @@ namespace PolygonRacing
             new Vector3(-190,0,-55),new Vector3(-120,0,-10),new Vector3(-60,0,0)};
         static readonly float[] auroraHeights={32,32,32,32,36,43,53,65,77,88,96,100,96,87,74,61,48,37,27,22,25,32,40,50,58,63,57,46,37,30,25,24,26,29,32};
         static readonly Vector3[] auroraBanks={new Vector3(8.8f,11.6f,-5),new Vector3(24.3f,27.6f,4)};
+        // Coastal spaceport: rolling waterfront roads, hangars and launch infrastructure.
+        static readonly Vector3[] starfallKnots={
+            new Vector3(0,0,0),new Vector3(155,0,0),new Vector3(310,0,0),new Vector3(465,0,0),
+            new Vector3(610,0,25),new Vector3(725,0,95),new Vector3(780,0,205),new Vector3(770,0,335),
+            new Vector3(805,0,465),new Vector3(780,0,590),new Vector3(710,0,690),new Vector3(600,0,760),
+            new Vector3(460,0,785),new Vector3(320,0,755),new Vector3(180,0,780),new Vector3(45,0,835),
+            new Vector3(-90,0,820),new Vector3(-215,0,755),new Vector3(-270,0,650),new Vector3(-255,0,535),
+            new Vector3(-315,0,435),new Vector3(-430,0,395),new Vector3(-550,0,410),new Vector3(-650,0,365),
+            new Vector3(-700,0,265),new Vector3(-690,0,155),new Vector3(-740,0,35),new Vector3(-710,0,-95),
+            new Vector3(-620,0,-195),new Vector3(-485,0,-235),new Vector3(-350,0,-220),new Vector3(-245,0,-145),
+            new Vector3(-185,0,-65),new Vector3(-115,0,-12),new Vector3(-55,0,0)};
+        static readonly float[] starfallHeights={25,25,25,25,28,34,43,53,64,72,78,80,76,68,58,49,40,33,27,23,25,31,39,47,52,56,52,45,37,29,24,22,23,24,25};
+        static readonly Vector3[] starfallBanks={new Vector3(8.8f,11.7f,-5),new Vector3(25,28,4)};
         static readonly Vector3[] points=new Vector3[Samples+1];
         static readonly float[] sampleHeights=new float[Samples+1];
         static readonly float[] distances=new float[Samples+1];
@@ -133,10 +147,10 @@ namespace PolygonRacing
         public static float RoadHalfWidth { get; private set; }
         public static float Length { get; private set; }
         public static PolygonCircuitLayout Layout=>activeLayout;
-        public static string LayoutName=>activeLayout==PolygonCircuitLayout.AuroraForge?"Aurora Forge":activeLayout==PolygonCircuitLayout.IonRift?"Ion Rift":activeLayout==PolygonCircuitLayout.NeonMeridian?"Neon Meridian":activeLayout==PolygonCircuitLayout.CoastalExpressway?"Coastal Expressway":activeLayout==PolygonCircuitLayout.Downtown?"Downtown Street Circuit":activeLayout==PolygonCircuitLayout.Riviera?"Riviera Harbour":activeLayout==PolygonCircuitLayout.Sakura?"Sakura Hills":activeLayout==PolygonCircuitLayout.Nordwald?"Nordwald Ring":"Forest Circuit";
-        public static string LayoutId=>activeLayout==PolygonCircuitLayout.AuroraForge?"AuroraForgeV01":activeLayout==PolygonCircuitLayout.IonRift?"IonRiftV01":activeLayout==PolygonCircuitLayout.NeonMeridian?"NeonMeridianV01":activeLayout==PolygonCircuitLayout.CoastalExpressway?"CoastalExpresswayV01":activeLayout==PolygonCircuitLayout.Downtown?"DowntownV01":activeLayout==PolygonCircuitLayout.Riviera?"RivieraV01":activeLayout==PolygonCircuitLayout.Sakura?"SakuraV01":activeLayout==PolygonCircuitLayout.Nordwald?"NordwaldV01":"ForestCircuitV12";
+        public static string LayoutName=>activeLayout==PolygonCircuitLayout.StarfallPort?"Starfall Port":activeLayout==PolygonCircuitLayout.AuroraForge?"Aurora Forge":activeLayout==PolygonCircuitLayout.IonRift?"Ion Rift":activeLayout==PolygonCircuitLayout.NeonMeridian?"Neon Meridian":activeLayout==PolygonCircuitLayout.CoastalExpressway?"Coastal Expressway":activeLayout==PolygonCircuitLayout.Downtown?"Downtown Street Circuit":activeLayout==PolygonCircuitLayout.Riviera?"Riviera Harbour":activeLayout==PolygonCircuitLayout.Sakura?"Sakura Hills":activeLayout==PolygonCircuitLayout.Nordwald?"Nordwald Ring":"Forest Circuit";
+        public static string LayoutId=>activeLayout==PolygonCircuitLayout.StarfallPort?"StarfallPortV01":activeLayout==PolygonCircuitLayout.AuroraForge?"AuroraForgeV01":activeLayout==PolygonCircuitLayout.IonRift?"IonRiftV01":activeLayout==PolygonCircuitLayout.NeonMeridian?"NeonMeridianV01":activeLayout==PolygonCircuitLayout.CoastalExpressway?"CoastalExpresswayV01":activeLayout==PolygonCircuitLayout.Downtown?"DowntownV01":activeLayout==PolygonCircuitLayout.Riviera?"RivieraV01":activeLayout==PolygonCircuitLayout.Sakura?"SakuraV01":activeLayout==PolygonCircuitLayout.Nordwald?"NordwaldV01":"ForestCircuitV12";
         // Distance from the road edge to the barrier line the driver is held inside.
-        public static float BarrierMargin=>activeLayout==PolygonCircuitLayout.AuroraForge?2f:activeLayout==PolygonCircuitLayout.IonRift?2f:activeLayout==PolygonCircuitLayout.NeonMeridian?2f:activeLayout==PolygonCircuitLayout.Riviera?1.3f:activeLayout==PolygonCircuitLayout.Nordwald?2.5f:6.5f;
+        public static float BarrierMargin=>activeLayout==PolygonCircuitLayout.StarfallPort?2f:activeLayout==PolygonCircuitLayout.AuroraForge?2f:activeLayout==PolygonCircuitLayout.IonRift?2f:activeLayout==PolygonCircuitLayout.NeonMeridian?2f:activeLayout==PolygonCircuitLayout.Riviera?1.3f:activeLayout==PolygonCircuitLayout.Nordwald?2.5f:6.5f;
         public static bool HasElevation=>heights!=null;
         // The route crosses itself (on a bridge), so projections must also compare heights.
         public static bool HasCrossover=>activeLayout==PolygonCircuitLayout.Sakura;
@@ -150,10 +164,10 @@ namespace PolygonRacing
         {
             if(initialized&&activeLayout==layout)return;
             activeLayout=layout;
-            knots=layout==PolygonCircuitLayout.AuroraForge?auroraKnots:layout==PolygonCircuitLayout.IonRift?ionKnots:layout==PolygonCircuitLayout.NeonMeridian?neonKnots:layout==PolygonCircuitLayout.CoastalExpressway?coastalKnots:layout==PolygonCircuitLayout.Downtown?downtownKnots:layout==PolygonCircuitLayout.Riviera?rivieraKnots:layout==PolygonCircuitLayout.Sakura?sakuraKnots:layout==PolygonCircuitLayout.Nordwald?nordwaldKnots:forestKnots;
-            heights=layout==PolygonCircuitLayout.AuroraForge?auroraHeights:layout==PolygonCircuitLayout.IonRift?ionHeights:layout==PolygonCircuitLayout.NeonMeridian?neonHeights:layout==PolygonCircuitLayout.Riviera?rivieraHeights:layout==PolygonCircuitLayout.Sakura?sakuraHeights:layout==PolygonCircuitLayout.Nordwald?nordwaldHeights:null;
-            banks=layout==PolygonCircuitLayout.AuroraForge?auroraBanks:layout==PolygonCircuitLayout.IonRift?ionBanks:layout==PolygonCircuitLayout.NeonMeridian?neonBanks:layout==PolygonCircuitLayout.Nordwald?nordwaldBanks:null;
-            RoadHalfWidth=layout==PolygonCircuitLayout.AuroraForge?10f:layout==PolygonCircuitLayout.IonRift?10f:layout==PolygonCircuitLayout.NeonMeridian?10f:layout==PolygonCircuitLayout.CoastalExpressway?11f:layout==PolygonCircuitLayout.Downtown?10f:layout==PolygonCircuitLayout.Riviera?7.5f:layout==PolygonCircuitLayout.Nordwald?7f:9f;
+            knots=layout==PolygonCircuitLayout.StarfallPort?starfallKnots:layout==PolygonCircuitLayout.AuroraForge?auroraKnots:layout==PolygonCircuitLayout.IonRift?ionKnots:layout==PolygonCircuitLayout.NeonMeridian?neonKnots:layout==PolygonCircuitLayout.CoastalExpressway?coastalKnots:layout==PolygonCircuitLayout.Downtown?downtownKnots:layout==PolygonCircuitLayout.Riviera?rivieraKnots:layout==PolygonCircuitLayout.Sakura?sakuraKnots:layout==PolygonCircuitLayout.Nordwald?nordwaldKnots:forestKnots;
+            heights=layout==PolygonCircuitLayout.StarfallPort?starfallHeights:layout==PolygonCircuitLayout.AuroraForge?auroraHeights:layout==PolygonCircuitLayout.IonRift?ionHeights:layout==PolygonCircuitLayout.NeonMeridian?neonHeights:layout==PolygonCircuitLayout.Riviera?rivieraHeights:layout==PolygonCircuitLayout.Sakura?sakuraHeights:layout==PolygonCircuitLayout.Nordwald?nordwaldHeights:null;
+            banks=layout==PolygonCircuitLayout.StarfallPort?starfallBanks:layout==PolygonCircuitLayout.AuroraForge?auroraBanks:layout==PolygonCircuitLayout.IonRift?ionBanks:layout==PolygonCircuitLayout.NeonMeridian?neonBanks:layout==PolygonCircuitLayout.Nordwald?nordwaldBanks:null;
+            RoadHalfWidth=layout==PolygonCircuitLayout.StarfallPort?10f:layout==PolygonCircuitLayout.AuroraForge?10f:layout==PolygonCircuitLayout.IonRift?10f:layout==PolygonCircuitLayout.NeonMeridian?10f:layout==PolygonCircuitLayout.CoastalExpressway?11f:layout==PolygonCircuitLayout.Downtown?10f:layout==PolygonCircuitLayout.Riviera?7.5f:layout==PolygonCircuitLayout.Nordwald?7f:9f;
             for(int i=0;i<=Samples;i++)
             {
                 points[i]=Evaluate(i*Mathf.PI*2/Samples);sampleHeights[i]=ElevationAtAngle(i*Mathf.PI*2/Samples);

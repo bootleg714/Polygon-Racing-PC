@@ -112,7 +112,7 @@ namespace PolygonRacing
         }
         void DrawMenu()
         {
-            if(boardText)boardText.characterSize=selectingCircuit?.0082f:.009f;
+            if(boardText)boardText.characterSize=selectingCircuit?.0077f:.009f;
             string restart=mode==Mode.TimeTrial?"RESTART TIME TRIAL":"RESTART RACE";
             if(selectingRivieraLighting)
             {
@@ -121,7 +121,7 @@ namespace PolygonRacing
             }
             if(selectingCircuit)
             {
-                SetBoard("SELECT CIRCUIT\n"+(selection==0?"> ":"  ")+"FOREST CIRCUIT\n"+(selection==1?"> ":"  ")+"COASTAL EXPRESSWAY\n"+(selection==2?"> ":"  ")+"DOWNTOWN STREETS\n"+(selection==3?"> ":"  ")+"RIVIERA HARBOUR\n"+(selection==4?"> ":"  ")+"SAKURA HILLS\n"+(selection==5?"> ":"  ")+"NORDWALD RING\n"+(selection==6?"> ":"  ")+"NEON MERIDIAN\n"+(selection==7?"> ":"  ")+"ION RIFT\n"+(selection==8?"> ":"  ")+"AURORA FORGE\n"+(selection==9?"> ":"  ")+"BACK\nSTICK / D-PAD / ARROWS: MOVE\nA / ENTER: SELECT  Y / M: MENU",true);
+                SetBoard("SELECT CIRCUIT\n"+(selection==0?"> ":"  ")+"FOREST CIRCUIT\n"+(selection==1?"> ":"  ")+"COASTAL EXPRESSWAY\n"+(selection==2?"> ":"  ")+"DOWNTOWN STREETS\n"+(selection==3?"> ":"  ")+"RIVIERA HARBOUR\n"+(selection==4?"> ":"  ")+"SAKURA HILLS\n"+(selection==5?"> ":"  ")+"NORDWALD RING\n"+(selection==6?"> ":"  ")+"NEON MERIDIAN\n"+(selection==7?"> ":"  ")+"ION RIFT\n"+(selection==8?"> ":"  ")+"AURORA FORGE\n"+(selection==9?"> ":"  ")+"STARFALL PORT\n"+(selection==10?"> ":"  ")+"BACK\nSTICK / D-PAD / ARROWS: MOVE\nA / ENTER: SELECT  Y / M: MENU",true);
                 return;
             }
             SetBoard("POLYGON RACING\n"+(selection==0?"> ":"  ")+"START RACE\n"+(selection==1?"> ":"  ")+"TIME TRIAL\n"+(selection==2?"> ":"  ")+restart+"\nSTICK / ARROWS: MOVE\nA / ENTER: SELECT  Y / M: MENU",true);
@@ -169,7 +169,7 @@ namespace PolygonRacing
                 }
                 if(keyboard!=null){if(keyboard.upArrowKey.isPressed)y=1;if(keyboard.downArrowKey.isPressed)y=-1;}
                 bool held=Mathf.Abs(y)>.6f;
-                int options=selectingRivieraLighting?3:selectingCircuit?10:3;
+                int options=selectingRivieraLighting?3:selectingCircuit?11:3;
                 if(held&&!navLatched){selection=(selection+(y>0?options-1:1))%options;DrawMenu();}
                 navLatched=held;
                 if(confirmPressed)
@@ -181,7 +181,7 @@ namespace PolygonRacing
                     }
                     else if(selectingCircuit)
                     {
-                        if(selection==9){selectingCircuit=false;selection=menuMode==Mode.Race?0:1;DrawMenu();}
+                        if(selection==10){selectingCircuit=false;selection=menuMode==Mode.Race?0:1;DrawMenu();}
                         else LoadCircuit((PolygonCircuitLayout)selection);
                     }
                     else if(selection<2)
@@ -333,7 +333,7 @@ namespace PolygonRacing
         }
         bool StartCircuit(PolygonCircuitLayout layout)
         {
-            string sceneName=layout==PolygonCircuitLayout.AuroraForge?"AuroraForge":layout==PolygonCircuitLayout.IonRift?"IonRift":layout==PolygonCircuitLayout.NeonMeridian?"NeonMeridian":layout==PolygonCircuitLayout.Forest?"ForestCircuit":layout==PolygonCircuitLayout.Downtown?"DowntownCircuit":layout==PolygonCircuitLayout.Riviera?"RivieraHarbour":layout==PolygonCircuitLayout.Sakura?"SakuraHills":layout==PolygonCircuitLayout.Nordwald?"NordwaldRing":"CoastalExpressway";
+            string sceneName=layout==PolygonCircuitLayout.StarfallPort?"StarfallPort":layout==PolygonCircuitLayout.AuroraForge?"AuroraForge":layout==PolygonCircuitLayout.IonRift?"IonRift":layout==PolygonCircuitLayout.NeonMeridian?"NeonMeridian":layout==PolygonCircuitLayout.Forest?"ForestCircuit":layout==PolygonCircuitLayout.Downtown?"DowntownCircuit":layout==PolygonCircuitLayout.Riviera?"RivieraHarbour":layout==PolygonCircuitLayout.Sakura?"SakuraHills":layout==PolygonCircuitLayout.Nordwald?"NordwaldRing":"CoastalExpressway";
             if(PolygonCircuit.Layout==layout){Begin(menuMode);return true;}
             if(!Application.CanStreamedLevelBeLoaded(sceneName))
             {
@@ -374,7 +374,7 @@ namespace PolygonRacing
         }
         void DrawDesktopMenu(Rect safe,float scale)
         {
-            int count=selectingRivieraLighting?3:selectingCircuit?10:3;
+            int count=selectingRivieraLighting?3:selectingCircuit?11:3;
             float width=Mathf.Min(240*scale,safe.width-24*scale);
             float step=Mathf.Min(42*scale,(safe.height-55*scale)/count);
             float x=safe.x+12*scale,y=safe.y+12*scale;
@@ -400,7 +400,8 @@ namespace PolygonRacing
                 if(ButtonAt(6,"NEON MERIDIAN"))LoadCircuit(PolygonCircuitLayout.NeonMeridian);
                 if(ButtonAt(7,"ION RIFT"))LoadCircuit(PolygonCircuitLayout.IonRift);
                 if(ButtonAt(8,"AURORA FORGE"))LoadCircuit(PolygonCircuitLayout.AuroraForge);
-                if(ButtonAt(9,"BACK")){selectingCircuit=false;selection=menuMode==Mode.Race?0:1;DrawMenu();}
+                if(ButtonAt(9,"STARFALL PORT"))LoadCircuit(PolygonCircuitLayout.StarfallPort);
+                if(ButtonAt(10,"BACK")){selectingCircuit=false;selection=menuMode==Mode.Race?0:1;DrawMenu();}
             }
             else
             {

@@ -27,6 +27,8 @@ namespace PolygonRacing
 
         public static Preset For(PolygonCircuitLayout layout)
         {
+            if(layout==PolygonCircuitLayout.StarfallPort)
+                return new Preset{SunEuler=new Vector3(18,-70,0),SunColor=new Color(1,.72f,.63f),SunIntensity=.65f,Zenith=new Color(.035f,.025f,.12f),Horizon=new Color(.32f,.16f,.30f),BelowHorizon=new Color(.08f,.06f,.16f),WaterZenith=new Color(.04f,.09f,.20f),FogStart=550,FogEnd=2200,CloudRadius=1800,CloudSeed=151};
             if(layout==PolygonCircuitLayout.AuroraForge)
                 return new Preset{SunEuler=new Vector3(20,-55,0),SunColor=new Color(.65f,.8f,1),SunIntensity=.7f,Zenith=new Color(.012f,.035f,.10f),Horizon=new Color(.18f,.30f,.40f),BelowHorizon=new Color(.08f,.14f,.21f),WaterZenith=new Color(.04f,.16f,.25f),FogStart=500,FogEnd=2000,CloudRadius=1800,CloudSeed=131};
             if(layout==PolygonCircuitLayout.IonRift)

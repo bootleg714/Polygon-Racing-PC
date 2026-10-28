@@ -328,6 +328,27 @@ namespace PolygonRacing.Editor
         };
         public static bool ApplyToOpenAuroraForgeScene() => ApplyToOpenScene(AuroraForge);
 
+        static readonly Profile StarfallPort = new Profile
+        {
+            Layout = PolygonCircuitLayout.StarfallPort, DisplayName = "Starfall Port",
+            ScenePath = "Assets/PolygonRacing/Scenes/StarfallPort.unity",
+            Folder = "Assets/PolygonRacing/Generated/PCVisuals/StarfallPort", FolderName = "StarfallPort",
+            VolumeAssetName = "Starfall Port PC Volume Profile", SkyName = "Starfall Port PC Sky",
+            VolumeObjectName = "PC Visual Profile - Starfall Port", BackupPrefix = "StarfallPort",
+            SunColor = new Color(1,.72f,.63f), SunIntensity = .65f, ShadowStrength = .45f,
+            Zenith = new Color(.035f,.025f,.12f), Horizon = new Color(.32f,.16f,.30f),
+            BelowHorizon = new Color(.08f,.06f,.16f),
+            AmbientSky = new Color(.43f,.42f,.58f), AmbientEquator = new Color(.37f,.29f,.39f),
+            AmbientGround = new Color(.19f,.17f,.23f),
+            FogColor = new Color(.32f,.16f,.30f), FogStart = 550, FogEnd = 2200,
+            MaterialSky = new Color(.53f,.50f,.68f), MaterialGround = new Color(.27f,.22f,.30f),
+            MaterialStrength = 1f, MaterialWrap = .18f,
+            Exposure = .1f, Contrast = 6f, Saturation = 8f,
+            BloomThreshold = .9f, BloomIntensity = .55f, BloomScatter = .6f,
+            WhiteBalanceTemperature = 2f, Vignette = .06f, ExtraGrading = true
+        };
+        public static bool ApplyToOpenStarfallPortScene() => ApplyToOpenScene(StarfallPort);
+
         static bool ApplyToOpenScene(Profile profile)
         {
             active = profile;
