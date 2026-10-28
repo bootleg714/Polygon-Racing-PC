@@ -1,3 +1,5 @@
+October 28 obstruction fix: fixed-world conduit falls too close to the revised route are omitted. A forward-facing scan across the road found the likely obstruction near 3,500 m before the fix and zero hits after regeneration. The updated scenery has 659 renderers and 157,614 triangles. A full driven lap is still needed to confirm the reported object is gone. The Play-mode report below predates this scenery-only fix.
+
 # Starfall Port v01
 
 Australia 2011-inspired revision, October 28, 2026: 4,836 m with a rounded end, narrower middle and stepped opposite end, retaining the spaceport setting and existing handling. Elevation is 22.5?79.1 m, maximum sampled grade 12.9%, minimum sampled radius 60.9 m, and timing ID StarfallPortV02. Native Unity road checks found no sampled obstructions, holes or buried road points; 95 Play-mode checks passed. The updated scene has 661 scenery renderers and 157,878 triangles. Full-lap handling, AI and sustained target-PC FPS remain to be tested. The route statistics below describe the original version.

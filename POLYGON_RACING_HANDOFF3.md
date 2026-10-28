@@ -1,3 +1,15 @@
+## Latest status - October 28, 2026
+
+Thomas reports that everything is working great and plans to commit and push. He confirmed the Starfall Port track obstruction is fixed after reopening the scene. The four revised circuits are accepted: Neon Meridian (Hungary-inspired), Ion Rift (Malaysia-inspired), Aurora Forge (South Korea-inspired), and Starfall Port (Australia-inspired). Preserve their layouts, scenery, handling and opponent tuning unless a future request calls for changes.
+
+The Starfall fix and its generated scene/mesh assets are the current changes to include with this handoff. Unity's fast Play settings disable scene reload; after replacing a baked scene, stop Play and reopen the scene before judging it. Backups under PolygonRacingBackups are local and ignored by Git. Automated checks and their limitations are recorded below; no sustained target-PC FPS measurement, standalone Windows build, or Quest test was reported for the latest fix.
+
+## Starfall Port track obstruction fix ? October 28, 2026
+
+Thomas reported a billboard in the road on Starfall Port. A dense forward-ray inspection found a vertical black conduit structure crossing the racing line around 3,500 m; matching the illuminated obstruction shown in his screenshot. Two fixed-world conduit falls were close to the revised track. The Starfall scenery generator now omits a fixed conduit fall when its footprint is within 45 m of sampled track centerline points. No handling or route changes.
+
+Rebuilt and installed the scene in isolated Unity 6000.6.4f1; backup is PolygonRacingBackups/StarfallHazard_before_20261028_160737. Native geometry checks passed with zero upward obstructions, road holes or buried points; a new forward scan every 2 m across nine lateral positions and at three heights reports zero hits, as does a separate scan including all rendered mesh filters. Updated StarfallPortProbe preserves the forward scan. Scenery is 659 renderers and 157,614 triangles. Prior Play-mode report predates this scenery-only fix; no new full driven lap or target-PC FPS test. Thomas confirmed the obstruction is gone after reopening the scene. Lesson: upward rays at three lateral samples can miss thin vertical panels; use forward-facing checks as well.
+
 ## Starfall Port Australia-inspired revision ? October 28, 2026
 
 Thomas approved the revised Aurora Forge and requested Starfall Port close to the 2011 Australia reference, with subtle changes. Starfall now has a 4,836 m course with a rounded end, narrower middle and stepped opposite end, retaining the spaceport scenery, existing elevation character, driving and rival tuning. Timing ID is StarfallPortV02 to keep prior course records separate. Pre-revision scene and generated assets are backed up under PolygonRacingBackups/StarfallAustralia_before_20261028_153251. Other route arrays match their pre-change hashes in Tools/StarfallPort/prior-route-hashes.json.

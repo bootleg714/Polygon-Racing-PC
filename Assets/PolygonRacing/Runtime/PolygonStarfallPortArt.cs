@@ -456,7 +456,12 @@ namespace PolygonRacing
         }
         static void ConduitFalls(Chunks chunks,float z,int side,float top)
         {
-            float x=RiverX(z)+side*99;var p=new Vector3(x,0,z);var kit=chunks.At(p);
+            float x=RiverX(z)+side*99;var p=new Vector3(x,0,z);
+            // Fixed-world landmarks can land on a revised circuit. Omit the whole
+            // structure when its footprint is close to any part of the road.
+            foreach(var sample in samples)
+                if((sample-p).sqrMagnitude<45f*45f)return;
+            var kit=chunks.At(p);
             // The falls are framed power channels rather than transparent particles.
             float bottom=Floor+2,height=top-bottom;
             for(int strip=0;strip<3;strip++)
