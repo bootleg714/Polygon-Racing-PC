@@ -262,6 +262,72 @@ namespace PolygonRacing.Editor
             ApplyProfile(Coastal, true);
         }
 
+        static readonly Profile Neon = new Profile
+        {
+            Layout = PolygonCircuitLayout.NeonMeridian, DisplayName = "Neon Meridian",
+            ScenePath = "Assets/PolygonRacing/Scenes/NeonMeridian.unity",
+            Folder = "Assets/PolygonRacing/Generated/PCVisuals/Neon", FolderName = "Neon",
+            VolumeAssetName = "Neon PC Volume Profile", SkyName = "Neon PC Sky",
+            VolumeObjectName = "PC Visual Profile - Neon Meridian", BackupPrefix = "NeonMeridian",
+            SunColor = new Color(.45f,.58f,1f), SunIntensity = .35f, ShadowStrength = .4f,
+            Zenith = new Color(.012f,.018f,.065f), Horizon = new Color(.12f,.075f,.23f),
+            BelowHorizon = new Color(.025f,.035f,.075f),
+            AmbientSky = new Color(.24f,.30f,.52f), AmbientEquator = new Color(.18f,.20f,.34f),
+            AmbientGround = new Color(.10f,.12f,.20f),
+            FogColor = new Color(.12f,.075f,.23f), FogStart = 500, FogEnd = 1900,
+            MaterialSky = new Color(.30f,.38f,.62f), MaterialGround = new Color(.12f,.14f,.24f),
+            MaterialStrength = 1f, MaterialWrap = .2f,
+            Exposure = .1f, Contrast = 8f, Saturation = 8f,
+            BloomThreshold = .8f, BloomIntensity = .65f, BloomScatter = .65f,
+            WhiteBalanceTemperature = -5f, Vignette = .1f, ExtraGrading = true, CityGlass = true
+        };
+
+        public static bool ApplyToOpenNeonScene() => ApplyToOpenScene(Neon);
+
+        // Ion Rift keeps its twilight fill and canyon haze separate from the approved city look.
+        static readonly Profile IonRift = new Profile
+        {
+            Layout = PolygonCircuitLayout.IonRift, DisplayName = "Ion Rift",
+            ScenePath = "Assets/PolygonRacing/Scenes/IonRift.unity",
+            Folder = "Assets/PolygonRacing/Generated/PCVisuals/IonRift", FolderName = "IonRift",
+            VolumeAssetName = "Ion Rift PC Volume Profile", SkyName = "Ion Rift PC Sky",
+            VolumeObjectName = "PC Visual Profile - Ion Rift", BackupPrefix = "IonRift",
+            SunColor = new Color(.95f,.67f,.56f), SunIntensity = .65f, ShadowStrength = .48f,
+            Zenith = new Color(.025f,.035f,.10f), Horizon = new Color(.24f,.14f,.30f),
+            BelowHorizon = new Color(.07f,.045f,.11f),
+            AmbientSky = new Color(.35f,.36f,.52f), AmbientEquator = new Color(.30f,.25f,.38f),
+            AmbientGround = new Color(.18f,.14f,.24f),
+            FogColor = new Color(.24f,.14f,.30f), FogStart = 650, FogEnd = 2300,
+            MaterialSky = new Color(.42f,.42f,.62f), MaterialGround = new Color(.24f,.19f,.27f),
+            MaterialStrength = 1f, MaterialWrap = .18f,
+            Exposure = .1f, Contrast = 7f, Saturation = 8f,
+            BloomThreshold = .9f, BloomIntensity = .55f, BloomScatter = .65f,
+            WhiteBalanceTemperature = -2f, Vignette = .08f, ExtraGrading = true
+        };
+
+        public static bool ApplyToOpenIonRiftScene() => ApplyToOpenScene(IonRift);
+
+        static readonly Profile AuroraForge = new Profile
+        {
+            Layout = PolygonCircuitLayout.AuroraForge, DisplayName = "Aurora Forge",
+            ScenePath = "Assets/PolygonRacing/Scenes/AuroraForge.unity",
+            Folder = "Assets/PolygonRacing/Generated/PCVisuals/AuroraForge", FolderName = "AuroraForge",
+            VolumeAssetName = "Aurora Forge PC Volume Profile", SkyName = "Aurora Forge PC Sky",
+            VolumeObjectName = "PC Visual Profile - Aurora Forge", BackupPrefix = "AuroraForge",
+            SunColor = new Color(.65f,.8f,1), SunIntensity = .7f, ShadowStrength = .45f,
+            Zenith = new Color(.012f,.035f,.10f), Horizon = new Color(.18f,.30f,.40f),
+            BelowHorizon = new Color(.08f,.14f,.21f),
+            AmbientSky = new Color(.50f,.65f,.80f), AmbientEquator = new Color(.36f,.48f,.57f),
+            AmbientGround = new Color(.25f,.32f,.40f),
+            FogColor = new Color(.18f,.30f,.40f), FogStart = 500, FogEnd = 2000,
+            MaterialSky = new Color(.68f,.78f,.90f), MaterialGround = new Color(.38f,.48f,.58f),
+            MaterialStrength = 1f, MaterialWrap = .18f,
+            Exposure = .1f, Contrast = 5f, Saturation = 8f,
+            BloomThreshold = .9f, BloomIntensity = .5f, BloomScatter = .6f,
+            WhiteBalanceTemperature = -4f, Vignette = .06f, ExtraGrading = true
+        };
+        public static bool ApplyToOpenAuroraForgeScene() => ApplyToOpenScene(AuroraForge);
+
         static bool ApplyToOpenScene(Profile profile)
         {
             active = profile;

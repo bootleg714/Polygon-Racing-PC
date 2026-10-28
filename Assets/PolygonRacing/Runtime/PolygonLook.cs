@@ -27,6 +27,20 @@ namespace PolygonRacing
 
         public static Preset For(PolygonCircuitLayout layout)
         {
+            if(layout==PolygonCircuitLayout.AuroraForge)
+                return new Preset{SunEuler=new Vector3(20,-55,0),SunColor=new Color(.65f,.8f,1),SunIntensity=.7f,Zenith=new Color(.012f,.035f,.10f),Horizon=new Color(.18f,.30f,.40f),BelowHorizon=new Color(.08f,.14f,.21f),WaterZenith=new Color(.04f,.16f,.25f),FogStart=500,FogEnd=2000,CloudRadius=1800,CloudSeed=131};
+            if(layout==PolygonCircuitLayout.IonRift)
+                return new Preset{
+                    SunEuler=new Vector3(18,-65,0),SunColor=new Color(.95f,.67f,.56f),SunIntensity=.65f,
+                    Zenith=new Color(.025f,.035f,.10f),Horizon=new Color(.24f,.14f,.30f),
+                    BelowHorizon=new Color(.07f,.045f,.11f),WaterZenith=new Color(.025f,.12f,.18f),
+                    FogStart=650,FogEnd=2300,CloudRadius=2200,CloudSeed=131};
+            if(layout==PolygonCircuitLayout.NeonMeridian)
+                return new Preset{
+                    SunEuler=new Vector3(24,-48,0),SunColor=new Color(.45f,.58f,1),SunIntensity=.35f,
+                    Zenith=new Color(.012f,.018f,.065f),Horizon=new Color(.12f,.075f,.23f),
+                    BelowHorizon=new Color(.025f,.035f,.075f),WaterZenith=new Color(.02f,.06f,.14f),
+                    FogStart=500,FogEnd=1900,CloudRadius=1800,CloudSeed=107};
             if(layout==PolygonCircuitLayout.CoastalExpressway)
                 return new Preset{
                     SunEuler=new Vector3(38,-35,0),SunColor=new Color(1,.94f,.82f),SunIntensity=1.3f,

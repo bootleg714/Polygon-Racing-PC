@@ -23,6 +23,15 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/PolygonRacing/Scenes/NordwaldRing.unity
     guid: ea53ef1ab863c054f926952d96e87b1c
+  - enabled: 1
+    path: Assets/PolygonRacing/Scenes/NeonMeridian.unity
+    guid: 1ef02a674fd02a34194ac50f230791d4
+  - enabled: 1
+    path: Assets/PolygonRacing/Scenes/IonRift.unity
+    guid: b50b022e496629946a4b8674c8330b62
+  - enabled: 1
+    path: Assets/PolygonRacing/Scenes/AuroraForge.unity
+    guid: 152771cfaa2924946847381bb29e8024
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 30da35604ebaf1a4db92ecfae8870ff2, type: 2}
