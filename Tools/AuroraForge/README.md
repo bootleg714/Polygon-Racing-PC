@@ -1,5 +1,7 @@
 # Aurora Forge v01
 
+South Korea-inspired route revision, October 28, 2026: long straight, hairpin and a technical return sector, retaining the Arctic scenery and existing handling. The revised route is 4,489 m with elevation 32.0?63.7 m, maximum sampled grade 12.9%, and minimum sampled corner radius 32.6 m. Timing ID is AuroraForgeV02. Native Unity road checks found no sampled obstructions, holes or buried road points; 90 Play-mode checks passed. Revised scenery has 737 renderers and 155,980 triangles. Full-lap handling, AI and target-PC FPS remain to be tested. Notes below describe the original route and verification.
+
 First playable arctic circuit, October 27, 2026. Thomas approved Ion Rift's visuals,
 driving and solid 72 FPS before requesting this track.
 

@@ -41,7 +41,7 @@ public static class NeonProbe
         var player=Object.FindFirstObjectByType<PolygonDriver>();Check(player&&player.view,"Player/camera missing");
         Check(Mathf.Abs(player.topSpeed-67.056f)<.001f,"Tuned top speed changed");
         Check(Mathf.Abs(player.cornerGrip-60)<.001f,"Tuned grip changed");
-        Check(PolygonCircuit.LayoutId=="NeonMeridianV01","Neon timing ID missing");
+        Check(PolygonCircuit.LayoutId=="NeonMeridianV02","Neon timing ID missing");
         Check((int)PolygonCircuitLayout.Nordwald==5&&(int)PolygonCircuitLayout.NeonMeridian==6,"Existing serialized layout indices changed");
         float length=PolygonCircuit.Length,min=float.MaxValue,max=float.MinValue,grade=0;
         for(float d=0;d<length;d+=2)
@@ -127,3 +127,4 @@ public static class NeonProbe
         RenderTexture.active=null;camera.targetTexture=null;target.Release();Object.DestroyImmediate(target);Object.DestroyImmediate(go);
     }
 }
+

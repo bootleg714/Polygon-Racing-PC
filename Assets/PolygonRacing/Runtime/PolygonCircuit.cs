@@ -77,62 +77,73 @@ namespace PolygonRacing
         static readonly float[] nordwaldHeights={30f,30f,29.5f,28.5f,27f,25.5f,24f,23f,22.5f,23f,25f,28f,31.5f,29f,30f,31f,31f,30f,26f,20f,14f,10f,9f,9f,9.5f,9f,7.5f,6f,5f,3.5f,2f,0.5f,0f,0f,0.3f,0.5f,1.5f,3f,5f,8f,11f,14f,17.5f,21f,25f,29f,33f,38f,43f,46f,47f,47f,47f,47f,48f,48.5f,47.5f,45f,42f,39f,36f,34f,31f,33.5f,28f,25f,23f,21.5f,21f,21f,21.5f,22f,23f,24.5f,26f,27f,28f,29f,29.5f};
         // Banked sections: first knot, last knot, degrees (positive raises the right-hand side).
         static readonly Vector3[] nordwaldBanks={new Vector3(48.6f,53.4f,18)};
-        // Neon Meridian: a continuous city circuit with a long skyline climb, a sweeping
-        // descent, an enclosed undercity, and a raised return. Existing layouts retain their IDs.
+        // Neon Meridian: Hungary-inspired city loop, with a long straight, hairpin,
+        // linked bends and a rising return. Existing layouts retain their IDs.
         static readonly Vector3[] neonKnots={
-            new Vector3(0,0,0),new Vector3(138,0,0),new Vector3(276,0,0),new Vector3(414,0,12),
-            new Vector3(518,0,69),new Vector3(581,0,161),new Vector3(615,0,276),new Vector3(638,0,391),
-            new Vector3(684,0,500),new Vector3(748,0,598),new Vector3(782,0,713),new Vector3(748,0,828),
-            new Vector3(656,0,886),new Vector3(529,0,886),new Vector3(403,0,857),new Vector3(276,0,874),
-            new Vector3(173,0,943),new Vector3(40,0,978),new Vector3(-86,0,943),new Vector3(-161,0,851),
-            new Vector3(-190,0,736),new Vector3(-167,0,621),new Vector3(-213,0,518),new Vector3(-328,0,489),
-            new Vector3(-449,0,541),new Vector3(-564,0,518),new Vector3(-638,0,431),new Vector3(-633,0,305),
-            new Vector3(-552,0,207),new Vector3(-460,0,127),new Vector3(-477,0,23),new Vector3(-552,0,-52),
-            new Vector3(-558,0,-150),new Vector3(-472,0,-230),new Vector3(-351,0,-253),new Vector3(-230,0,-230),
-            new Vector3(-150,0,-161),new Vector3(-132,0,-75),new Vector3(-75,0,-12)};
-        static readonly float[] neonHeights={20,20,20,22,28,36,45,56,67,78,86,90,92,89,81,66,48,30,16,10,16,25,32,28,16,8,5,7,15,22,27,24,16,9,8,12,17,20,20};
-        static readonly Vector3[] neonBanks={new Vector3(9.4f,13.1f,-5),new Vector3(24.6f,28.5f,-4)};
-        // Ion Rift: east-rim climb (4-10), high overlook (10-14), long canyon descent
-        // (14-22), reactor gorge (22-25), rolling basin (25-29) and return bridge (29-35).
-        // Original, non-crossing plan. Broad grade transitions retain the approved neon feel.
+            new Vector3(0,0,0),new Vector3(140,0,0),new Vector3(280,0,0),new Vector3(420,0,0),
+            new Vector3(560,0,0),new Vector3(680,0,0),new Vector3(750,0,25),new Vector3(780,0,75),
+            new Vector3(760,0,125),new Vector3(700,0,150),new Vector3(610,0,145),new Vector3(520,0,120),
+            new Vector3(440,0,130),new Vector3(390,0,175),new Vector3(410,0,230),new Vector3(470,0,260),
+            new Vector3(550,0,270),new Vector3(620,0,300),new Vector3(650,0,350),new Vector3(620,0,400),
+            new Vector3(550,0,420),new Vector3(470,0,405),new Vector3(400,0,390),new Vector3(340,0,410),
+            new Vector3(300,0,455),new Vector3(320,0,510),new Vector3(390,0,550),new Vector3(470,0,560),
+            new Vector3(550,0,590),new Vector3(575,0,650),new Vector3(550,0,710),new Vector3(490,0,740),
+            new Vector3(400,0,735),new Vector3(320,0,700),new Vector3(235,0,690),new Vector3(150,0,710),
+            new Vector3(70,0,690),new Vector3(-15,0,640),new Vector3(-60,0,550),new Vector3(-75,0,430),
+            new Vector3(-75,0,300),new Vector3(-75,0,170),new Vector3(-70,0,75)};
+        static readonly float[] neonHeights={20,20,20,21,23,26,29,32,34,36,39,42,46,50,54,58,63,68,73,78,82,84,83,80,76,72,68,64,59,54,49,44,39,35,31,28,25,22,19,17,17,18,19};
+        static readonly Vector3[] neonBanks={new Vector3(18.0f,20.5f,-4),new Vector3(29.0f,31.5f,-4)};
+        // Ion Rift: Sepang-inspired loop with paired straights, a final hairpin,
+        // flowing canyon bends and a technical inner section.
         static readonly Vector3[] ionKnots={
-            new Vector3(0,0,0),new Vector3(151.2f,0,0),new Vector3(302.4f,0,0),new Vector3(453.6f,0,0),
-            new Vector3(594,0,27),new Vector3(691.2f,0,108),new Vector3(734.4f,0,248.4f),new Vector3(702,0,399.6f),
-            new Vector3(745.2f,0,540),new Vector3(777.6f,0,691.2f),new Vector3(745.2f,0,842.4f),new Vector3(658.8f,0,961.2f),
-            new Vector3(518.4f,0,1031.4f),new Vector3(356.4f,0,1036.8f),new Vector3(194.4f,0,1009.8f),new Vector3(32.4f,0,1036.8f),
-            new Vector3(-129.6f,0,1004.4f),new Vector3(-248.4f,0,907.2f),new Vector3(-264.6f,0,756),new Vector3(-216,0,615.6f),
-            new Vector3(-253.8f,0,475.2f),new Vector3(-356.4f,0,405),new Vector3(-502.2f,0,432),new Vector3(-626.4f,0,378),
-            new Vector3(-664.2f,0,248.4f),new Vector3(-702,0,108),new Vector3(-723.6f,0,-43.2f),new Vector3(-702,0,-194.4f),
-            new Vector3(-604.8f,0,-291.6f),new Vector3(-453.6f,0,-297),new Vector3(-324,0,-259.2f),new Vector3(-248.4f,0,-156.6f),
-            new Vector3(-216,0,-64.8f),new Vector3(-151.2f,0,-10.8f),new Vector3(-75.6f,0,0)};
-        static readonly float[] ionHeights={60,60,60,60,64,73,86,102,116,129,136,140,141,138,128,113,94,75,57,42,31,22,17,20,31,46,60,68,64,52,42,43,49,55,60};
-        static readonly Vector3[] ionBanks={new Vector3(10.2f,13.5f,5),new Vector3(26.3f,29.2f,4)};
-        // Arctic loop: rolling ridges, a frozen basin, a forge and an elevated return.
+            new Vector3(0,0,0),new Vector3(-200,0,0),new Vector3(-400,0,0),new Vector3(-600,0,0),
+            new Vector3(-780,0,0),new Vector3(-880,0,20),new Vector3(-920,0,70),new Vector3(-910,0,120),
+            new Vector3(-860,0,155),new Vector3(-800,0,165),new Vector3(-700,0,205),new Vector3(-735,0,270),
+            new Vector3(-820,0,310),new Vector3(-900,0,340),new Vector3(-900,0,420),new Vector3(-845,0,500),
+            new Vector3(-730,0,550),new Vector3(-600,0,575),new Vector3(-475,0,590),new Vector3(-410,0,645),
+            new Vector3(-370,0,720),new Vector3(-310,0,760),new Vector3(-245,0,745),new Vector3(-205,0,680),
+            new Vector3(-160,0,630),new Vector3(-75,0,600),new Vector3(30,0,615),new Vector3(125,0,675),
+            new Vector3(220,0,680),new Vector3(300,0,630),new Vector3(330,0,565),new Vector3(310,0,500),
+            new Vector3(250,0,460),new Vector3(150,0,445),new Vector3(50,0,430),new Vector3(-60,0,430),
+            new Vector3(-140,0,400),new Vector3(-210,0,350),new Vector3(-300,0,330),new Vector3(-390,0,350),
+            new Vector3(-480,0,340),new Vector3(-550,0,300),new Vector3(-570,0,250),new Vector3(-530,0,210),
+            new Vector3(-450,0,200),new Vector3(-300,0,200),new Vector3(-100,0,200),new Vector3(100,0,200),
+            new Vector3(300,0,200),new Vector3(500,0,200),new Vector3(700,0,200),new Vector3(900,0,200),
+            new Vector3(1020,0,180),new Vector3(1090,0,140),new Vector3(1100,0,90),new Vector3(1080,0,40),
+            new Vector3(1020,0,10),new Vector3(950,0,0),new Vector3(750,0,0),new Vector3(500,0,0),
+            new Vector3(250,0,0)};
+        static readonly float[] ionHeights={60,60,60,60,60,60,63,66,69,72,75,78,81,84,87,90,93,96,99,102,105,103,101,99,97,95,93,91,89,87,85,83,83,81,79,77,75,73,71,69,67,65,63,61,60,60,60,60,60,60,60,60,60,60,60,60,60,60,60,60,60};
+        static readonly Vector3[] ionBanks={new Vector3(15.5f,18.5f,4),new Vector3(27f,30f,-4)};
+        // Aurora Forge: Korea-inspired long straight, hairpin and technical return sector.
         static readonly Vector3[] auroraKnots={
-            new Vector3(0,0,0),new Vector3(150,0,0),new Vector3(300,0,0),new Vector3(450,0,0),
-            new Vector3(570,0,35),new Vector3(660,0,120),new Vector3(700,0,245),new Vector3(680,0,375),
-            new Vector3(720,0,500),new Vector3(700,0,635),new Vector3(630,0,735),new Vector3(530,0,790),
-            new Vector3(390,0,810),new Vector3(260,0,780),new Vector3(140,0,825),new Vector3(15,0,870),
-            new Vector3(-120,0,845),new Vector3(-230,0,775),new Vector3(-280,0,655),new Vector3(-260,0,525),
-            new Vector3(-315,0,415),new Vector3(-430,0,380),new Vector3(-540,0,405),new Vector3(-640,0,360),
-            new Vector3(-685,0,255),new Vector3(-665,0,145),new Vector3(-720,0,35),new Vector3(-690,0,-100),
-            new Vector3(-605,0,-190),new Vector3(-480,0,-220),new Vector3(-350,0,-200),new Vector3(-250,0,-130),
-            new Vector3(-190,0,-55),new Vector3(-120,0,-10),new Vector3(-60,0,0)};
-        static readonly float[] auroraHeights={32,32,32,32,36,43,53,65,77,88,96,100,96,87,74,61,48,37,27,22,25,32,40,50,58,63,57,46,37,30,25,24,26,29,32};
-        static readonly Vector3[] auroraBanks={new Vector3(8.8f,11.6f,-5),new Vector3(24.3f,27.6f,4)};
-        // Coastal spaceport: rolling waterfront roads, hangars and launch infrastructure.
+            new Vector3(0,0,0),new Vector3(140,0,35),new Vector3(280,0,75),new Vector3(420,0,115),
+            new Vector3(540,0,150),new Vector3(600,0,180),new Vector3(620,0,240),new Vector3(600,0,300),
+            new Vector3(520,0,330),new Vector3(400,0,305),new Vector3(240,0,270),new Vector3(80,0,235),
+            new Vector3(-100,0,205),new Vector3(-280,0,200),new Vector3(-460,0,200),new Vector3(-640,0,200),
+            new Vector3(-820,0,200),new Vector3(-1000,0,200),new Vector3(-1100,0,180),new Vector3(-1140,0,110),
+            new Vector3(-1130,0,30),new Vector3(-1060,0,-10),new Vector3(-960,0,-35),new Vector3(-850,0,-55),
+            new Vector3(-760,0,-100),new Vector3(-700,0,-170),new Vector3(-620,0,-210),new Vector3(-530,0,-200),
+            new Vector3(-470,0,-150),new Vector3(-400,0,-140),new Vector3(-350,0,-200),new Vector3(-300,0,-250),
+            new Vector3(-220,0,-270),new Vector3(-160,0,-245),new Vector3(-100,0,-285),new Vector3(-30,0,-320),
+            new Vector3(40,0,-300),new Vector3(70,0,-250),new Vector3(40,0,-210),new Vector3(-40,0,-200),
+            new Vector3(-120,0,-180),new Vector3(-180,0,-120),new Vector3(-200,0,-70),new Vector3(-160,0,-25),
+            new Vector3(-80,0,0)};
+        static readonly float[] auroraHeights={32,32,32,32,32,34.5f,37.0f,39.5f,42.0f,44.5f,47.0f,49.5f,52.0f,54.5f,57.0f,59.5f,62.0f,64.5f,62.0f,59.5f,57.0f,54.5f,52.0f,49.5f,47.0f,44.5f,42.0f,39.5f,39.0f,40.8f,42.5f,44.0f,45.3f,46.2f,46.8f,47.0f,46.8f,46.2f,45.3f,44.0f,42.5f,40.8f,32,32,32};
+        static readonly Vector3[] auroraBanks={new Vector3(23.5f,26.5f,-4),new Vector3(35f,38f,4)};
+        // Starfall Port: Albert Park-inspired waterfront loop, with chicanes and flowing bends.
         static readonly Vector3[] starfallKnots={
-            new Vector3(0,0,0),new Vector3(155,0,0),new Vector3(310,0,0),new Vector3(465,0,0),
-            new Vector3(610,0,25),new Vector3(725,0,95),new Vector3(780,0,205),new Vector3(770,0,335),
-            new Vector3(805,0,465),new Vector3(780,0,590),new Vector3(710,0,690),new Vector3(600,0,760),
-            new Vector3(460,0,785),new Vector3(320,0,755),new Vector3(180,0,780),new Vector3(45,0,835),
-            new Vector3(-90,0,820),new Vector3(-215,0,755),new Vector3(-270,0,650),new Vector3(-255,0,535),
-            new Vector3(-315,0,435),new Vector3(-430,0,395),new Vector3(-550,0,410),new Vector3(-650,0,365),
-            new Vector3(-700,0,265),new Vector3(-690,0,155),new Vector3(-740,0,35),new Vector3(-710,0,-95),
-            new Vector3(-620,0,-195),new Vector3(-485,0,-235),new Vector3(-350,0,-220),new Vector3(-245,0,-145),
-            new Vector3(-185,0,-65),new Vector3(-115,0,-12),new Vector3(-55,0,0)};
-        static readonly float[] starfallHeights={25,25,25,25,28,34,43,53,64,72,78,80,76,68,58,49,40,33,27,23,25,31,39,47,52,56,52,45,37,29,24,22,23,24,25};
-        static readonly Vector3[] starfallBanks={new Vector3(8.8f,11.7f,-5),new Vector3(25,28,4)};
+            new Vector3(0,0,0),new Vector3(234,0,0),new Vector3(468,0,0),new Vector3(702,0,0),
+            new Vector3(936,0,0),new Vector3(1134,0,0),new Vector3(1260,0,18),new Vector3(1305,0,90),
+            new Vector3(1278,0,180),new Vector3(1350,0,243),new Vector3(1458,0,261),new Vector3(1530,0,315),
+            new Vector3(1521,0,414),new Vector3(1440,0,450),new Vector3(1314,0,477),new Vector3(1188,0,495),
+            new Vector3(1080,0,486),new Vector3(990,0,432),new Vector3(900,0,360),new Vector3(792,0,333),
+            new Vector3(666,0,342),new Vector3(540,0,342),new Vector3(432,0,387),new Vector3(342,0,468),
+            new Vector3(288,0,576),new Vector3(198,0,684),new Vector3(81,0,738),new Vector3(-45,0,711),
+            new Vector3(-153,0,630),new Vector3(-225,0,504),new Vector3(-225,0,396),new Vector3(-171,0,306),
+            new Vector3(-216,0,234),new Vector3(-342,0,225),new Vector3(-432,0,162),new Vector3(-423,0,72),
+            new Vector3(-342,0,0),new Vector3(-216,0,-27),new Vector3(-108,0,0)};
+        static readonly float[] starfallHeights={25,25,25,25,28,34,43,53,64,72,78,80,76,68,58,49,40,33,27,23,25,31,39,47,52,56,52,45,37,29,24,22,23,24,25,25,25,25,25};
+        static readonly Vector3[] starfallBanks={new Vector3(12f,15f,-4),new Vector3(24f,27f,4)};
         static readonly Vector3[] points=new Vector3[Samples+1];
         static readonly float[] sampleHeights=new float[Samples+1];
         static readonly float[] distances=new float[Samples+1];
@@ -148,7 +159,7 @@ namespace PolygonRacing
         public static float Length { get; private set; }
         public static PolygonCircuitLayout Layout=>activeLayout;
         public static string LayoutName=>activeLayout==PolygonCircuitLayout.StarfallPort?"Starfall Port":activeLayout==PolygonCircuitLayout.AuroraForge?"Aurora Forge":activeLayout==PolygonCircuitLayout.IonRift?"Ion Rift":activeLayout==PolygonCircuitLayout.NeonMeridian?"Neon Meridian":activeLayout==PolygonCircuitLayout.CoastalExpressway?"Coastal Expressway":activeLayout==PolygonCircuitLayout.Downtown?"Downtown Street Circuit":activeLayout==PolygonCircuitLayout.Riviera?"Riviera Harbour":activeLayout==PolygonCircuitLayout.Sakura?"Sakura Hills":activeLayout==PolygonCircuitLayout.Nordwald?"Nordwald Ring":"Forest Circuit";
-        public static string LayoutId=>activeLayout==PolygonCircuitLayout.StarfallPort?"StarfallPortV01":activeLayout==PolygonCircuitLayout.AuroraForge?"AuroraForgeV01":activeLayout==PolygonCircuitLayout.IonRift?"IonRiftV01":activeLayout==PolygonCircuitLayout.NeonMeridian?"NeonMeridianV01":activeLayout==PolygonCircuitLayout.CoastalExpressway?"CoastalExpresswayV01":activeLayout==PolygonCircuitLayout.Downtown?"DowntownV01":activeLayout==PolygonCircuitLayout.Riviera?"RivieraV01":activeLayout==PolygonCircuitLayout.Sakura?"SakuraV01":activeLayout==PolygonCircuitLayout.Nordwald?"NordwaldV01":"ForestCircuitV12";
+        public static string LayoutId=>activeLayout==PolygonCircuitLayout.StarfallPort?"StarfallPortV02":activeLayout==PolygonCircuitLayout.AuroraForge?"AuroraForgeV02":activeLayout==PolygonCircuitLayout.IonRift?"IonRiftV02":activeLayout==PolygonCircuitLayout.NeonMeridian?"NeonMeridianV02":activeLayout==PolygonCircuitLayout.CoastalExpressway?"CoastalExpresswayV01":activeLayout==PolygonCircuitLayout.Downtown?"DowntownV01":activeLayout==PolygonCircuitLayout.Riviera?"RivieraV01":activeLayout==PolygonCircuitLayout.Sakura?"SakuraV01":activeLayout==PolygonCircuitLayout.Nordwald?"NordwaldV01":"ForestCircuitV12";
         // Distance from the road edge to the barrier line the driver is held inside.
         public static float BarrierMargin=>activeLayout==PolygonCircuitLayout.StarfallPort?2f:activeLayout==PolygonCircuitLayout.AuroraForge?2f:activeLayout==PolygonCircuitLayout.IonRift?2f:activeLayout==PolygonCircuitLayout.NeonMeridian?2f:activeLayout==PolygonCircuitLayout.Riviera?1.3f:activeLayout==PolygonCircuitLayout.Nordwald?2.5f:6.5f;
         public static bool HasElevation=>heights!=null;
@@ -257,3 +268,4 @@ namespace PolygonRacing
         }
     }
 }
+

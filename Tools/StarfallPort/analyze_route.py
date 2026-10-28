@@ -1,14 +1,15 @@
 """Independent spline and existing-route preservation checks."""
 from pathlib import Path
-import json,math,re,sys
+import json,math,re,sys,hashlib
 import numpy as np
 root=Path(__file__).resolve().parents[2];sys.dont_write_bytecode=True
 sys.path.insert(0,str(root/'Tools/RivalSim'));import track
 track.HALF_WIDTH['starfall']=10;route=track.Track('starfall')
 source=(root/'Assets/PolygonRacing/Runtime/PolygonCircuit.cs').read_text(encoding='utf-8')
-baseline=(root/'PolygonRacingBackups/StarfallPort_before_20261027_234058/Assets/PolygonRacing/Runtime/PolygonCircuit.cs').read_text(encoding='utf-8')
-for name in ['forestKnots','coastalKnots','downtownKnots','rivieraKnots','rivieraHeights','sakuraKnots','sakuraHeights','nordwaldKnots','nordwaldHeights','nordwaldBanks','neonKnots','neonHeights','neonBanks','ionKnots','ionHeights','ionBanks','auroraKnots','auroraHeights','auroraBanks']:
-    pattern=re.escape(name)+r'\s*=\s*\{.*?\};';assert re.search(pattern,baseline,re.S)[0]==re.search(pattern,source,re.S)[0],name+' changed'
+baseline=json.loads((root/'Tools/StarfallPort/prior-route-hashes.json').read_text(encoding='utf-8'))
+for name,expected in baseline.items():
+    pattern=re.escape(name)+r'\s*=\s*\{.*?\};'
+    assert hashlib.sha256(re.search(pattern,source,re.S)[0].encode()).hexdigest()==expected,name+' changed'
 h=np.array([float(x) for x in re.findall(r'-?\d+(?:\.\d+)?',re.search(r'starfallHeights=\{(.*?)\}',source,re.S)[1])]);assert len(h)==len(route.knots)
 def elevation(d):
     u=route.angle_at(d)/(2*math.pi)*len(h);i=int(u);t=u-i;n=len(h);a,b,c,e=[h[j%n] for j in (i-1,i,i+1,i+2)]
@@ -18,5 +19,5 @@ for i,p in enumerate(route.points[:-1]):
     delta=np.abs(route.dist[:-1]-route.dist[i]);delta=np.minimum(delta,route.length-delta)
     nearest=min(nearest,float(np.linalg.norm(route.points[:-1]-p,axis=1)[delta>75].min()))
 assert abs(elevation(.01)-elevation(route.length-.01))<.01 and max(abs(grades))<.2 and nearest>30
-result={'length_m':round(route.length,2),'minimum_height_m':round(float(min(heights)),2),'maximum_height_m':round(float(max(heights)),2),'maximum_grade_percent':round(float(max(abs(grades)))*100,2),'minimum_corner_radius_m':round(float(1/max(abs(curvatures))),2),'minimum_nonlocal_centerline_gap_m':round(nearest,2),'prior_nine_route_arrays_preserved':True}
+result={'length_m':round(route.length,2),'minimum_height_m':round(float(min(heights)),2),'maximum_height_m':round(float(max(heights)),2),'maximum_grade_percent':round(float(max(abs(grades)))*100,2),'minimum_corner_radius_m':round(float(1/max(abs(curvatures))),2),'minimum_nonlocal_centerline_gap_m':round(nearest,2),'other_route_arrays_preserved':True}
 (Path(__file__).parent/'route-analysis.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8');print(json.dumps(result,indent=2))

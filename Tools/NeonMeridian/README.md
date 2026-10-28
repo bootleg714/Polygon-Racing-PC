@@ -1,5 +1,9 @@
 # Neon Meridian v01
 
+Hungary-inspired route revision (October 28, 2026): 3,604 m with a long straight, tight first hairpin and linked bends. Neon city identity retained. Timing ID is NeonMeridianV02, so previous route records remain separate. The updated scene was generated and verified in an isolated Unity project: 1,052 scenery renderers, 266,454 triangles, no sampled road-corridor obstructions, and 34 Play-mode smoke checks passed. Full driven laps, AI behavior through tight turns, readability and sustained FPS on target hardware remain to be tested.
+
+The historical notes below describe the original route and its original verification; their route statistics describe the original route; previews have been updated for the revision.
+
 First playable implementation of the approved neon future-city concept (October 27, 2026).
 
 Open `Assets/PolygonRacing/Scenes/NeonMeridian.unity` and enter Play mode, or choose

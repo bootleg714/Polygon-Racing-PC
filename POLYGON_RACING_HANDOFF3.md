@@ -1,3 +1,35 @@
+## Starfall Port Australia-inspired revision ? October 28, 2026
+
+Thomas approved the revised Aurora Forge and requested Starfall Port close to the 2011 Australia reference, with subtle changes. Starfall now has a 4,836 m course with a rounded end, narrower middle and stepped opposite end, retaining the spaceport scenery, existing elevation character, driving and rival tuning. Timing ID is StarfallPortV02 to keep prior course records separate. Pre-revision scene and generated assets are backed up under PolygonRacingBackups/StarfallAustralia_before_20261028_153251. Other route arrays match their pre-change hashes in Tools/StarfallPort/prior-route-hashes.json.
+
+Independent route analysis: elevation 22.5?79.1 m, max grade 12.9%, minimum sampled radius 60.9 m, no nonlocal overlap. Native Unity 6000.6.4f1 compiled and rebuilt the scene; sampled road checks found zero obstructions, holes or buried points. Scenery has 661 renderers and 157,878 triangles. Native Play mode passed 95 checks, including circuit switching, menus, countdown, three progressing rivals, restart and moving machinery/shuttles. Reports are in Tools/StarfallPort/Previews.
+
+Next: Thomas should drive full laps to judge resemblance to the Australia reference, corners, opponents, cockpit readability and sustained FPS on the target PC. Sampled checks do not establish full-lap drivability or performance. Always rebuild baked scenes when changing route geometry and check the road surfaces and clearance.
+
+## Aurora Forge South Korea-inspired revision ? October 28, 2026
+
+Thomas approved the updated Ion Rift and requested Aurora Forge inspired by South Korea, with subtle differences. Aurora Forge has a 4,489 m course with a long straight into a hairpin and a technical return sector, retaining Arctic scenery and existing driving and rival tuning. Timing ID is AuroraForgeV02 to keep the previous course records separate. Pre-revision scene and generated assets are backed up under PolygonRacingBackups/AuroraKorea_before_20261028_141816. Other route arrays match their pre-change hashes in Tools/AuroraForge/prior-route-hashes.json.
+
+Independent route analysis: elevation 32.0?63.7 m, max grade 12.9%, minimum sampled radius 32.6 m, no nonlocal overlap. Native Unity 6000.6.4f1 compiled and rebuilt the scene and found no sampled road obstructions, holes or buried points. Scenery has 737 renderers and 155,980 triangles. Native Play mode passed 90 checks including scene switching, menus, countdown, progressing rivals, restart and animation/pause. Reports are in Tools/AuroraForge/Previews.
+
+Next: Thomas should drive full laps to assess resemblance to the South Korea reference, handling through the tight sector, rivals, visibility and sustained target-PC FPS. Sampled geometry and smoke tests do not establish full-lap drivability or performance. Always rebuild the baked scene when changing the route and validate road surfaces as well as clearance.
+
+## Ion Rift Malaysia-inspired revision ? October 28, 2026
+
+Thomas liked the revised Neon Meridian and requested Ion Rift closer to Malaysia with subtle differences. Ion Rift now has paired straights linked by a final hairpin and a technical flowing sector, in its existing canyon setting. Route is 6,821 m, longer than the previous 4,784 m; timing ID is IonRiftV02 to keep old records separate. Existing driving and rival tuning and other circuits remain unchanged. Pre-revision scene and generated Ion assets are backed up under PolygonRacingBackups/IonMalaysia_before_20261028_135756.
+
+Independent analysis: elevation 60.0?104.2 m, max grade 6.1%, minimum radius 26.7 m, no nonlocal overlap. Unity 6000.6.4f1 rebuilt the scene and passed sampled road clearance, surface and solid checks (zero detected obstructions, holes or buried points). It has 775 scenery renderers and 208,913 triangles. Native Play mode passed 90 checks including cross-scene menu loading, time trial, race countdown, three progressing rivals, restart, machinery animation and pause; reports are in Tools/IonRift/Previews.
+
+Next: Thomas should drive the entire Ion Rift lap to judge similarity to Malaysia, overall lap length, tight corner handling and opponents, as well as visual clarity and sustained FPS on the target PC. Automated sampling and smoke checks do not establish full-lap drivability or performance. Lesson: regenerate the canyon scene together with the route and recheck surfaces and scene switching; do not judge solely from a minimap.
+
+## Neon Meridian Hungary-inspired route revision ? October 28, 2026
+
+Neon Meridian now has an original Hungary-inspired 3,604 m route: long straight, tight hairpin and linked bends, retaining the neon city and existing car/AI tuning. Layout timing ID changed to NeonMeridianV02 to separate old lap records. Neon scene and generated city were rebuilt in an isolated Unity 6000.6.4f1 project and installed; previous scene and generated assets are backed up under PolygonRacingBackups/NeonHungary_before_20261028_131824. Other circuits were not changed.
+
+Independent spline checks: 17.1?83.5 m elevation, maximum grade 10.0%, minimum sampled radius 39.1 m, no close nonlocal overlap. Native Unity compiled and verified geometry, sampled road clearance (zero obstructions), 1,052 scenery renderers and 266,454 triangles. Play-mode smoke test passed 34 checks including menu, time trial, race countdown, three progressing rivals and animated scenery. Reports and current captures are in Tools/NeonMeridian/Previews.
+
+Next: drive full laps and assess the shape, tight corners, AI passing and ability to negotiate them with the current no-corner-braking arcade tuning, scenery readability, and sustained FPS on the target PC. Automated clearance and smoke checks are not full-lap or performance tests. Iterate Neon based on feedback before moving to another reference circuit. Lesson: rebuild the baked scene whenever the shared route changes; changing only runtime knots leaves the road and scenery out of sync.
+
 # Polygon Racing VR — current development handoff
 
 Updated: October 28, 2026 (America/Chicago).

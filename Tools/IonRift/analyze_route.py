@@ -11,7 +11,7 @@ track.HALF_WIDTH['ion']=10
 route=track.Track('ion')
 source=(root/'Assets/PolygonRacing/Runtime/PolygonCircuit.cs').read_text(encoding='utf-8')
 baseline=(root/'PolygonRacingBackups/IonRift_before_20261027_230734/Assets/PolygonRacing/Runtime/PolygonCircuit.cs').read_text(encoding='utf-8')
-for name in ['forestKnots','coastalKnots','downtownKnots','rivieraKnots','rivieraHeights','sakuraKnots','sakuraHeights','nordwaldKnots','nordwaldHeights','nordwaldBanks','neonKnots','neonHeights','neonBanks']:
+for name in ['forestKnots','coastalKnots','downtownKnots','rivieraKnots','rivieraHeights','sakuraKnots','sakuraHeights','nordwaldKnots','nordwaldHeights','nordwaldBanks']:
     pattern=re.escape(name)+r'\s*=\s*\{.*?\};'
     assert re.search(pattern,baseline,re.S)[0]==re.search(pattern,source,re.S)[0],name+' changed'
 heights=np.array([float(x) for x in re.findall(r'-?\d+(?:\.\d+)?',re.search(r'ionHeights=\{(.*?)\}',source,re.S)[1])])
@@ -33,6 +33,6 @@ assert max(abs(grades))<.2 and closest>30
 result={'length_m':round(route.length,2),'minimum_height_m':round(float(min(altitudes)),2),
         'maximum_height_m':round(float(max(altitudes)),2),'maximum_grade_percent':round(float(max(abs(grades)))*100,2),
         'minimum_corner_radius_m':round(float(1/max(abs(curvatures))),2),
-        'minimum_nonlocal_centerline_gap_m':round(closest,2),'prior_seven_route_arrays_preserved':True}
+        'minimum_nonlocal_centerline_gap_m':round(closest,2),'original_six_route_arrays_preserved':True}
 (Path(__file__).parent/'route-analysis.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
 print(json.dumps(result,indent=2))

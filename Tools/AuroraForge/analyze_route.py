@@ -1,6 +1,6 @@
 """Independent numerical route check and preservation audit for existing circuits."""
 from pathlib import Path
-import json,math,re,sys
+import json,math,re,sys,hashlib
 import numpy as np
 root=Path(__file__).resolve().parents[2]
 sys.dont_write_bytecode=True
@@ -9,10 +9,10 @@ import track
 track.HALF_WIDTH['aurora']=10
 route=track.Track('aurora')
 source=(root/'Assets/PolygonRacing/Runtime/PolygonCircuit.cs').read_text(encoding='utf-8')
-baseline=(root/'PolygonRacingBackups/AuroraForge_before_20261027_232951/Assets/PolygonRacing/Runtime/PolygonCircuit.cs').read_text(encoding='utf-8')
-for name in ['forestKnots','coastalKnots','downtownKnots','rivieraKnots','rivieraHeights','sakuraKnots','sakuraHeights','nordwaldKnots','nordwaldHeights','nordwaldBanks','neonKnots','neonHeights','neonBanks','ionKnots','ionHeights','ionBanks']:
+baseline=json.loads((root/'Tools/AuroraForge/prior-route-hashes.json').read_text(encoding='utf-8'))
+for name,expected in baseline.items():
     pattern=re.escape(name)+r'\s*=\s*\{.*?\};'
-    assert re.search(pattern,baseline,re.S)[0]==re.search(pattern,source,re.S)[0],name+' changed'
+    assert hashlib.sha256(re.search(pattern,source,re.S)[0].encode()).hexdigest()==expected,name+' changed'
 h=np.array([float(x) for x in re.findall(r'-?\d+(?:\.\d+)?',re.search(r'auroraHeights=\{(.*?)\}',source,re.S)[1])])
 assert len(h)==len(route.knots)
 def elevation(d):
@@ -29,6 +29,6 @@ assert abs(elevation(.01)-elevation(route.length-.01))<.01
 assert max(abs(grades))<.2 and nearest>30
 result={'length_m':round(route.length,2),'minimum_height_m':round(float(min(altitudes)),2),'maximum_height_m':round(float(max(altitudes)),2),
         'maximum_grade_percent':round(float(max(abs(grades)))*100,2),'minimum_corner_radius_m':round(float(1/max(abs(curvatures))),2),
-        'minimum_nonlocal_centerline_gap_m':round(nearest,2),'prior_eight_route_arrays_preserved':True}
+        'minimum_nonlocal_centerline_gap_m':round(nearest,2),'other_route_arrays_preserved':True}
 (Path(__file__).parent/'route-analysis.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
 print(json.dumps(result,indent=2))

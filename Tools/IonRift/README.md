@@ -1,5 +1,7 @@
 # Ion Rift v01
 
+Malaysia-inspired route revision, October 28, 2026: paired long straights, a final hairpin and a more technical middle sector in the existing neon canyon. The original route notes below are historical. The revised lap is 6,821 m, elevation 60.0?104.2 m, maximum sampled grade 6.1%, minimum sampled corner radius 26.7 m, and uses timing ID IonRiftV02. Unity verified road clearance and surfaces and passed 90 Play-mode checks; 775 scenery renderers and 208,913 triangles. Full-lap handling and AI behavior, visual quality and FPS on the target PC remain to be tested.
+
 First playable version of the approved neon canyon concept, October 27, 2026.
 
 Open `Assets/PolygonRacing/Scenes/IonRift.unity` and enter Play, or choose **ION RIFT**

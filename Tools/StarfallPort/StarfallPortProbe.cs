@@ -48,7 +48,7 @@ public static class StarfallPortProbe
         Check(player&&player.view,"Player/cockpit camera missing");
         Check(Mathf.Abs(player.topSpeed-67.056f)<.001f,"Accepted top speed changed");
         Check(Mathf.Abs(player.cornerGrip-60)<.001f&&Mathf.Abs(player.maxSlipAngle-5)<.001f,"Accepted grip/slip tuning changed");
-        Check(PolygonCircuit.LayoutId=="StarfallPortV01"&&PolygonCircuit.LayoutName=="Starfall Port","New circuit timing/name mismatch");
+        Check(PolygonCircuit.LayoutId=="StarfallPortV02"&&PolygonCircuit.LayoutName=="Starfall Port","New circuit timing/name mismatch");
         Check((int)PolygonCircuitLayout.Forest==0&&(int)PolygonCircuitLayout.Nordwald==5&&
               (int)PolygonCircuitLayout.NeonMeridian==6&&(int)PolygonCircuitLayout.IonRift==7&&(int)PolygonCircuitLayout.AuroraForge==8&&(int)PolygonCircuitLayout.StarfallPort==9,"Existing serialized layout indices changed");
         Check(Mathf.Abs(PolygonCircuit.RoadHalfWidth-10)<.001f,"Expected twenty-metre road width");

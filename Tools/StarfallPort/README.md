@@ -1,5 +1,7 @@
 # Starfall Port v01
 
+Australia 2011-inspired revision, October 28, 2026: 4,836 m with a rounded end, narrower middle and stepped opposite end, retaining the spaceport setting and existing handling. Elevation is 22.5?79.1 m, maximum sampled grade 12.9%, minimum sampled radius 60.9 m, and timing ID StarfallPortV02. Native Unity road checks found no sampled obstructions, holes or buried road points; 95 Play-mode checks passed. The updated scene has 661 scenery renderers and 157,878 triangles. Full-lap handling, AI and sustained target-PC FPS remain to be tested. The route statistics below describe the original version.
+
 First playable version of the proposed neon spaceport circuit, October 27, 2026.
 Thomas approved Aurora Forge and reported pushing the project to GitHub before requesting it.
 
