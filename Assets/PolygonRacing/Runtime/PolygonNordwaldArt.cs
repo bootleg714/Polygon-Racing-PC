@@ -13,7 +13,7 @@ namespace PolygonRacing
     // Cross-section (metres from the racing line, both sides; heights follow road elevation and bank):
     //   0-7 road (edge line 6.7-7) | 7-8.2 kerb at corners | 8.2-9.5 grass verge |
     //   9.5-9.8 double steel barrier (driver limit 7 + 2.5 = 9.5) | 10.4+ forest floor.
-    public static class PolygonNordwaldArt
+    public static partial class PolygonNordwaldArt
     {
         public const string SceneryName="Circuit - editable scenery";
         const float Road=7f,Kerb=8.2f,Barrier0=9.5f,Barrier1=9.8f,Edge=10.4f,ChunkSize=300;
@@ -34,7 +34,7 @@ namespace PolygonRacing
             public PolygonSceneryKit At(Vector3 p)
             {
                 var key=new Vector2Int(Mathf.FloorToInt(p.x/ChunkSize),Mathf.FloorToInt(p.z/ChunkSize));
-                if(!kits.TryGetValue(key,out var kit)){kit=new PolygonSceneryKit("Nordwald "+key.x+"_"+key.y);kits.Add(key,kit);}
+                if(!kits.TryGetValue(key,out var kit)){kit=new PolygonSceneryKit("Nordwald "+key.x+"_"+key.y){MaxVerticesPerMesh=60000};kits.Add(key,kit);}
                 return kit;
             }
             public void Emit(Transform root)
@@ -632,7 +632,7 @@ namespace PolygonRacing
                 // Keep the forest back from the spectator banks.
                 for(float d=a;d<b;d+=20){var p=Flat(d,side*20);clearings.Add(Rect.MinMaxRect(p.x-14,p.z-14,p.x+14,p.z+14));}
             }
-            reserved.AddRange(clearings);
+            clearingStart=reserved.Count;reserved.AddRange(clearings);clearingEnd=reserved.Count;
 
             // Camping meadow outside the spectator corners: camper vans, tents, flags and barbecues.
             var c=new Vector3(CampSite.x,0,CampSite.y);
@@ -883,6 +883,7 @@ namespace PolygonRacing
             BuildCastle(world,chunks);
             BuildVillage(chunks);
             BuildBoards(world);
+            BuildDetail(world,chunks);   // PC detail pass v01 (PolygonNordwaldDetail.cs)
             BuildForest(chunks);
             BuildTerrain(chunks);
             chunks.Emit(world);

@@ -6,6 +6,8 @@ This replaces the previous contents of this handoff. It supersedes the old v01/v
 
 ## Resume here
 
+**Nordwald Ring PC visual + detail pass v01 (October 27, 2026; USER-APPROVED 20:48 — "works and looks great", solid 72 FPS on Thomas's PC):** cool summer-afternoon PC profile plus trackside and countryside detail (sponsor boards, fence banners, marshal posts, festival marquees/flags, camping clearings, 14 spinning wind turbines, high seats, timber piles, hay bales). See "Nordwald Ring — PC visual profile and detail v01" below. Run **Polygon Racing → 15 - Create or Refresh Nordwald Ring** after pulling (about 130 s), then enter Play mode before judging.
+
 **Coastal follow-ups (October 27, 20:10):** Thomas: "looks and plays good". (1) See-through rock overhangs fixed: `PolygonSceneryMeshes.Mesa` now emits the ledge ring between tiers two-sided (a wider upper tier exposed the culled underside); also applies to Riviera's palace rock (`Mesa(17)`) on its next menu 13 rebuild. Thomas confirmed the rocks look good. (2) Up to 7 extra wind turbines 48–68 m from the road (`BuildRoadsideTurbines`), and all turbines now spin: new `Runtime/PolygonWindTurbine.cs` rotates each rotor (16–28°/s). **Lesson:** `PolygonDriver.Start` calls `StaticBatchingUtility.Combine` on everything under "Circuit - editable scenery", which freezes any moving child mesh. The turbine script's `Awake` (runs before that `Start`) re-parents its rotor to the circuit root, keeping its world pose; verified spinning in Play mode. Use the same pattern (or a sibling root like "Sakura animated rides") for any future moving scenery.
 
 **Coastal Expressway PC visual + fill pass v01 (October 27, 2026; USER-APPROVED — "looks and plays good"):** bright Atlantic PC profile and a scenery fill for the empty infield/inland/beach/sea. See "Coastal Expressway — PC visual profile and fill v01" below. Run **Polygon Racing → 7 - Refresh Coastal Expressway Scenery** after pulling, then enter Play mode before judging.
@@ -328,6 +330,28 @@ Sixth circuit, "NORDWALD RING" (`PolygonCircuitLayout.Nordwald`, scene `Scenes/N
 - Quest result (22 Oct, Thomas): frame rate perfect, no drops. The banked hairpin is cool but taking it at full speed is nauseating in VR; expected to be fixed by the planned over/understeer handling, which will force braking. Rivals feel good, but because they never brake they are impossible to catch once ahead, so AI tuning and rubberbanding for the player are needed. Lap counting and minimap were fine. Original checklist, for any later regression: frame rate (levers are tree grids in `BuildForest` and crowd density), the banked hairpin feel, rivals in the banked hairpin, lap counting over the 5 km lap, minimap scale.
 
 Colours were chosen with a Python software preview that mirrors the shader maths (not Unity output). It lives outside the repo.
+
+### Nordwald Ring — PC visual profile and detail v01 (October 27, 2026)
+
+**Files:** new `Runtime/PolygonNordwaldDetail.cs` (second half of the now `partial` class `PolygonNordwaldArt`); `Runtime/PolygonNordwaldArt.cs` (class made `partial`, chunks use `MaxVerticesPerMesh=60000`, `BuildSpectators` records the index range of its spectator clearings in `reserved`, and `Build` calls `BuildDetail` just before `BuildForest`); `Editor/PolygonNordwaldSetup.cs` (menu 15 reapplies base look then the PC profile; persistence fixed); `Editor/PolygonPCVisualSetup.cs` (Nordwald profile and menus). Pre-change copies: `PolygonRacingBackups/Nordwald_pc_detail_before_20261027.zip`; menu 15 also makes its scene backup.
+
+**PC profile "Nordwald Ring":** sun (1,.95,.87) ×1.34 at the preset 42/−150, shadows .60; sky zenith (.22,.44,.76), horizon (.76,.84,.88); trilight ambient (.60,.70,.82)/(.58,.64,.64)/(.42,.44,.34); fog (.76,.83,.87) 340–1200 m; material fill (.64,.74,.88)/(.50,.50,.38) ×.97 wrap .14; post Neutral, exposure +.10, contrast +5, saturation +9, white balance −2 (slightly cool), bloom 1.15/.16/.55, vignette .12. Assets `Generated/PCVisuals/Nordwald`; object **PC Visual Profile - Nordwald Ring**; menus **PC Visuals → Apply PC Visual Profile / Refresh PC Materials - Nordwald Ring**.
+
+**Persistence:** menu 15 no longer deletes `Generated/Nordwald`. Materials are refreshed in place by name (stable GUIDs, so PC clones are reused); meshes are deleted and recreated each build (same pattern as Sakura/Downtown).
+
+**Detail pass (editor-time, baked into the 300 m chunks; runs before the forest so reserved spots keep trees back):**
+- Sponsor boards behind the barrier on straights (10.28–10.46 m lateral, ~1 m tall, coloured 18 m blocks with a stripe), in ~72 m runs alternating sides; skipped at the start/pits, bridges, banked sections, kilometre posts and fenced spectator zones.
+- Sponsor banners on the spectator catch fences (1.05–1.85 m high).
+- 8 marshal posts ~38 m before big corners, outside of the turn: concrete pad, white hut with red roof and window, yellow flag, extinguisher, two marshals in orange.
+- Festival behind the crowds in each spectator zone (~22 m lateral, inside the existing clearings): white marquees with coloured valances and beer benches, flag lines (5 × 7 m poles), food trucks with awnings and queues.
+- Camping clearings in the woods ~50 m from each spectator zone: camper vans with awnings, ridge tents, campers and a campfire ring (85 items).
+- Wind turbines: up to 7 beside the road (52–74 m, facing the track, ~420 m apart) plus a 7-turbine farm on the highest ground 170–460 m out, all facing the same wind. Rotors spin via `PolygonWindTurbine` (rotors live under "Nordwald turbine rotors" and re-parent in `Awake`, as on Coastal).
+- 7 hunting high seats on meadows near the road, 14 timber piles at the forest edge (~15.5 m), 154 round hay bales (straw or white wrap) on the meadows.
+- Build log: "Nordwald PC detail v01: 32 sponsor board runs, 31 fence banners, 8 marshal posts, 13 festival marquees/stalls, 85 extra campers and tents, 14 wind turbines, 7 high seats, 14 timber piles, 154 hay bales."
+
+**Verified on Thomas's PC by the assistant:** compiles with no errors; menu 15 rebuilt in about 132 s (1,647 scenery renderers; scenery triangles roughly 0.49 M versus ~457 k before, read from a small screenshot, so approximate). Play mode: Stats panel showed about 72–74 FPS at the start grid; Scene-view driver and helicopter viewpoints checked; turbine rotors confirmed spinning. Not done: full lap, FPS on the whole lap, Quest/VR check, close-up review of every zone, Windows build.
+
+**Performance levers:** hay bale rate (`Hash>.075f`), camping items per clearing (16), turbine counts (7 + 7), festival spacing (27 m). The forest grid in `BuildForest` remains the main cost.
 
 ### Coastal Expressway — PC visual profile and fill v01 (October 27, 2026)
 

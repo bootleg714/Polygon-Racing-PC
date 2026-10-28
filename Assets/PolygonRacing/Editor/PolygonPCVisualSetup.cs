@@ -110,6 +110,27 @@ namespace PolygonRacing.Editor
             WhiteBalanceTemperature = 0f, Vignette = 0.1f, ExtraGrading = true
         };
 
+        // Nordwald PC v01: cool summer afternoon in the Eifel-style hills. Higher sun, deep pine
+        // greens, grey-blue haze among the trees and firm (not black) forest shadows.
+        static readonly Profile Nordwald = new Profile
+        {
+            Layout = PolygonCircuitLayout.Nordwald, DisplayName = "Nordwald Ring",
+            ScenePath = "Assets/PolygonRacing/Scenes/NordwaldRing.unity",
+            Folder = "Assets/PolygonRacing/Generated/PCVisuals/Nordwald", FolderName = "Nordwald",
+            VolumeAssetName = "Nordwald PC Volume Profile", SkyName = "Nordwald PC Sky",
+            VolumeObjectName = "PC Visual Profile - Nordwald Ring", BackupPrefix = "NordwaldRing",
+            SunColor = new Color(1f, 0.95f, 0.87f), SunIntensity = 1.34f, ShadowStrength = 0.6f,
+            Zenith = new Color(0.22f, 0.44f, 0.76f), Horizon = new Color(0.76f, 0.84f, 0.88f),
+            BelowHorizon = new Color(0.44f, 0.54f, 0.52f),
+            AmbientSky = new Color(0.60f, 0.70f, 0.82f), AmbientEquator = new Color(0.58f, 0.64f, 0.64f),
+            AmbientGround = new Color(0.42f, 0.44f, 0.34f),
+            FogColor = new Color(0.76f, 0.83f, 0.87f), FogStart = 340, FogEnd = 1200,
+            MaterialSky = new Color(0.64f, 0.74f, 0.88f), MaterialGround = new Color(0.50f, 0.50f, 0.38f),
+            MaterialStrength = 0.97f, MaterialWrap = 0.14f,
+            Exposure = 0.1f, Contrast = 5f, Saturation = 9f, BloomThreshold = 1.15f, BloomIntensity = 0.16f, BloomScatter = 0.55f,
+            WhiteBalanceTemperature = -2f, Vignette = 0.12f, ExtraGrading = true
+        };
+
         static Profile active = Riviera;
 
         [MenuItem("Polygon Racing/PC Visuals/Apply PC Visual Profile - Riviera Harbour")]
@@ -215,6 +236,19 @@ namespace PolygonRacing.Editor
         public static bool ApplyToOpenDowntownScene() => ApplyToOpenScene(Downtown);
         public static bool ApplyToOpenSakuraScene() => ApplyToOpenScene(Sakura);
         public static bool ApplyToOpenCoastalScene() => ApplyToOpenScene(Coastal);
+        public static bool ApplyToOpenNordwaldScene() => ApplyToOpenScene(Nordwald);
+
+        [MenuItem("Polygon Racing/PC Visuals/Apply PC Visual Profile - Nordwald Ring")]
+        static void ApplyNordwaldProfile()
+        {
+            ApplyProfile(Nordwald, false);
+        }
+
+        [MenuItem("Polygon Racing/PC Visuals/Refresh PC Materials - Nordwald Ring")]
+        static void RefreshNordwaldMaterials()
+        {
+            ApplyProfile(Nordwald, true);
+        }
 
         [MenuItem("Polygon Racing/PC Visuals/Apply PC Visual Profile - Coastal Expressway")]
         static void ApplyCoastalProfile()
