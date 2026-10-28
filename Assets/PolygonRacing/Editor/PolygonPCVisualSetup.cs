@@ -90,6 +90,26 @@ namespace PolygonRacing.Editor
             WhiteBalanceTemperature = 0f, Vignette = 0.12f, ExtraGrading = true
         };
 
+        // Coastal PC v01: bright Atlantic late morning. Clear turquoise sky, sea haze, crisp shadows.
+        static readonly Profile Coastal = new Profile
+        {
+            Layout = PolygonCircuitLayout.CoastalExpressway, DisplayName = "Coastal Expressway",
+            ScenePath = "Assets/PolygonRacing/Scenes/CoastalExpressway.unity",
+            Folder = "Assets/PolygonRacing/Generated/PCVisuals/Coastal", FolderName = "Coastal",
+            VolumeAssetName = "Coastal PC Volume Profile", SkyName = "Coastal PC Sky",
+            VolumeObjectName = "PC Visual Profile - Coastal Expressway", BackupPrefix = "CoastalExpressway",
+            SunColor = new Color(1f, 0.95f, 0.86f), SunIntensity = 1.38f, ShadowStrength = 0.64f,
+            Zenith = new Color(0.12f, 0.40f, 0.80f), Horizon = new Color(0.70f, 0.86f, 0.93f),
+            BelowHorizon = new Color(0.36f, 0.62f, 0.74f),
+            AmbientSky = new Color(0.62f, 0.76f, 0.90f), AmbientEquator = new Color(0.62f, 0.72f, 0.74f),
+            AmbientGround = new Color(0.52f, 0.50f, 0.40f),
+            FogColor = new Color(0.70f, 0.86f, 0.93f), FogStart = 480, FogEnd = 1450,
+            MaterialSky = new Color(0.68f, 0.80f, 0.92f), MaterialGround = new Color(0.58f, 0.54f, 0.42f),
+            MaterialStrength = 0.96f, MaterialWrap = 0.12f,
+            Exposure = 0.08f, Contrast = 4f, Saturation = 10f, BloomThreshold = 1.15f, BloomIntensity = 0.18f, BloomScatter = 0.55f,
+            WhiteBalanceTemperature = 0f, Vignette = 0.1f, ExtraGrading = true
+        };
+
         static Profile active = Riviera;
 
         [MenuItem("Polygon Racing/PC Visuals/Apply PC Visual Profile - Riviera Harbour")]
@@ -194,6 +214,19 @@ namespace PolygonRacing.Editor
         public static bool ApplyToOpenRivieraScene() => ApplyToOpenScene(Riviera);
         public static bool ApplyToOpenDowntownScene() => ApplyToOpenScene(Downtown);
         public static bool ApplyToOpenSakuraScene() => ApplyToOpenScene(Sakura);
+        public static bool ApplyToOpenCoastalScene() => ApplyToOpenScene(Coastal);
+
+        [MenuItem("Polygon Racing/PC Visuals/Apply PC Visual Profile - Coastal Expressway")]
+        static void ApplyCoastalProfile()
+        {
+            ApplyProfile(Coastal, false);
+        }
+
+        [MenuItem("Polygon Racing/PC Visuals/Refresh PC Materials - Coastal Expressway")]
+        static void RefreshCoastalMaterials()
+        {
+            ApplyProfile(Coastal, true);
+        }
 
         static bool ApplyToOpenScene(Profile profile)
         {

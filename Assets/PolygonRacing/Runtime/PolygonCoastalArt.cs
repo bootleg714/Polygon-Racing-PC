@@ -65,6 +65,8 @@ namespace PolygonRacing
                 }
             }
             PolygonBanking.BuildVergeAndAlignScenery(world);
+            // PC detail v01: infield villages, beach life, crowds, ad boards, sea traffic.
+            PolygonCoastalDetail.Build(world);
         }
         static void SeparateSignText(Transform world)
         {

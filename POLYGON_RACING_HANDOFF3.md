@@ -6,6 +6,10 @@ This replaces the previous contents of this handoff. It supersedes the old v01/v
 
 ## Resume here
 
+**Coastal follow-ups (October 27, 20:10):** Thomas: "looks and plays good". (1) See-through rock overhangs fixed: `PolygonSceneryMeshes.Mesa` now emits the ledge ring between tiers two-sided (a wider upper tier exposed the culled underside); also applies to Riviera's palace rock (`Mesa(17)`) on its next menu 13 rebuild. Thomas confirmed the rocks look good. (2) Up to 7 extra wind turbines 48–68 m from the road (`BuildRoadsideTurbines`), and all turbines now spin: new `Runtime/PolygonWindTurbine.cs` rotates each rotor (16–28°/s). **Lesson:** `PolygonDriver.Start` calls `StaticBatchingUtility.Combine` on everything under "Circuit - editable scenery", which freezes any moving child mesh. The turbine script's `Awake` (runs before that `Start`) re-parents its rotor to the circuit root, keeping its world pose; verified spinning in Play mode. Use the same pattern (or a sibling root like "Sakura animated rides") for any future moving scenery.
+
+**Coastal Expressway PC visual + fill pass v01 (October 27, 2026; USER-APPROVED — "looks and plays good"):** bright Atlantic PC profile and a scenery fill for the empty infield/inland/beach/sea. See "Coastal Expressway — PC visual profile and fill v01" below. Run **Polygon Racing → 7 - Refresh Coastal Expressway Scenery** after pulling, then enter Play mode before judging.
+
 **Sakura Hills PC visual + fill pass v01 (October 27, 2026; USER-APPROVED 19:32 — "looks great", steady 72 FPS that never dipped on Thomas's PC):** spring-morning PC profile plus a large scenery fill ("it's kinda empty"). See "Sakura Hills — PC visual profile and fill v01" below. Run **Polygon Racing → 14 - Create or Refresh Sakura Hills** after pulling (about 85 s), then enter Play mode before judging (GPU Resident Drawer edit-mode caveat).
 
 **Downtown PC Visual + detail v01 (October 27, 2026; built and checked in Unity by the assistant, user review pending):** Downtown Streets now has its own PC look and a trackside detail pass, following the Riviera approach. See the section "Downtown Streets — PC visual profile and detail v01" below for files, menus, numbers and the editor-display caveat. Run **Polygon Racing → 12 - Create or Refresh Downtown Circuit** after pulling; then enter Play mode (or restart Unity) before judging the result, because the GPU Resident Drawer keeps showing stale meshes in edit mode after a rebuild.
@@ -324,6 +328,28 @@ Sixth circuit, "NORDWALD RING" (`PolygonCircuitLayout.Nordwald`, scene `Scenes/N
 - Quest result (22 Oct, Thomas): frame rate perfect, no drops. The banked hairpin is cool but taking it at full speed is nauseating in VR; expected to be fixed by the planned over/understeer handling, which will force braking. Rivals feel good, but because they never brake they are impossible to catch once ahead, so AI tuning and rubberbanding for the player are needed. Lap counting and minimap were fine. Original checklist, for any later regression: frame rate (levers are tree grids in `BuildForest` and crowd density), the banked hairpin feel, rivals in the banked hairpin, lap counting over the 5 km lap, minimap scale.
 
 Colours were chosen with a Python software preview that mirrors the shader maths (not Unity output). It lives outside the repo.
+
+### Coastal Expressway — PC visual profile and fill v01 (October 27, 2026)
+
+**Files:** new `Runtime/PolygonCoastalDetail.cs`; `Runtime/PolygonCoastalArt.cs` (one call at the end of `Build`, after banking alignment); `Editor/PolygonCoastalExpresswaySetup.cs` (menus 6/7 apply the PC profile after the old scenery is removed; materials persisted by name); `Editor/PolygonPCVisualSetup.cs` (Coastal profile). Pre-change copies: `PolygonRacingBackups/Coastal_pc_detail_before_20261027.zip`; menu 7 also makes its scene backup. All accepted coastal art, marina, banking, bridge, tunnel, cliffs, stands, paddock and gantry code is untouched.
+
+**PC profile "Coastal Expressway":** sun (1,.95,.86) ×1.38 at the preset 38/−35, soft shadows .64; sky zenith (.12,.40,.80), horizon (.70,.86,.93); trilight ambient (.62,.76,.90)/(.62,.72,.74)/(.52,.50,.40); fog (.70,.86,.93) 480–1450 m; material fill (.68,.80,.92)/(.58,.54,.42) ×.96 wrap .12; post Neutral, exposure +.08, contrast +4, saturation +10, bloom 1.15/.18/.55, vignette .10. Assets `Generated/PCVisuals/Coastal`; object **PC Visual Profile - Coastal Expressway**; menus **PC Visuals → Apply PC Visual Profile / Refresh PC Materials - Coastal Expressway**.
+
+**Persistence:** menu 7 meshes keep the original unique-path behaviour (older backups stay restorable; `CoastalExpresswayArtV02` keeps growing — prune manually if wanted). Materials are now refreshed in place by name so GUIDs, and therefore PC clones, stay stable.
+
+**PolygonCoastalDetail (editor-time geometry, 300 m chunks, `MaxVerticesPerMesh=60000`):** it first reserves the bounds of every existing renderer smaller than 220 m, and keeps clear of the bridge (±120 m, <42 m), tunnel, banked Coral Sweep/Amber Point, the marina lane (<64 m) and the start area. Contents:
+- Advertising boards behind both barriers on straights (18.7–18.9 m lateral, 1.05 m tall, ~22 m blocks).
+- 5 spectator banks on straights: six white/cream terraces with teal benches, standing crowd, striped umbrellas, navy back screen, bunting strings and flags.
+- 5 whitewashed villages (185 houses): pastel/white houses with windows/doors, tiled or flat roofs with terraces/awnings, cypresses, a central square with church and bell tower and palms.
+- 61 villas with pools, garden walls, palms and bougainvillea; 8 walled vineyards with cypresses.
+- Vegetation: scrub, pink bougainvillea, white oleander, grassy/sandy mounds, palm clusters (1,087 palms in total), denser near the track.
+- Beach: striped umbrellas, towels, sunbathers, people at the water's edge, lifeguard towers with flags, rows of beach huts (few on the coastal straight, where the marina lane occupies the beach side).
+- Sea: 26 sailboats/motorboats, 10 windsurfers, a container ship on the horizon. Southern plain: 7 static wind turbines.
+- Build log line: "Coastal PC detail v01: … spectator banks, … villages (… houses), … beach umbrellas, … palms, … villas, … vineyards, … boats and ships, … wind turbines."
+
+**Verified on Thomas's PC by the assistant:** compiles (existing CS0618 warnings only); menu 7 rebuild OK; large-mesh report shows only the existing accepted landmark meshes as 32-bit (all small; they render). Play-mode Scene-view driver/helicopter viewpoints checked. Not done: full lap, FPS measurement, close-up review of every village/beach section, Windows build.
+
+**Performance levers:** vegetation `keep` density in `BuildVegetation`, villa rate (`h<.068`), palms per cluster, village count (5), spectator density (`h<.25` skip).
 
 ### Sakura Hills — PC visual profile and fill v01 (October 27, 2026)
 

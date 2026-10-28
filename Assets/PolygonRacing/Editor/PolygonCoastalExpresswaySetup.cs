@@ -90,6 +90,8 @@ namespace PolygonRacing.Editor
                 ConfigureCoastalView(player);
                 PolygonLookSetup.ApplyToOpenScene(PolygonCircuitLayout.CoastalExpressway);
                 Object.DestroyImmediate(oldScenery.gameObject);
+                if(!PolygonPCVisualSetup.ApplyToOpenCoastalScene())
+                    throw new System.InvalidOperationException("Coastal PC visual profile could not be applied.");
                 EditorSceneManager.MarkSceneDirty(coastalScene);
                 if(!EditorSceneManager.SaveScene(coastalScene,CoastalPath))
                     throw new IOException("Unity could not save the Coastal Expressway scene.");
@@ -160,6 +162,10 @@ namespace PolygonRacing.Editor
                 ConfigureCoastalView(player);
                 PolygonLookSetup.ApplyToOpenScene(PolygonCircuitLayout.CoastalExpressway);
                 Object.DestroyImmediate(oldScenery.gameObject);
+                // PC v01: shadows, sky, haze and post-processing (after the old scenery is gone,
+                // so only the new scenery's materials are converted).
+                if(!PolygonPCVisualSetup.ApplyToOpenCoastalScene())
+                    throw new System.InvalidOperationException("Coastal PC visual profile could not be applied.");
                 EditorSceneManager.MarkSceneDirty(scene);
                 if(!EditorSceneManager.SaveScene(scene,CoastalPath))
                     throw new IOException("Unity could not save the refreshed Coastal Expressway scene.");
@@ -201,13 +207,39 @@ namespace PolygonRacing.Editor
                 AssetDatabase.CreateAsset(mesh,
                     AssetDatabase.GenerateUniqueAssetPath($"{GeneratedPath}/Mesh_{index++}.asset"));
             }
-            foreach(var renderer in scenery.GetComponentsInChildren<Renderer>())
-                foreach(var material in renderer.sharedMaterials)
+            // PC v01: materials are refreshed in place by name (stable GUIDs, so the PC material
+            // clones are reused); meshes keep the original unique-path behaviour so older scene
+            // backups stay restorable.
+            var materials=new Dictionary<Material,Material>();
+            foreach(var renderer in scenery.GetComponentsInChildren<Renderer>(true))
+            {
+                var shared=renderer.sharedMaterials;bool changed=false;
+                for(int i=0;i<shared.Length;i++)
                 {
-                    if(!material||AssetDatabase.Contains(material)||!saved.Add(material))continue;
-                    AssetDatabase.CreateAsset(material,
-                        AssetDatabase.GenerateUniqueAssetPath($"{GeneratedPath}/{material.name}.mat"));
+                    var material=shared[i];
+                    if(!material)continue;
+                    if(materials.TryGetValue(material,out var savedMaterial))
+                    {
+                        if(savedMaterial!=material){shared[i]=savedMaterial;changed=true;}
+                        continue;
+                    }
+                    if(AssetDatabase.Contains(material)){materials.Add(material,material);continue;}
+                    string safe=material.name;foreach(char c in Path.GetInvalidFileNameChars())safe=safe.Replace(c,'_');
+                    string path=$"{GeneratedPath}/{safe}.mat";
+                    var asset=AssetDatabase.LoadAssetAtPath<Material>(path);
+                    if(asset)
+                    {
+                        EditorUtility.CopySerialized(material,asset);asset.name=material.name;EditorUtility.SetDirty(asset);
+                        shared[i]=asset;materials.Add(material,asset);changed=true;
+                    }
+                    else
+                    {
+                        AssetDatabase.CreateAsset(material,AssetDatabase.GenerateUniqueAssetPath(path));
+                        materials.Add(material,material);
+                    }
                 }
+                if(changed)renderer.sharedMaterials=shared;
+            }
         }
 
         static void AddBuildScenes()

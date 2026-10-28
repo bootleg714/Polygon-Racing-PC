@@ -194,7 +194,15 @@ namespace PolygonRacing
                 var centre=new Vector3(o.x,(y0+y1)*.5f,o.y);
                 for(int k=0;k<sides;k++){int j=(k+1)%sides;b.Quad(bottom[k],bottom[j],top[j],top[k],centre);}
                 if(previousTop!=null)
-                    for(int k=0;k<sides;k++){int j=(k+1)%sides;b.Quad(previousTop[k],previousTop[j],bottom[j],bottom[k],new Vector3(o.x,y0-1,o.y));}
+                    for(int k=0;k<sides;k++)
+                    {
+                        // The ledge between tiers is two-sided: where a wobbly upper tier overhangs
+                        // the one below, its underside is visible from the road (it used to be
+                        // culled, letting the sky show through).
+                        int j=(k+1)%sides;
+                        b.Quad(previousTop[k],previousTop[j],bottom[j],bottom[k],new Vector3(o.x,y0-1,o.y));
+                        b.Quad(previousTop[k],previousTop[j],bottom[j],bottom[k],new Vector3(o.x,y0+1,o.y));
+                    }
                 previousTop=top;
             }
             var cap=Vector3.zero;foreach(var p in previousTop)cap+=p;cap/=sides;
