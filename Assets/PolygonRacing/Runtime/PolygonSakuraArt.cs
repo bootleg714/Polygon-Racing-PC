@@ -32,7 +32,7 @@ namespace PolygonRacing
             fence,cream,white,charcoal,vermilion,gold,teal,navy,coral,ochre,sakura,sakuraPale,sakuraDeep,pine,pineDark,bark,lakeWater,
             paddy,paddyFlooded,glassDark,steel,lampGlow,skinLight,skinTan,skinDeep,hair,mountain,mountainSnow,roofGrey,plaster,timber,
             lilac,lime,sky,plaza,plazaWarm;
-        static Material[] teamColors,shirts,skins,gondolaColors;
+        static Material[] teamColors,shirts,skins,gondolaColors,adColors;
         static readonly List<Rect> reserved=new List<Rect>();
         static Transform propsRoot;
 
@@ -42,7 +42,7 @@ namespace PolygonRacing
             public PolygonSceneryKit At(Vector3 p)
             {
                 var key=new Vector2Int(Mathf.FloorToInt(p.x/ChunkSize),Mathf.FloorToInt(p.z/ChunkSize));
-                if(!kits.TryGetValue(key,out var kit)){kit=new PolygonSceneryKit("Sakura "+key.x+"_"+key.y);kits.Add(key,kit);}
+                if(!kits.TryGetValue(key,out var kit)){kit=new PolygonSceneryKit("Sakura "+key.x+"_"+key.y){MaxVerticesPerMesh=60000};kits.Add(key,kit);}
                 return kit;
             }
             public void Emit(Transform root)
@@ -114,6 +114,7 @@ namespace PolygonRacing
             shirts=new[]{coral,teal,ochre,navy,white,lilac,lime,sakura,sky};
             skins=new[]{skinLight,skinTan,skinDeep};
             gondolaColors=new[]{coral,teal,ochre,sky,lilac,lime};
+            adColors=new[]{white,vermilion,navy,teal,white,ochre,coral,lilac};
         }
 
         // ------------------------------------------------------------ route helpers
@@ -320,6 +321,8 @@ namespace PolygonRacing
                 float o=far?999:Offset(centre);
                 float patch=Hash(Mathf.Floor(centre.x/30),Mathf.Floor(centre.z/30));
                 m=o<17.5f?runoff:n.y<.82f?dirt:centre.y>28?grassDark:patch<.3f?meadow:grass;
+                // Fallen blossom under the trackside cherry rows.
+                if(o>=17.5f&&o<40&&n.y>=.82f&&Hash(Mathf.Floor(centre.x/9),Mathf.Floor(centre.z/9),24)<.3f)m=petals;
             }
             kit.Tri(m,a,b,c,centre+Vector3.down);
         }
@@ -413,6 +416,14 @@ namespace PolygonRacing
                     kit.Beam(armco,At(d0,mid,.5f),At(d1,mid,.5f),.1f,.3f);
                     kit.Beam(armco,At(d0,mid,.88f),At(d1,mid,.88f),.1f,.3f);
                     if(i%2==0)kit.Beam(steel,At(d0,mid+side*.15f,0),At(d0,mid+side*.15f,1.1f),.12f,.12f);
+                    // PC detail v01: advertising boards behind the barrier on the straights, in
+                    // blocks of about 25 m (original abstract designs: plain colour, white strip).
+                    if(!corner&&!OnBridge(dm)&&!(side<0&&dm>PitStart-10&&dm<PitEnd+10))
+                    {
+                        int block=i/4+(side>0?3:0);var board=adColors[block%adColors.Length];
+                        Slab(kit,side,d0,d1,Barrier1+.1f,Barrier1+.24f,.12f,1.2f,board);
+                        if(block%3!=1)Slab(kit,side,d0,d1,Barrier1+.05f,Barrier1+.1f,.5f,.82f,board==white?vermilion:white);
+                    }
                     if(corner&&side==outside&&!OnBridge(dm))
                     {
                         // Tyre wall behind the barrier with red bands, and a catch fence.
@@ -1002,14 +1013,19 @@ namespace PolygonRacing
         static void BuildTrees(Chunks chunks)
         {
             // Cherry trees lining the circuit (not at the bridge or among the stands).
-            for(float d=8;d<PolygonCircuit.Length;d+=26)
+            // PC detail v01: two staggered rows of larger trees (was one row every 26 m).
+            for(float d=8;d<PolygonCircuit.Length;d+=13)
             {
                 if(Mathf.Abs(UpperDelta(d))<200||Mathf.Abs(Wrap(d,crossLower))<60)continue;
                 foreach(float side in new[]{-1f,1f})
                 {
-                    float lateral=side*(21.5f+Hash(d,side)*5);var p=At(d,lateral,0);
-                    if(Reserved(new Vector2(p.x,p.z),3)||Offset(p)<20||LakeDistance(p.x,p.z)<1.4f)continue;
-                    p.y=TerrainHeight(p.x,p.z);CherryTree(chunks.At(p),p,.95f+Hash(p.x,p.z,5)*.35f);
+                    float lateral=side*(21.5f+Hash(d,side)*4);var p=At(d,lateral,0);
+                    if(!(Reserved(new Vector2(p.x,p.z),3)||Offset(p)<20||LakeDistance(p.x,p.z)<1.4f))
+                    {p.y=TerrainHeight(p.x,p.z);CherryTree(chunks.At(p),p,1.15f+Hash(p.x,p.z,5)*.45f);}
+                    if(Hash(d,side,7)>.7f)continue;
+                    var q=At(d+6.5f,side*(30+Hash(d,side,8)*6),0);
+                    if(Reserved(new Vector2(q.x,q.z),3)||Offset(q)<27||LakeDistance(q.x,q.z)<1.4f)continue;
+                    q.y=TerrainHeight(q.x,q.z);CherryTree(chunks.At(q),q,1.2f+Hash(q.x,q.z,6)*.5f);
                 }
             }
             // Cherry groves round the lake and on the pagoda hill.
@@ -1041,7 +1057,7 @@ namespace PolygonRacing
                     {
                         float o=Offset(p);if(o<42)continue;
                         if(Reserved(new Vector2(p.x,p.z),4)||LakeDistance(p.x,p.z)<1.5f)continue;
-                        if(Hash(x,z,43)>.25f+Mathf.InverseLerp(40,220,o)*.5f)continue;
+                        if(Hash(x,z,43)>.4f+Mathf.InverseLerp(40,220,o)*.45f)continue;
                     }
                     p.y=TerrainHeight(p.x,p.z);
                     if(p.y>150)continue;   // tree line
@@ -1079,12 +1095,304 @@ namespace PolygonRacing
             }
         }
 
+        // ------------------------------------------------------------ PC detail v01: filling the valley
+        // Editor-time geometry only (no colliders, lights or updates). Placement always checks the
+        // circuit (flat offset), reserved sites, the lake and the park.
+        static Material petals,tea,teaLight,bamboo,bambooDark,bambooLeaf,lanternRed,lanternWhite,lane,balloonA,balloonB,balloonC;
+        static int banks,villages,teaFields,groves;
+
+        static void CreateDetailPalette()
+        {
+            petals=Mat("Petal meadow",new Color(.90f,.76f,.80f));
+            tea=Mat("Tea bush",new Color(.22f,.46f,.22f));
+            teaLight=Mat("Tea bush tips",new Color(.42f,.64f,.26f));
+            bamboo=Mat("Bamboo",new Color(.46f,.62f,.30f));
+            bambooDark=Mat("Bamboo dark",new Color(.32f,.50f,.24f));
+            bambooLeaf=Mat("Bamboo leaves",new Color(.36f,.58f,.28f));
+            lanternRed=Mat("Paper lantern red",new Color(.95f,.22f,.14f));lanternRed.SetColor("_EmissionColor",new Color(.7f,.12f,.05f));
+            lanternWhite=Mat("Paper lantern white",new Color(1,.95f,.86f));lanternWhite.SetColor("_EmissionColor",new Color(.55f,.48f,.34f));
+            lane=Mat("Village lane",new Color(.66f,.60f,.50f));
+            balloonA=Mat("Balloon yellow",new Color(1,.80f,.20f));
+            balloonB=Mat("Balloon blue",new Color(.20f,.42f,.86f));
+            balloonC=Mat("Balloon red",new Color(.90f,.20f,.18f));
+            banks=villages=teaFields=groves=0;
+        }
+
+        static bool OpenGround(Vector3 p,float margin,float minOffset)
+        {
+            return Offset(p)>=minOffset&&!Reserved(new Vector2(p.x,p.z),margin)&&LakeDistance(p.x,p.z)>1.5f&&!InPark(p.x,p.z);
+        }
+        static Vector3 OnGround(Vector3 p){p.y=TerrainHeight(p.x,p.z);return p;}
+
+        // ---------------- hillside spectator banks at corners
+        static void BuildSpectatorBanks(Chunks chunks)
+        {
+            float length=PolygonCircuit.Length;int n=PolygonCircuit.SampleCount;float step=length/n;
+            var picks=new List<(float d,float side)>();
+            // First pass: outsides of corners (where the stands are not). Later passes: straights,
+            // either side, to spread the crowds round the lap.
+            for(int pass=0;pass<3;pass++)
+            for(float d=240;d<length-80&&picks.Count<8;d+=10)
+            {
+                if(pass==0&&!Corner(d))continue;
+                bool spaced=true;foreach(var pk in picks)if(Mathf.Abs(Wrap(d,pk.d))<(pass==0?300:260))spaced=false;
+                if(!spaced||Mathf.Abs(UpperDelta(d))<220||Mathf.Abs(Wrap(d,crossLower))<90)continue;
+                if(d>PitStart-30&&d<PitEnd+60)continue;
+                float side=pass==0?OutsideSign(d):pass==1?1:-1;bool ok=true;
+                for(float e=-40;e<=60&&ok;e+=10)
+                {
+                    int i=Mathf.Clamp(Mathf.FloorToInt(Mathf.Repeat(d+e,length)/step),0,n);
+                    float g=side<0?groundLeft[i]:groundRight[i];
+                    if(g<-2.5f||g>4f)ok=false;
+                    var p=At(d+e,side*26,0);
+                    if(Reserved(new Vector2(p.x,p.z),4)||LakeDistance(p.x,p.z)<1.5f||InPark(p.x,p.z))ok=false;
+                    if(Offset(At(d+e,side*33,0))<28)ok=false;   // never reach another part of the circuit
+                }
+                if(ok)picks.Add((d,side));
+            }
+            int theme=0;
+            foreach(var (d,side) in picks)SpectatorBank(chunks,d-40,d+60,side,theme++);
+            banks=picks.Count;
+        }
+
+        static void SpectatorBank(Chunks chunks,float d0,float d1,float side,int theme)
+        {
+            const int rows=7;const float first=19.2f,depth=1.3f,rise=.45f,seg=4f;
+            float back=first+rows*depth;
+            for(float d=d0;d<d1-.01f;d+=seg)
+            {
+                float e=Mathf.Min(d+seg,d1);var kit=chunks.At(P((d+e)*.5f));
+                for(int r=0;r<rows;r++)
+                {
+                    float a=first+r*depth;
+                    Slab(kit,side,d,e,a,a+depth,-3,.25f+r*rise,r%2==0?grass:meadow);
+                }
+                // Low white rail at the back of the bank.
+                kit.Rail(white,At(d,side*(back-.2f),.25f+rows*rise+.9f),At(e,side*(back-.2f),.25f+rows*rise+.9f),.08f);
+            }
+            for(float d=d0+.8f;d<d1-.8f;d+=.95f)
+                for(int r=0;r<rows;r++)
+                {
+                    float h=Hash(d*1.37f,r+theme*11,51);if(h<.28f)continue;
+                    float dd=d+(Hash(d,r,53)-.5f)*.45f;
+                    var p=At(dd,side*(first+r*depth+.65f+(Hash(d,r,52)-.5f)*.35f),.25f+r*rise);
+                    float ground=TerrainHeight(p.x,p.z)+.05f;if(ground>p.y)p.y=ground;
+                    var kit=chunks.At(p);var facing=-S(dd)*side;var rot=Quaternion.LookRotation(facing);
+                    var shirt=Hash(d,r,54)<.35f?teamColors[theme%teamColors.Length]:shirts[Mathf.FloorToInt(Hash(d,r,55)*shirts.Length)%shirts.Length];
+                    kit.Box(Hash(d,r,56)<.5f?navy:charcoal,p+Vector3.up*.35f,new Vector3(.32f,.7f,.22f),rot);
+                    kit.PersonLite(p+Vector3.up*.6f,facing,.9f+h*.12f,shirt,skins[Mathf.FloorToInt(Hash(d,r,57)*3)%3],h>.88f?white:hair,h>.95f);
+                    if(Hash(d*.7f,r,58)<.045f)
+                    {
+                        // Sun parasol.
+                        var top=p+Vector3.up*2.5f;
+                        kit.Beam(steel,p+Vector3.up*1.1f,top,.05f,.05f);
+                        kit.Column(gondolaColors[Mathf.FloorToInt(Hash(d,r,59)*gondolaColors.Length)%gondolaColors.Length],top+Vector3.down*.15f,1.15f,.06f,.55f,8);
+                    }
+                }
+            // Lantern poles along the back with a string of paper lanterns, and team flags.
+            Vector3? prev=null;int k=0;
+            for(float d=d0;d<=d1+.01f;d+=12,k++)
+            {
+                var foot=At(d,side*(back+.6f),0);foot.y=Mathf.Max(foot.y+.25f+rows*rise,TerrainHeight(foot.x,foot.z));
+                var kit=chunks.At(foot);var top=foot+Vector3.up*5.2f;
+                kit.Column(timber,foot+Vector3.down*.3f,.12f,.1f,5.6f,6);
+                if(k%2==0)
+                {
+                    var t=T(d);var flag=teamColors[(k/2+theme)%teamColors.Length];
+                    kit.Beam(steel,top,top+Vector3.up*2.2f,.06f,.06f);
+                    kit.SheetQuad(flag,top+Vector3.up*2.1f,top+Vector3.up*2.1f+t*1.8f,top+Vector3.up*.9f+t*1.8f,top+Vector3.up*.9f);
+                }
+                if(prev.HasValue)
+                {
+                    var a=prev.Value+Vector3.up*5.0f;var b=foot+Vector3.up*5.0f;
+                    kit.Beam(charcoal,a,b,.03f,.03f);
+                    int count=Mathf.Max(2,Mathf.RoundToInt(Vector3.Distance(a,b)/1.5f));
+                    for(int i=1;i<count;i++)
+                    {
+                        float u=i/(float)count;var lp=Vector3.Lerp(a,b,u)+Vector3.down*(.55f+Mathf.Sin(u*Mathf.PI)*.6f);
+                        kit.Beam(charcoal,lp+Vector3.up*(.55f+Mathf.Sin(u*Mathf.PI)*.6f),lp+Vector3.up*.25f,.02f,.02f);
+                        kit.Column(i%2==0?lanternRed:lanternWhite,lp+Vector3.down*.2f,.2f,.2f,.45f,6);
+                    }
+                }
+                prev=foot;
+            }
+            // Keep trees and other props off the bank.
+            var c0=At(d0,side*first,0);var c1=At(d1,side*(back+2),0);var cm=At((d0+d1)*.5f,side*(back+2),0);var cn=At((d0+d1)*.5f,side*first,0);
+            ReserveWorld(Mathf.Min(Mathf.Min(c0.x,c1.x),Mathf.Min(cm.x,cn.x))-2,Mathf.Max(Mathf.Max(c0.x,c1.x),Mathf.Max(cm.x,cn.x))+2,
+                         Mathf.Min(Mathf.Min(c0.z,c1.z),Mathf.Min(cm.z,cn.z))-2,Mathf.Max(Mathf.Max(c0.z,c1.z),Mathf.Max(cm.z,cn.z))+2);
+        }
+
+        // ---------------- villages: lanes of houses with gardens, carp streamers, a gate and bamboo
+        static void BuildVillages(Chunks chunks)
+        {
+            var centres=new List<Vector3>();
+            for(float x=-620;x<=920&&centres.Count<4;x+=40)
+                for(float z=-220;z<=740&&centres.Count<4;z+=40)
+                {
+                    if(Hash(x,z,61)>.16f)continue;
+                    var c=new Vector3(x,0,z);float o=Offset(c);
+                    if(o<75||o>220||!OpenGround(c,48,0))continue;
+                    bool spaced=true;foreach(var v in centres)if((v-c).sqrMagnitude<320*320)spaced=false;
+                    if(!spaced)continue;
+                    float lo=float.MaxValue,hi=float.MinValue;
+                    for(int i=0;i<9;i++){float a=i*.7f;var q=c+new Vector3(Mathf.Cos(a),0,Mathf.Sin(a))*(i==0?0:40);float g=TerrainHeight(q.x,q.z);lo=Mathf.Min(lo,g);hi=Mathf.Max(hi,g);}
+                    if(hi-lo>9)continue;
+                    centres.Add(c);
+                }
+            foreach(var c in centres)Village(chunks,c);
+            villages=centres.Count;
+        }
+
+        static void Village(Chunks chunks,Vector3 c)
+        {
+            float yaw=Hash(c.x,c.z,62)*180;var rot=Quaternion.Euler(0,yaw,0);var dir=rot*Vector3.forward;var side=rot*Vector3.right;
+            for(float t=-48;t<48;t+=4)
+            {
+                var p=OnGround(c+dir*(t+2));
+                chunks.At(p).Box(lane,p+Vector3.up*.02f,new Vector3(4.2f,.4f,4.3f),rot);
+            }
+            for(int i=0;i<14;i++)
+            {
+                float s=i%2==0?-1:1,t=-42+(i/2)*13+Hash(i,c.x,63)*3;
+                var p=c+dir*t+side*s*(10+Hash(i,c.z,64)*3);
+                if(!OpenGround(p,1,45))continue;
+                p=OnGround(p);var kit=chunks.At(p);
+                if(Hash(i,c.x,65)<.15f){CherryTree(kit,p,1.3f);continue;}
+                float houseYaw=yaw+(s>0?90:-90);
+                FarmHouse(kit,p+Vector3.down*.6f,houseYaw,.75f+Hash(i,c.z,66)*.25f);
+                var garden=OnGround(p+side*s*9+dir*4);
+                if(Hash(i,c.z,67)<.5f)CherryTree(chunks.At(garden),garden,1.1f+Hash(i,c.x,68)*.4f);
+                else StoneLantern(chunks.At(garden),garden,.9f);
+                if(Hash(i,c.x,69)<.35f)CarpStreamers(chunks.At(p),OnGround(p-side*s*6+dir*5),houseYaw,i);
+            }
+            var gate=OnGround(c+dir*54);Torii(chunks.At(gate),gate,yaw,.5f);
+            StoneLantern(chunks.At(gate),OnGround(gate+side*4-dir*3),1);StoneLantern(chunks.At(gate),OnGround(gate-side*4-dir*3),1);
+            BambooGrove(chunks,c-dir*30+side*28,13,46);
+            BambooGrove(chunks,c+dir*22-side*30,10,30);
+            ReserveWorld(c.x-62,c.x+62,c.z-62,c.z+62);
+        }
+
+        static void CarpStreamers(PolygonSceneryKit kit,Vector3 p,float yaw,int seed)
+        {
+            const float pole=11;
+            kit.Column(white,p+Vector3.down*.3f,.14f,.08f,pole+.3f,6);
+            kit.Column(gold,p+Vector3.up*pole,.3f,.05f,.6f,6);
+            var dir=Quaternion.Euler(0,yaw+40+Hash(seed,p.x,70)*60,0)*Vector3.forward;
+            var colors=new[]{charcoal,vermilion,sky};
+            for(int k=0;k<3;k++)
+            {
+                float y=pole-1.2f-k*2.1f,len=4.6f-k*.7f,r=.75f-k*.12f;
+                var head=p+Vector3.up*y;var tail=head+dir*len+Vector3.down*.5f;
+                var right=Vector3.Cross(Vector3.up,dir).normalized;
+                Vector3[] Ring(Vector3 c,float rr)=>new[]{c+Vector3.up*rr,c+right*rr,c+Vector3.down*rr,c-right*rr};
+                kit.Prism(colors[k],Ring(head,r),Ring(head+(tail-head)*.6f,r*.8f));
+                kit.Prism(colors[k],Ring(head+(tail-head)*.6f,r*.8f),Ring(tail,r*.25f));
+                kit.Box(white,head+dir*.5f+right*(r+.02f)+Vector3.up*.2f,new Vector3(.12f,.3f,.3f),Quaternion.LookRotation(dir));
+                kit.Box(white,head+dir*.5f-right*(r+.02f)+Vector3.up*.2f,new Vector3(.12f,.3f,.3f),Quaternion.LookRotation(dir));
+            }
+        }
+
+        static void BambooGrove(Chunks chunks,Vector3 c,float radius,int count)
+        {
+            for(int i=0;i<count;i++)
+            {
+                float a=Hash(i,c.x,71)*Mathf.PI*2,r=Mathf.Sqrt(Hash(i,c.z,72))*radius;
+                var p=c+new Vector3(Mathf.Cos(a),0,Mathf.Sin(a))*r;
+                if(!OpenGround(p,1,30))continue;
+                p=OnGround(p);var kit=chunks.At(p);float h=7+Hash(i,c.x,73)*6;
+                kit.Column(i%3==0?bambooDark:bamboo,p+Vector3.down*.3f,.12f,.09f,h,5);
+                kit.Chamfered(bambooLeaf,p+Vector3.up*(h-2.6f),.5f,.5f,1.1f,1.1f,0,1.3f,.3f);
+                kit.Chamfered(bambooLeaf,p+Vector3.up*(h-1.3f),1.1f,1.1f,.15f,.15f,0,1.9f,.3f);
+            }
+        }
+
+        // ---------------- tea plantations on gentle slopes
+        static void BuildTeaFields(Chunks chunks)
+        {
+            var centres=new List<Vector3>();
+            for(float x=-620;x<=920&&centres.Count<5;x+=36)
+                for(float z=-220;z<=740&&centres.Count<5;z+=36)
+                {
+                    if(Hash(x,z,81)>.14f)continue;
+                    var c=new Vector3(x,0,z);float o=Offset(c);
+                    if(o<55||o>260||!OpenGround(c,34,0))continue;
+                    bool spaced=true;foreach(var v in centres)if((v-c).sqrMagnitude<260*260)spaced=false;
+                    if(!spaced)continue;
+                    float lo=float.MaxValue,hi=float.MinValue;
+                    foreach(var q in new[]{c,c+new Vector3(26,0,22),c+new Vector3(-26,0,22),c+new Vector3(26,0,-22),c+new Vector3(-26,0,-22)})
+                    {float g=TerrainHeight(q.x,q.z);lo=Mathf.Min(lo,g);hi=Mathf.Max(hi,g);}
+                    if(hi-lo>14)continue;
+                    centres.Add(c);
+                }
+            foreach(var c in centres)
+            {
+                float yaw=Hash(c.x,c.z,82)*180;var rot=Quaternion.Euler(0,yaw,0);var dir=rot*Vector3.forward;var side=rot*Vector3.right;
+                for(int row=-9;row<=9;row++)
+                    for(float t=-22;t<22;t+=4.2f)
+                    {
+                        var p=c+side*row*2.5f+dir*(t+2.1f);
+                        if(!OpenGround(p,0,45))continue;
+                        p=OnGround(p);var kit=chunks.At(p);
+                        kit.Box(tea,p+Vector3.up*.4f,new Vector3(1.5f,1.2f,4.1f),rot);
+                        kit.Box(teaLight,p+Vector3.up*1.08f,new Vector3(1.05f,.24f,4.0f),rot);
+                    }
+                ReserveWorld(c.x-36,c.x+36,c.z-36,c.z+36);
+            }
+            teaFields=centres.Count;
+        }
+
+        // ---------------- hot-air balloons over the valley
+        static void BuildBalloons(Transform world)
+        {
+            var kit=new PolygonSceneryKit("Sakura balloons");
+            var spots=new[]{new Vector3(320,135,520),new Vector3(-210,165,250),new Vector3(660,118,430),new Vector3(110,205,-140),
+                            new Vector3(-520,150,560),new Vector3(890,185,120),new Vector3(260,240,240)};
+            var pairs=new[]{(balloonA,balloonC),(balloonB,white),(balloonC,balloonA),(sakura,white),(teal,balloonA),(balloonB,balloonC),(lilac,white)};
+            for(int b=0;b<spots.Length;b++)
+            {
+                var basePos=spots[b];float R=7.5f+Hash(b,1,91)*3,H=R*2.5f;const int bands=12;
+                for(int k=0;k<bands;k++)
+                {
+                    float t0=k/(float)bands,t1=(k+1)/(float)bands;
+                    float r0=R*Mathf.Sin(Mathf.PI*(.08f+.92f*Mathf.Pow(t0,1.4f))),r1=R*Mathf.Sin(Mathf.PI*(.08f+.92f*Mathf.Pow(t1,1.4f)));
+                    if(k==bands-1)r1=.01f;
+                    kit.Column(k%2==0?pairs[b].Item1:pairs[b].Item2,basePos+Vector3.up*(H*t0),r0,r1,H/bands,12);
+                }
+                var basket=basePos+Vector3.down*4.2f;
+                kit.Box(timber,basket,new Vector3(1.6f,1.2f,1.6f));
+                foreach(int sx in new[]{-1,1})foreach(int sz in new[]{-1,1})
+                    kit.Beam(charcoal,basket+new Vector3(sx*.7f,.6f,sz*.7f),basePos+new Vector3(sx*R*.22f,.2f,sz*R*.22f),.05f,.05f);
+            }
+            var group=new GameObject("Sakura hot-air balloons").transform;group.SetParent(world,false);
+            kit.Emit(group);
+        }
+
+        // ---------------- cherry groves in the meadows
+        static void BuildCherryGroves(Chunks chunks)
+        {
+            for(float x=-640;x<=940;x+=50)
+                for(float z=-240;z<=760;z+=50)
+                {
+                    if(Hash(x,z,95)>.16f)continue;
+                    var c=new Vector3(x+(Hash(x,z,96)-.5f)*20,0,z+(Hash(x,z,97)-.5f)*20);float o=Offset(c);
+                    if(o<40||o>340||!OpenGround(c,6,0))continue;
+                    int count=6+Mathf.FloorToInt(Hash(x,z,98)*9);groves++;
+                    for(int i=0;i<count;i++)
+                    {
+                        float a=Hash(i,x,99)*Mathf.PI*2,r=Mathf.Sqrt(Hash(i,z,100))*17;
+                        var p=c+new Vector3(Mathf.Cos(a),0,Mathf.Sin(a))*r;
+                        if(!OpenGround(p,2,30))continue;
+                        p=OnGround(p);CherryTree(chunks.At(p),p,1.1f+Hash(i,x,101)*.5f);
+                    }
+                }
+        }
+
         // ------------------------------------------------------------ entry point
         public static Transform Build(Transform circuitRoot)
         {
             if(PolygonCircuit.Layout!=PolygonCircuitLayout.Sakura)
                 throw new System.InvalidOperationException("Select the Sakura layout before building its scenery.");
-            CreatePalette();reserved.Clear();sites.Clear();
+            CreatePalette();CreateDetailPalette();reserved.Clear();sites.Clear();
             FindCrossover();
             PrepareTerrainSamples();
             PlanSites();
@@ -1103,11 +1411,17 @@ namespace PolygonRacing
             BuildLake(world,chunks);
             BuildShrines(world,chunks);
             BuildBoardsAndPosts(world,chunks);
+            BuildSpectatorBanks(chunks);
+            BuildVillages(chunks);
             BuildPaddies(chunks);
+            BuildTeaFields(chunks);
+            BuildBalloons(world);
             BuildTrees(chunks);
+            BuildCherryGroves(chunks);
             BuildTerrain(chunks);
             chunks.Emit(world);
             reserved.Clear();sites.Clear();tPts=null;tH=null;tD=null;tZone=null;groundLeft=groundRight=null;
+            Debug.Log($"Sakura PC detail v01: {banks} spectator banks, {villages} villages, {teaFields} tea fields, {groves} cherry groves.");
             Debug.Log($"Sakura crossover: lower road at {crossLower:0} m ({E(crossLower):0.0} m high), bridge at {crossUpper:0} m ({E(crossUpper):0.0} m high).");
             return world;
         }

@@ -11,14 +11,14 @@ Mesh:
   m_SubMeshes:
   - serializedVersion: 2
     firstByte: 0
-    indexCount: 3
+    indexCount: 12
     topology: 0
     baseVertex: 0
     firstVertex: 0
-    vertexCount: 3
+    vertexCount: 12
     localAABB:
-      m_Center: {x: 1460, y: 174.16165, z: -940}
-      m_Extent: {x: 20, y: 0.73104095, z: 20}
+      m_Center: {x: 660, y: 65.60951, z: -620}
+      m_Extent: {x: 60, y: 9.600327, z: 20}
   m_Shapes:
     vertices: []
     shapes: []
@@ -35,10 +35,10 @@ Mesh:
   m_KeepVertices: 0
   m_KeepIndices: 0
   m_IndexFormat: 0
-  m_IndexBuffer: 000001000200y
+  m_IndexBuffer: 00000100020003000400050006000700080009000a000b00y
   m_VertexData:
     serializedVersion: 3
-    m_VertexCount: 3
+    m_VertexCount: 12
     m_Channels:
     - stream: 0
       offset: 0
@@ -96,8 +96,8 @@ Mesh:
       offset: 0
       format: 0
       dimension: 0
-    m_DataSize: 72
-    _typelessdata: 0000b944c86b2e43000070c44d92153d39c07f3fdea3ca3c0000b44487e42e43000066c44d92153d39c07f3fdea3ca3c0000b9443c6e2d43000066c44d92153d39c07f3fdea3ca3c
+    m_DataSize: 288
+    _typelessdata: 000016443f428a42000020c4e2757ebde94f733f4efa9b3e00002044e0b06b42000016c4e2757ebde94f733f4efa9b3e00002044e57c8f42000020c4e2757ebde94f733f4efa9b3e000016443f428a42000020c4af678dbd1fab723f64319f3e0000164468096042000016c4af678dbd1fab723f64319f3e00002044e0b06b42000016c4af678dbd1fab723f64319f3e00002044e57c8f42000020c41d8edcbd825d723fe95e9b3e00002044e0b06b42000016c41d8edcbd825d723fe95e9b3e00002a4422e47d42000016c41d8edcbd825d723fe95e9b3e00002a44706b9642000020c4668610be412f733fa9b68e3e00002a4422e47d42000016c4668610be412f733fa9b68e3e00003444e4d48a42000016c4668610be412f733fa9b68e3e
   m_CompressedMesh:
     m_Vertices:
       m_NumItems: 0
@@ -151,8 +151,8 @@ Mesh:
       m_BitSize: 0
     m_UVInfo: 0
   m_LocalAABB:
-    m_Center: {x: 1460, y: 174.16165, z: -940}
-    m_Extent: {x: 20, y: 0.73104095, z: 20}
+    m_Center: {x: 660, y: 65.60951, z: -620}
+    m_Extent: {x: 60, y: 9.600327, z: 20}
   m_CookingOptions: 30
   m_PreBakeConvexCollisionMesh: 0
   m_PreBakeTriangleCollisionMesh: 0

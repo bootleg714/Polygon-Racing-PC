@@ -69,6 +69,27 @@ namespace PolygonRacing.Editor
             WhiteBalanceTemperature = 6f, Vignette = 0.14f, ExtraGrading = true, CityGlass = true
         };
 
+        // Sakura PC v01: clear spring morning. Soft sun from the east, pale lilac-blue haze in the
+        // valley, fresh saturated greens and blossom; glowing paper lanterns pick up a little bloom.
+        static readonly Profile Sakura = new Profile
+        {
+            Layout = PolygonCircuitLayout.Sakura, DisplayName = "Sakura Hills",
+            ScenePath = "Assets/PolygonRacing/Scenes/SakuraHills.unity",
+            Folder = "Assets/PolygonRacing/Generated/PCVisuals/Sakura", FolderName = "Sakura",
+            VolumeAssetName = "Sakura PC Volume Profile", SkyName = "Sakura PC Sky",
+            VolumeObjectName = "PC Visual Profile - Sakura Hills", BackupPrefix = "SakuraHills",
+            SunColor = new Color(1f, 0.93f, 0.85f), SunIntensity = 1.36f, ShadowStrength = 0.66f,
+            Zenith = new Color(0.17f, 0.42f, 0.82f), Horizon = new Color(0.86f, 0.86f, 0.94f),
+            BelowHorizon = new Color(0.52f, 0.60f, 0.60f),
+            AmbientSky = new Color(0.64f, 0.72f, 0.88f), AmbientEquator = new Color(0.72f, 0.70f, 0.76f),
+            AmbientGround = new Color(0.46f, 0.48f, 0.38f),
+            FogColor = new Color(0.86f, 0.86f, 0.94f), FogStart = 420, FogEnd = 1500,
+            MaterialSky = new Color(0.68f, 0.76f, 0.92f), MaterialGround = new Color(0.56f, 0.54f, 0.42f),
+            MaterialStrength = 0.98f, MaterialWrap = 0.14f,
+            Exposure = 0.08f, Contrast = 4f, Saturation = 12f, BloomThreshold = 1.1f, BloomIntensity = 0.22f, BloomScatter = 0.6f,
+            WhiteBalanceTemperature = 0f, Vignette = 0.12f, ExtraGrading = true
+        };
+
         static Profile active = Riviera;
 
         [MenuItem("Polygon Racing/PC Visuals/Apply PC Visual Profile - Riviera Harbour")]
@@ -93,6 +114,18 @@ namespace PolygonRacing.Editor
         static void RefreshDowntownMaterials()
         {
             ApplyProfile(Downtown, true);
+        }
+
+        [MenuItem("Polygon Racing/PC Visuals/Apply PC Visual Profile - Sakura Hills")]
+        static void ApplySakuraProfile()
+        {
+            ApplyProfile(Sakura, false);
+        }
+
+        [MenuItem("Polygon Racing/PC Visuals/Refresh PC Materials - Sakura Hills")]
+        static void RefreshSakuraMaterials()
+        {
+            ApplyProfile(Sakura, true);
         }
 
         static void ApplyProfile(Profile profile, bool materialsOnly)
@@ -160,6 +193,7 @@ namespace PolygonRacing.Editor
 
         public static bool ApplyToOpenRivieraScene() => ApplyToOpenScene(Riviera);
         public static bool ApplyToOpenDowntownScene() => ApplyToOpenScene(Downtown);
+        public static bool ApplyToOpenSakuraScene() => ApplyToOpenScene(Sakura);
 
         static bool ApplyToOpenScene(Profile profile)
         {
@@ -288,7 +322,8 @@ namespace PolygonRacing.Editor
             float metallic = 0.02f;
             float smoothness = 0.18f;
             float reflection = 0.28f;
-            if (active.CityGlass && ContainsAny(name, "window lit", "crown light", "aviation light", "lamp glow"))
+            if ((active.CityGlass && ContainsAny(name, "window lit", "crown light", "aviation light", "lamp glow")) ||
+                (active.Layout == PolygonCircuitLayout.Sakura && ContainsAny(name, "paper lantern", "lamp glow")))
             {
                 // Emissive city lights stay matte so the glow reads cleanly.
                 metallic = 0;

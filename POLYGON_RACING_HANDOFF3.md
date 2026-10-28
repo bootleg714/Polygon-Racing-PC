@@ -6,6 +6,8 @@ This replaces the previous contents of this handoff. It supersedes the old v01/v
 
 ## Resume here
 
+**Sakura Hills PC visual + fill pass v01 (October 27, 2026; USER-APPROVED 19:32 — "looks great", steady 72 FPS that never dipped on Thomas's PC):** spring-morning PC profile plus a large scenery fill ("it's kinda empty"). See "Sakura Hills — PC visual profile and fill v01" below. Run **Polygon Racing → 14 - Create or Refresh Sakura Hills** after pulling (about 85 s), then enter Play mode before judging (GPU Resident Drawer edit-mode caveat).
+
 **Downtown PC Visual + detail v01 (October 27, 2026; built and checked in Unity by the assistant, user review pending):** Downtown Streets now has its own PC look and a trackside detail pass, following the Riviera approach. See the section "Downtown Streets — PC visual profile and detail v01" below for files, menus, numbers and the editor-display caveat. Run **Polygon Racing → 12 - Create or Refresh Downtown Circuit** after pulling; then enter Play mode (or restart Unity) before judging the result, because the GPU Resident Drawer keeps showing stale meshes in edit mode after a rebuild.
 
 **Second earlier skid onset (October 27, 2026; user-approved):** Thomas tested the timing and said it is perfect. The weighted-slip start threshold is 0.35 (previous trial 0.40) and delay 20 ms (previously 40 ms). Release stays at 0.30 and the loop, fade and volume are unchanged. The narrower start/release gap may make the sound more sensitive to small fluctuations; the precise scenarios tested were not specified. Unity bundled Roslyn compiled the runtime assembly with existing obsolete API warnings. The assistant did not independently listen in-game or test target-hardware performance. No scene refresh is needed. Thomas intends to commit and push these changes.
@@ -322,6 +324,29 @@ Sixth circuit, "NORDWALD RING" (`PolygonCircuitLayout.Nordwald`, scene `Scenes/N
 - Quest result (22 Oct, Thomas): frame rate perfect, no drops. The banked hairpin is cool but taking it at full speed is nauseating in VR; expected to be fixed by the planned over/understeer handling, which will force braking. Rivals feel good, but because they never brake they are impossible to catch once ahead, so AI tuning and rubberbanding for the player are needed. Lap counting and minimap were fine. Original checklist, for any later regression: frame rate (levers are tree grids in `BuildForest` and crowd density), the banked hairpin feel, rivals in the banked hairpin, lap counting over the 5 km lap, minimap scale.
 
 Colours were chosen with a Python software preview that mirrors the shader maths (not Unity output). It lives outside the repo.
+
+### Sakura Hills — PC visual profile and fill v01 (October 27, 2026)
+
+**Files:** `Runtime/PolygonSakuraArt.cs`, `Editor/PolygonSakuraSetup.cs`, `Editor/PolygonPCVisualSetup.cs` (new Sakura profile). Pre-change copies: `PolygonRacingBackups/Sakura_pc_detail_before_20261027.zip`; menu 14 also makes its timestamped scene backup.
+
+**PC profile "Sakura Hills"** (same system as Riviera/Downtown; those profiles unchanged): sun (1,.93,.85) ×1.36 at the preset 34/115, soft shadows .66; sky zenith (.17,.42,.82), horizon (.86,.86,.94); trilight ambient (.64,.72,.88)/(.72,.70,.76)/(.46,.48,.38); fog (.86,.86,.94) 420–1500 m; material fill sky (.68,.76,.92), ground (.56,.54,.42), strength .98, wrap .14; post Neutral, exposure +.08, contrast +4, saturation +12, bloom 1.1/.22/.6, vignette .12. Paper lanterns/lamp glow are matte on first conversion. Assets in `Generated/PCVisuals/Sakura`; scene object **PC Visual Profile - Sakura Hills**; menus **PC Visuals → Apply PC Visual Profile / Refresh PC Materials - Sakura Hills**. Menu 14 now reapplies base look then the PC profile.
+
+**Rebuild fixes:** Sakura chunk kits use `MaxVerticesPerMesh=60000`; menu 14 keeps material assets (refreshed by name, stable GUIDs) and recreates meshes, instead of deleting `Generated/Sakura`.
+
+**Fill pass (editor-time geometry only):**
+- Trackside cherry trees: two staggered rows every 13 m (was one row every 26 m), 15–40 % larger; pink "Petal meadow" ground patches 17.5–40 m from the track. Cherry groves (6–14 trees) scattered through the meadows 40–340 m out. Near-track pine density raised.
+- 8 hillside spectator banks (corners first, then straights; never at the pits, bridge or lower crossing): seven grassy terraces behind the barrier at 19.2–28.3 m, standing crowds (legs + `PersonLite`), sun parasols, team flags, and strings of glowing red/white paper lanterns on timber poles; white rail at the back. Placement requires ground near road level and keeps 28 m from any other part of the circuit.
+- Advertising boards (original plain colours with a contrasting strip) behind the barrier on every straight, in ~25 m blocks, skipping corners, the bridge and the pit wall.
+- 4 villages: a lane with up to 14 farmhouses facing it, gardens with cherry trees or stone lanterns, carp streamers (koinobori) on poles, a small gate with lanterns and two bamboo groves.
+- 5 tea plantations: rows of clipped bushes on gentle slopes 55–260 m from the track.
+- 7 hot-air balloons over the valley (separate object "Sakura hot-air balloons").
+- Build log line: "Sakura PC detail v01: 8 spectator banks, 4 villages, 5 tea fields, N cherry groves."
+
+**Verified on Thomas's PC by the assistant:** compiles (only existing CS0618 warnings); menu 14 builds in about 85–92 s: 1,315 scenery renderers, about 896k scenery triangles (v01: 1,064 / 413k). Play-mode Scene-view driver and helicopter viewpoints show the cherry rows, banks, lanterns, ad boards, groves, farmhouses and balloons. Not done: full driven lap, FPS measurement, close inspection of every village/tea field, Windows build.
+
+**Performance levers if needed:** spectator density (`Hash<.28` skip in `SpectatorBank`), bank count (8), second cherry row (`Hash>.7` skip), grove count (`Hash(x,z,95)>.16`), pine density.
+
+**Workflow lesson:** the assistant's file commit can deliver the first version of a staged file name, even after that file is edited. Always stage under a brand-new name after the final edit and verify size on the device.
 
 ### Downtown Streets — PC visual profile and detail v01 (October 27, 2026)
 

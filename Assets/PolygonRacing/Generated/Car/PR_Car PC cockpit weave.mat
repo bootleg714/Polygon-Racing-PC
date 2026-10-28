@@ -29,7 +29,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _AmbientStrength: 1
+    - _AmbientStrength: 0.98
     - _Cull: 0
     - _GroundShade: 0.22
     - _Metallic: 0
@@ -41,7 +41,7 @@ Material:
     m_Colors:
     - _BaseColor: {r: 0.05499959, g: 0.069999576, b: 0.08999955, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _GroundAmbient: {r: 0.62, g: 0.5, b: 0.4, a: 1}
-    - _SkyAmbient: {r: 0.6, g: 0.68, b: 0.86, a: 1}
+    - _GroundAmbient: {r: 0.56, g: 0.54, b: 0.42, a: 1}
+    - _SkyAmbient: {r: 0.68, g: 0.76, b: 0.92, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

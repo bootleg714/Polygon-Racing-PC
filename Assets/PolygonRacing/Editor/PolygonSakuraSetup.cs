@@ -68,7 +68,11 @@ namespace PolygonRacing.Editor
                 EditorUtility.SetDirty(player.transform);
 
                 PersistGeneratedAssets(scenery,root.Find(PolygonSakuraArt.AnimatedName));
-                PolygonLookSetup.ApplyToOpenScene(PolygonCircuitLayout.Sakura);
+                if(!PolygonLookSetup.ApplyToOpenScene(PolygonCircuitLayout.Sakura))
+                    throw new System.InvalidOperationException("Sakura base look could not be reapplied.");
+                // PC v01: shadows, spring-morning sky/haze and post-processing.
+                if(!PolygonPCVisualSetup.ApplyToOpenSakuraScene())
+                    throw new System.InvalidOperationException("Sakura PC visual profile could not be applied.");
                 EditorSceneManager.MarkSceneDirty(scene);
                 if(!EditorSceneManager.SaveScene(scene,SakuraPath))throw new IOException("Unity could not save the Sakura scene.");
                 AddBuildScenes();
@@ -122,29 +126,68 @@ namespace PolygonRacing.Editor
                       $"{triangles:N0} scenery triangles, built in {seconds:0.0} s. Saved {SakuraPath} and added it to the build scenes.");
         }
 
+        // Same scheme as Downtown (Oct 27): meshes are deleted and recreated on every build, while
+        // named material assets are kept and refreshed in place, so material GUIDs stay stable and
+        // the PC material clones (keyed by source GUID) are reused instead of piling up.
         static void PersistGeneratedAssets(Transform scenery,Transform animated)
         {
-            // The folder is replaced on every build (older Sakura backups lose their meshes; the
-            // live scene is always complete).
             if(!AssetDatabase.IsValidFolder("Assets/PolygonRacing/Generated"))AssetDatabase.CreateFolder("Assets/PolygonRacing","Generated");
-            if(AssetDatabase.IsValidFolder(GeneratedPath))AssetDatabase.DeleteAsset(GeneratedPath);
-            AssetDatabase.CreateFolder("Assets/PolygonRacing/Generated","Sakura");
-            var saved=new HashSet<Object>();int index=0;
+            if(!AssetDatabase.IsValidFolder(GeneratedPath))AssetDatabase.CreateFolder("Assets/PolygonRacing/Generated","Sakura");
             var filters=new List<MeshFilter>(scenery.GetComponentsInChildren<MeshFilter>(true));
             var renderers=new List<Renderer>(scenery.GetComponentsInChildren<Renderer>(true));
             if(animated){filters.AddRange(animated.GetComponentsInChildren<MeshFilter>(true));renderers.AddRange(animated.GetComponentsInChildren<Renderer>(true));}
+
+            var oldMeshes=new List<string>();
+            foreach(var guid in AssetDatabase.FindAssets("t:Mesh",new[]{GeneratedPath}))oldMeshes.Add(AssetDatabase.GUIDToAssetPath(guid));
+            if(oldMeshes.Count>0)
+            {
+                var failed=new List<string>();
+                AssetDatabase.DeleteAssets(oldMeshes.ToArray(),failed);
+                if(failed.Count>0)Debug.LogWarning($"{failed.Count} old Sakura meshes could not be deleted.");
+            }
+            var savedMeshes=new HashSet<Mesh>();int index=0;
             foreach(var filter in filters)
             {
                 var mesh=filter.sharedMesh;
-                if(!mesh||AssetDatabase.Contains(mesh)||!saved.Add(mesh))continue;
-                AssetDatabase.CreateAsset(mesh,$"{GeneratedPath}/Mesh_{index++}.asset");
+                if(!mesh||AssetDatabase.Contains(mesh)||!savedMeshes.Add(mesh))continue;
+                AssetDatabase.CreateAsset(mesh,AssetDatabase.GenerateUniqueAssetPath($"{GeneratedPath}/Mesh_{index++}.asset"));
             }
+
+            var materials=new Dictionary<Material,Material>();
             foreach(var renderer in renderers)
-                foreach(var material in renderer.sharedMaterials)
+            {
+                var shared=renderer.sharedMaterials;bool changed=false;
+                for(int i=0;i<shared.Length;i++)
                 {
-                    if(!material||AssetDatabase.Contains(material)||!saved.Add(material))continue;
-                    AssetDatabase.CreateAsset(material,AssetDatabase.GenerateUniqueAssetPath($"{GeneratedPath}/{material.name}.mat"));
+                    var material=shared[i];
+                    if(!material)continue;
+                    if(materials.TryGetValue(material,out var savedMaterial))
+                    {
+                        if(savedMaterial!=material){shared[i]=savedMaterial;changed=true;}
+                        continue;
+                    }
+                    if(AssetDatabase.Contains(material)){materials.Add(material,material);continue;}
+                    string path=$"{GeneratedPath}/{SafeAssetName(material.name)}.mat";
+                    var asset=AssetDatabase.LoadAssetAtPath<Material>(path);
+                    if(asset)
+                    {
+                        EditorUtility.CopySerialized(material,asset);asset.name=material.name;EditorUtility.SetDirty(asset);
+                        shared[i]=asset;materials.Add(material,asset);changed=true;
+                    }
+                    else
+                    {
+                        AssetDatabase.CreateAsset(material,AssetDatabase.GenerateUniqueAssetPath(path));
+                        materials.Add(material,material);
+                    }
                 }
+                if(changed)renderer.sharedMaterials=shared;
+            }
+        }
+
+        static string SafeAssetName(string name)
+        {
+            foreach(char c in Path.GetInvalidFileNameChars())name=name.Replace(c,'_');
+            return name;
         }
 
         static void AddBuildScenes()
