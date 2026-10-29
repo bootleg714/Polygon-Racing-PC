@@ -1,4 +1,10 @@
-## Neon second polish pass: Ion Rift trackside dressing - October 29, 2026 (awaiting Thomas's review)
+## Neon second polish pass: Aurora Forge trackside dressing - October 29, 2026 (awaiting Thomas's review)
+
+Thomas approved Ion Rift's trackside pass ("looks awesome and works great, solid FPS"; committed and pushed). Aurora Forge now calls the shared `PolygonNeonTrackside` (`PolygonAuroraForgeArt.BuildTrackside`, before `chunks.Emit`) in an Arctic palette: ice-cyan glow / snow-white kerbs, ice-cyan and aurora-green LED boards, cyan/aurora-green/forge-amber accents. Same exclusions as Ion Rift (the generators share knot positions): start/grid, Conduit rock passage and Forge Cavern (+-15 m), both viaducts, 10 m around the six portals, tunnel mouths and four route signs, and the 96 m signal-fin rhythm. Build log: "Aurora Forge trackside v02: 76 LED board runs, 11 kerbed corners, 16 light arches, 12 billboards, 7 brake markers." Scene: 835 scenery renderers, about 183k triangles; terrain slope check still OK. Backup: `PolygonRacingBackups/AuroraForge_trackside_before_20261029.zip`.
+
+Verified by the assistant: compiles, menu 18 rebuilds, Play-mode views show boards, arches and a billboard; Stats about 72 FPS at the grid. Remaining: Starfall Port trackside, then the other three polish options (lighting & atmosphere, skyline & landmarks, road surface) one at a time.
+
+## Neon second polish pass: Ion Rift trackside dressing - October 29, 2026 (APPROVED by Thomas)
 
 Thomas approved Neon Meridian's trackside pass ("looks awesome and works great, solid FPS"; committed and pushed) and asked for the next stage. He also wants ALL the other polish options offered, one at a time, after the trackside pass on every neon stage: (1) lighting & atmosphere (shadows, wet-look road reflections, selective bloom, per-stage fog/haze), (2) skyline & landmarks (distant silhouettes, megastructures, flying traffic, extra animated set pieces), (3) road surface (lane markings, panel seams, glowing chevrons, racing-line detail).
 

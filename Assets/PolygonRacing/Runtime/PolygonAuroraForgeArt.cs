@@ -728,6 +728,34 @@ namespace PolygonRacing
             }
             var sky=new GameObject("Northern lights").transform;sky.SetParent(parent,false);kit.Emit(sky);
         }
+        // Second polish pass (October 29, 2026): shared neon trackside dressing in the Arctic
+        // palette (ice cyan, aurora green, forge amber). Tunnels and the start are skipped;
+        // viaducts keep their own superstructure, so no posts or overhead pieces go there.
+        static void BuildTrackside(Chunks chunks)
+        {
+            float length=PolygonCircuit.Length;
+            float[] overhead={D(4),D(14.4f),D(21.7f),D(32.2f),D(5.2f),D(8.8f),D(20.5f),D(27.1f),D(32.5f),
+                              D(6.1f),D(6.7f),D(22.25f),D(24.7f)};
+            var style=new PolygonNeonTracksideStyle
+            {
+                Prefix="Aurora Forge",KitAt=p=>chunks.At(p),Dark=black,Steel=steel,
+                KerbA=Mat("Kerb ice glow",new Color(.08f,.78f,1),1.5f,.35f),
+                KerbB=Mat("Kerb snow white",new Color(.90f,.95f,.98f),.25f,.35f),
+                BoardA=PolygonNeonTrackside.Panel("AF LED board ice",new Color(.05f,1.3f,2.3f),.45f,1.5f),
+                BoardB=PolygonNeonTrackside.Panel("AF LED board aurora",new Color(.12f,2.0f,1.0f),-.3f,1.2f),
+                Accents=new[]{cyan,violet,amber},
+                SkipAt=d=>d<45||d>length-40||(d>D(6.1f)-15&&d<D(6.7f)+15)||(d>D(22.25f)-15&&d<D(24.7f)+15),
+                PostBlocked=(d,side)=>
+                {
+                    if((d>D(15.6f)-12&&d<D(18.3f)+12)||(d>D(28.6f)-12&&d<D(30.7f)+12))return true;   // viaducts
+                    foreach(float o in overhead)if(Mathf.Abs(d-o)<10)return true;                      // portals and signs
+                    float fin=Mathf.Repeat(d-110,96);if(fin<6||fin>90)return true;                       // signal fins at 17.2 m
+                    return false;
+                }
+            };
+            PolygonNeonTrackside.Build(style);
+        }
+
         public static Transform Build(Transform root)
         {
             if(PolygonCircuit.Layout!=PolygonCircuitLayout.AuroraForge)throw new InvalidOperationException("Select Aurora Forge before building the canyon.");
@@ -738,7 +766,7 @@ namespace PolygonRacing
             BuildTunnel(parent,chunks,6.1f,6.7f,"Conduit rock passage");
             BuildReactor(parent,chunks);BuildIceLandmarks(chunks);BuildMiningRig(chunks);
             ConduitFalls(chunks,715,1,91);ConduitFalls(chunks,430,-1,75);ConduitFalls(chunks,70,1,47);
-            BuildBeacons(parent,chunks);chunks.Emit(parent);BuildAurora(parent);
+            BuildBeacons(parent,chunks);BuildTrackside(chunks);chunks.Emit(parent);BuildAurora(parent);
             Debug.Log($"Aurora Forge canyon: {RockCount} faceted rock formations, {StructureCount} industrial structures. Opaque scenery, shared materials, no extra local real-time lights.");
             return parent;
         }
