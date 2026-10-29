@@ -13,6 +13,7 @@ Shader "Polygon Racing/PC Flat Lit"
         _Metallic("Metallic", Range(0,1)) = 0
         _Smoothness("Smoothness", Range(0,1)) = 0.18
         _ReflectionStrength("Environment reflection", Range(0,1)) = 0.35
+        _DirectSpecular("Sun/moon highlight", Range(0,1)) = 1
         [Enum(UnityEngine.Rendering.CullMode)] _Cull("Cull", Float) = 2
     }
     SubShader
@@ -33,6 +34,7 @@ Shader "Polygon Racing/PC Flat Lit"
             half _Metallic;
             half _Smoothness;
             half _ReflectionStrength;
+            half _DirectSpecular;
             half _Cull;
         CBUFFER_END
         ENDHLSL
@@ -53,6 +55,13 @@ Shader "Polygon Racing/PC Flat Lit"
             #pragma multi_compile_fog
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #pragma multi_compile_fragment _ _SHADOWS_SOFT
+            // Forward+ (the PC renderer) only feeds reflection probes to shaders compiled with the
+            // cluster light loop and the probe blending/atlas keywords; without it every surface reflected the skybox only. Circuits with
+            // no probes still fall back to the skybox, so their look is unchanged.
+            #pragma multi_compile _ _CLUSTER_LIGHT_LOOP
+            #pragma multi_compile_fragment _ _REFLECTION_PROBE_BLENDING
+            #pragma multi_compile_fragment _ _REFLECTION_PROBE_BOX_PROJECTION
+            #pragma multi_compile_fragment _ _REFLECTION_PROBE_ATLAS
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
 
             struct Attributes
@@ -127,7 +136,7 @@ Shader "Polygon Racing/PC Flat Lit"
                 half fresnel = pow(1 - ndv, 5);
                 half specPower = lerp(18, 160, smoothness);
                 half directSpecular = pow(saturate(dot(faceNormal, halfDir)), specPower)
-                    * sun.shadowAttenuation * smoothness;
+                    * sun.shadowAttenuation * smoothness * _DirectSpecular;
                 color += sun.color * directSpecular * (f0 + (1 - f0) * fresnel);
 
                 half3 reflectionDir = reflect(-viewDir, faceNormal);

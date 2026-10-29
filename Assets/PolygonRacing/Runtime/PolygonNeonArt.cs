@@ -14,7 +14,7 @@ namespace PolygonRacing
         public const float Barrier=12f, DeckEdge=13.2f;
         const float ChunkSize=180;
         static Material road,concrete,wall,wallAlt,steel,glass,ground,rock,water,paint,
-            cyan,magenta,violet,amber,coolWindow,warmWindow,black,green,dataCyan,dataPink;
+            cyan,magenta,violet,amber,coolWindow,warmWindow,black,green,dataCyan,dataPink,barrierGlow,edgeSpill;
         static Vector3[] route;
         static float[] elevations;
         static readonly List<Bounds> occupied=new List<Bounds>();
@@ -55,7 +55,11 @@ namespace PolygonRacing
         }
         static void Palette()
         {
-            road=Mat("Asphalt",new Color(.105f,.12f,.17f),0,.26f);
+            // Lighting pass (Oct 29): rain-slick asphalt. Glossier and more reflective, so the baked
+            // wet-road probes (PolygonNeonReflections) mirror the neon into the road surface.
+            road=Mat("Asphalt",new Color(.075f,.088f,.13f),0,.91f);road.SetFloat("_ReflectionStrength",.55f);
+            // No moon highlight on the glossy road: it showed as a light stripe across the street.
+            road.SetFloat("_DirectSpecular",0);
             concrete=Mat("Graphite deck",new Color(.18f,.22f,.30f));
             wall=Mat("Midnight facade",new Color(.15f,.20f,.31f));
             wallAlt=Mat("Plum facade",new Color(.25f,.18f,.32f));
@@ -70,6 +74,10 @@ namespace PolygonRacing
             violet=Mat("Violet light",new Color(.42f,.15f,1),2.6f);
             amber=Mat("Amber guidance",new Color(1,.43f,.075f),2.3f);
             coolWindow=Mat("Cool window",new Color(.20f,.57f,.85f),1.15f);
+            // Same look as cyan / cool window, but named so the wet-road probe bake can leave these
+            // low trackside glows out (their reflection formed a light band across the road).
+            barrierGlow=Mat("Barrier glow",new Color(.035f,.8f,1),3.2f);
+            edgeSpill=Mat("Edge spill",new Color(.20f,.57f,.85f),1.15f);
             warmWindow=Mat("Warm window",new Color(1,.65f,.29f),1.0f);
             black=Mat("Black recess",new Color(.025f,.035f,.06f));
             green=Mat("Terrace planting",new Color(.055f,.20f,.17f));
@@ -133,9 +141,9 @@ namespace PolygonRacing
                     Ribbon(kit,concrete,d,end,lo,hi,.035f);
                     Ribbon(kit,paint,d,end,side*9.6f,side*9.78f,.022f);
                     RoadSlab(kit,black,d,end,side*Barrier,side*(Barrier+.55f),0,1.1f);
-                    kit.Beam(cyan,RoadPoint(d,side*(Barrier-.025f),1.05f),RoadPoint(end,side*(Barrier-.025f),1.05f),.10f,.12f);
+                    kit.Beam(barrierGlow,RoadPoint(d,side*(Barrier-.025f),1.05f),RoadPoint(end,side*(Barrier-.025f),1.05f),.10f,.12f);
                     // Broad, dim edge fill suggests neon spill without a local light per segment.
-                    Ribbon(kit,coolWindow,d,end,side*10.1f,side*10.22f,.05f);
+                    Ribbon(kit,edgeSpill,d,end,side*10.1f,side*10.22f,.05f);
                     if(((int)d/4)%4==0)kit.Beam(steel,RoadPoint(d,side*(Barrier+.2f),.1f),RoadPoint(d,side*(Barrier+.2f),1.4f),.10f,.10f);
                 }
                 if(d%24<8)
