@@ -612,6 +612,22 @@ namespace PolygonRacing
             });
         }
 
+        // Road-surface pass (October 29, 2026): joint seams, cat's-eye studs, braking chevrons, racing line.
+        static void BuildRoadSurface(Chunks chunks)
+        {
+            float length=PolygonCircuit.Length;
+            PolygonNeonRoadSurface.Build(new PolygonNeonRoadSurfaceStyle
+            {
+                Prefix="Neon Meridian",KitAt=p=>chunks.At(p),
+                Seam=Mat("Road paint seam",new Color(.03f,.035f,.05f),0,.5f),
+                Chevron=Mat("Road paint chevron",new Color(1,.1f,.5f),1.3f),
+                RacingLine=Mat("Road paint racing line",new Color(.1f,.75f,1),.4f),
+                StudLeft=Mat("Road paint stud amber",new Color(1,.55f,.1f),2.4f),
+                StudRight=Mat("Road paint stud white",new Color(.85f,.92f,1),2f),
+                SkipAt=d=>d<30||d>length-45
+            });
+        }
+
         public static Transform Build(Transform root)
         {
             if(PolygonCircuit.Layout!=PolygonCircuitLayout.NeonMeridian)
@@ -628,7 +644,7 @@ namespace PolygonRacing
             BuildRoad(chunks);BuildTerrain(chunks);BuildCrown(chunks);BuildCascade(chunks);
             BuildCity(chunks);BuildStart(parent);BuildMarket(parent,chunks);BuildTunnel(parent,chunks);
             BuildFurniture(parent,chunks);BuildTransit(parent,chunks);
-            BuildTrackside(chunks);BuildSkyline(parent,chunks);
+            BuildTrackside(chunks);BuildSkyline(parent,chunks);BuildRoadSurface(chunks);
             chunks.Emit(parent);
             Debug.Log($"Neon Meridian city: {BuildingCount} buildings. Opaque, chunked scenery; no extra real-time local lights.");
             occupied.Clear();return parent;

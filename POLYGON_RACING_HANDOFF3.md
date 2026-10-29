@@ -1,4 +1,16 @@
-## Neon polish option 3 (skyline & landmarks) on all four neon stages - October 29, 2026 (awaiting Thomas's review)
+## Neon polish option 4 (road surface) on all four neon stages - October 29, 2026 (awaiting Thomas's review)
+
+Thomas approved the skyline pass ("great"; committed and pushed) and asked for option 4 on all stages. New shared `Runtime/PolygonNeonRoadSurface.cs` (`PolygonNeonRoadSurfaceStyle`), called from each `Polygon<Stage>Art.BuildRoadSurface` just before `chunks.Emit`:
+- Expansion-joint seams across the road every 16 m (dark, 14 cm, at +.012 m).
+- Cat's-eye studs every 12 m just inside both edge lines (lateral +-9.3 m): amber left, white right.
+- Braking-zone chevrons: 6 rows of glowing ^ marks per lane in the 120 m before each tight corner that follows a straight (same detection as the brake-marker pylons), at +.042 m. Colours: Neon magenta, Ion amber, Aurora ice cyan, Starfall pink.
+- Racing line: faint dashes (emission .4) that lean to the inside of corners (smoothed curvature x 420, clamped +-6.5 m), skipped inside chevron zones and near the +-3.33 m lane dashes. Aurora's is green, the others cyan.
+- Start/grid (first 30 m, last 45 m) left clean. All materials are named "Road paint ..." so the wet-road probe bake ignores them.
+Logs: Neon 222 seams / 586 studs / 18 chevron rows / 409 dashes; Ion 421 / 1,124 / 24 / 912; Aurora 278 / 734 / 12 / 585; Starfall 297 / 792 / 12 / 644. Backup of the four generators before this pass: `PolygonRacingBackups/NeonStages_roadsurface_before_20261029.zip`.
+
+Verified by the assistant: compiles; menus 16-19 rebuild (probes re-baked); Play-mode driver views on Neon Meridian show seams, studs, racing line and magenta chevrons; Starfall grid about 72 FPS. Not checked: every stage's chevrons in close-up, full laps, VR. This completes the four polish options Thomas asked for; optional per-stage fog/haze tuning remains.
+
+## Neon polish option 3 (skyline & landmarks) on all four neon stages - October 29, 2026 (APPROVED by Thomas)
 
 Thomas approved the wet roads on all four stages ("everything looks good") and asked for option 3. New shared files:
 - `Runtime/PolygonNeonSkyline.cs`: per-stage `PolygonNeonSkylineStyle`; builds (a) a ring of distant megastructures beyond the circuit (radius + 300..780 m, 320-820 m tall, at least 260 m from any road) with wrapping light bands, edge lights, a big animated PolygonNeonPanel screen facing the circuit and a mast beacon; (b) sky beams (thin opaque emissive columns 1.9 km tall, >= 70 m from the road); (c) flying-traffic rings 190-230 m above the highest road point: each ring is ONE baked mesh of craft (drawn about 2.2x real size, every 5th a freighter) with long light trails; plus `Tether` and `Mothership` helpers.

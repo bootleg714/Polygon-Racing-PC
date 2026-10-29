@@ -776,6 +776,22 @@ namespace PolygonRacing
             });
         }
 
+        // Road-surface pass (October 29, 2026): joint seams, cat's-eye studs, braking chevrons, racing line.
+        static void BuildRoadSurface(Chunks chunks)
+        {
+            float length=PolygonCircuit.Length;
+            PolygonNeonRoadSurface.Build(new PolygonNeonRoadSurfaceStyle
+            {
+                Prefix="Aurora Forge",KitAt=p=>chunks.At(p),
+                Seam=Mat("Road paint seam",new Color(.03f,.035f,.05f),0,.5f),
+                Chevron=Mat("Road paint chevron",new Color(.1f,.8f,1),1.3f),
+                RacingLine=Mat("Road paint racing line",new Color(.15f,1,.55f),.4f),
+                StudLeft=Mat("Road paint stud amber",new Color(1,.55f,.1f),2.4f),
+                StudRight=Mat("Road paint stud white",new Color(.85f,.92f,1),2f),
+                SkipAt=d=>d<30||d>length-45
+            });
+        }
+
         public static Transform Build(Transform root)
         {
             if(PolygonCircuit.Layout!=PolygonCircuitLayout.AuroraForge)throw new InvalidOperationException("Select Aurora Forge before building the canyon.");
@@ -786,7 +802,7 @@ namespace PolygonRacing
             BuildTunnel(parent,chunks,6.1f,6.7f,"Conduit rock passage");
             BuildReactor(parent,chunks);BuildIceLandmarks(chunks);BuildMiningRig(chunks);
             ConduitFalls(chunks,715,1,91);ConduitFalls(chunks,430,-1,75);ConduitFalls(chunks,70,1,47);
-            BuildBeacons(parent,chunks);BuildTrackside(chunks);BuildSkyline(parent,chunks);chunks.Emit(parent);BuildAurora(parent);
+            BuildBeacons(parent,chunks);BuildTrackside(chunks);BuildSkyline(parent,chunks);BuildRoadSurface(chunks);chunks.Emit(parent);BuildAurora(parent);
             Debug.Log($"Aurora Forge canyon: {RockCount} faceted rock formations, {StructureCount} industrial structures. Opaque scenery, shared materials, no extra local real-time lights.");
             return parent;
         }
