@@ -1,4 +1,10 @@
-## Neon second polish pass: Aurora Forge trackside dressing - October 29, 2026 (awaiting Thomas's review)
+## Neon second polish pass: Starfall Port trackside dressing - October 29, 2026 (awaiting Thomas's review)
+
+Thomas approved Aurora Forge's trackside pass ("looks awesome and works great, solid FPS"; committed and pushed). Starfall Port now calls the shared `PolygonNeonTrackside` (`PolygonStarfallPortArt.BuildTrackside`, before `chunks.Emit`) in the blue-hour palette: hot-pink glow / pale kerbs, cyan and pink LED boards, cyan/pink/amber accents. Same exclusions as Ion Rift and Aurora Forge (shared knot positions; Launch Tunnel 22.25-24.7). Build log: "Starfall Port trackside v02: 81 LED board runs, 6 kerbed corners, 22 light arches, 11 billboards, 3 brake markers"; STARFALL_CARGO_GROUPS still 4. Scene: 749 scenery renderers, about 176k triangles. Backup: `PolygonRacingBackups/StarfallPort_trackside_before_20261029.zip`.
+
+Verified by the assistant: compiles, menu 19 rebuilds, Play-mode views show LED boards and a billboard; Stats about 72 FPS at the grid. This completes the trackside option on all four neon stages. Next (Thomas's plan, one at a time): lighting & atmosphere, then skyline & landmarks, then road surface.
+
+## Neon second polish pass: Aurora Forge trackside dressing - October 29, 2026 (APPROVED by Thomas)
 
 Thomas approved Ion Rift's trackside pass ("looks awesome and works great, solid FPS"; committed and pushed). Aurora Forge now calls the shared `PolygonNeonTrackside` (`PolygonAuroraForgeArt.BuildTrackside`, before `chunks.Emit`) in an Arctic palette: ice-cyan glow / snow-white kerbs, ice-cyan and aurora-green LED boards, cyan/aurora-green/forge-amber accents. Same exclusions as Ion Rift (the generators share knot positions): start/grid, Conduit rock passage and Forge Cavern (+-15 m), both viaducts, 10 m around the six portals, tunnel mouths and four route signs, and the 96 m signal-fin rhythm. Build log: "Aurora Forge trackside v02: 76 LED board runs, 11 kerbed corners, 16 light arches, 12 billboards, 7 brake markers." Scene: 835 scenery renderers, about 183k triangles; terrain slope check still OK. Backup: `PolygonRacingBackups/AuroraForge_trackside_before_20261029.zip`.
 
