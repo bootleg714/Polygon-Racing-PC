@@ -557,6 +557,38 @@ namespace PolygonRacing
             motion.Speed=19;motion.Phase=.28f;
         }
 
+        // Second polish pass (October 29, 2026): shared neon trackside dressing. Uses the city's
+        // own palette; the first two reservations (garages, train corridor) do not block it.
+        static void BuildTrackside(Chunks chunks)
+        {
+            float length=PolygonCircuit.Length;
+            float[] overheadSigns={D(4),D(10.4f),D(15.2f),D(27.5f)-35,D(30.5f)+24};
+            var style=new PolygonNeonTracksideStyle
+            {
+                Prefix="Neon Meridian",KitAt=p=>chunks.At(p),Dark=black,Steel=steel,
+                KerbA=Mat("Kerb magenta glow",new Color(1,.07f,.46f),1.5f,.3f),
+                KerbB=Mat("Kerb pale",new Color(.84f,.89f,.96f),.25f,.3f),
+                BoardA=PolygonNeonTrackside.Panel("NM LED board cyan",new Color(.05f,1.35f,2.3f),.55f,1.6f),
+                BoardB=PolygonNeonTrackside.Panel("NM LED board magenta",new Color(2.0f,.05f,.75f),-.4f,1.3f),
+                Accents=new[]{cyan,magenta,violet,amber},
+                SkipAt=d=>d<45||d>length-40||(d>D(27.2f)&&d<D(30.8f)),
+                OverheadSkip=d=>d>D(4.3f)-30&&d<D(9.5f)+30,          // market walkways
+                PostBlocked=(d,side)=>
+                {
+                    float lamp=Mathf.Repeat(d-24,38);if(lamp<3||lamp>35)return true;   // furniture lamp posts
+                    foreach(float sign in overheadSigns)if(Mathf.Abs(d-sign)<8)return true;
+                    return false;
+                },
+                Blocked=(p,r)=>
+                {
+                    var probe=new Bounds(new Vector3(p.x,0,p.z),new Vector3(r*2,2,r*2));
+                    for(int i=2;i<occupied.Count;i++)if(occupied[i].Intersects(probe))return true;
+                    return false;
+                }
+            };
+            PolygonNeonTrackside.Build(style);
+        }
+
         public static Transform Build(Transform root)
         {
             if(PolygonCircuit.Layout!=PolygonCircuitLayout.NeonMeridian)
@@ -572,7 +604,9 @@ namespace PolygonRacing
                 new Vector3(Mathf.Abs(transitB.x-transitA.x)+18,2,Mathf.Abs(transitB.z-transitA.z)+18)));
             BuildRoad(chunks);BuildTerrain(chunks);BuildCrown(chunks);BuildCascade(chunks);
             BuildCity(chunks);BuildStart(parent);BuildMarket(parent,chunks);BuildTunnel(parent,chunks);
-            BuildFurniture(parent,chunks);BuildTransit(parent,chunks);chunks.Emit(parent);
+            BuildFurniture(parent,chunks);BuildTransit(parent,chunks);
+            BuildTrackside(chunks);
+            chunks.Emit(parent);
             Debug.Log($"Neon Meridian city: {BuildingCount} buildings. Opaque, chunked scenery; no extra real-time local lights.");
             occupied.Clear();return parent;
         }

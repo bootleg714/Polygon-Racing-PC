@@ -1,3 +1,20 @@
+## Neon second polish pass: Neon Meridian trackside dressing - October 29, 2026 (awaiting Thomas's review)
+
+Thomas asked for a second polish pass on the four neon stages, focused on trackside dressing, one stage at a time with a review after each. Neon Meridian is done first; Ion Rift, Aurora Forge and Starfall Port follow after his review.
+
+New shared module `Runtime/PolygonNeonTrackside.cs` (works for all four neon stages, which share the road cross-section: road +-10 m, deck strip 10-12 m, 1.1 m barrier from 12 m, deck edge 13.2 m). Each stage passes a `PolygonNeonTracksideStyle` (its own materials, chunk lookup, skip zones, post-clash and building checks). It adds, all opaque and baked into the stage's chunks, no lights:
+- Animated LED boards (PolygonNeonPanel shader, finer pattern) on the road face of the barrier along straights, 0.22-0.9 m high, in 36 m runs alternating cyan/magenta.
+- Glowing two-tone kerbs (9.85-11.3 m, 8.5 cm high) on both sides of every corner tighter than about 150 m radius.
+- Light arches over the three longest straights (up to 8 each, 24 m apart); crossbeam underside at least 9.6 m above the higher road edge, pillars at 12.9 m.
+- Cantilevered LED billboards on poles at 12.9 m, angled toward oncoming cars, reaching about 18 m out (clear of the 19.2 m building setback).
+- Brake-marker pylons (3/2/1 bands) at 150/100/50 m on the outside before tight corners that follow a straight.
+
+Neon Meridian wiring (`PolygonNeonArt.BuildTrackside`, called before `chunks.Emit`): skips the start/grid (first 45 m, last 40 m) and the Undercity tunnel; no arches over the market walkways; posts avoid the 38 m lamp-post rhythm and the five overhead district signs; billboards/arches check the city `occupied` lots (ignoring the garage and train-corridor reservations). Build log: "Neon Meridian trackside v02: 50 LED board runs, 7 kerbed corners, 16 light arches, 6 billboards, 7 brake markers." Scene: 309 buildings, about 1,100 scenery renderers, about 275k triangles (was 256k). Backup of the previous generator: `PolygonRacingBackups/NeonMeridian_trackside_before_20261029.zip`; menu 16 also makes its own scene backup.
+
+Verified by the assistant in Thomas's editor: compiles (existing CS0618 warnings only), menu 16 rebuilds, Play-mode Scene-view driver views show the arches, boards and kerbs; Stats showed about 72 FPS at the grid. Not done: full lap, sustained FPS, AI/race checks, VR.
+
+Lesson: after writing scripts from outside, Unity may not auto-import while it already has focus; press Ctrl+R (Assets > Refresh) before rebuilding, and confirm the build log reflects the change.
+
 ## Latest status - October 29, 2026
 
 Thomas reports that the polished Starfall Port works and looks good, and plans to commit and push. All four neon-stage polish passes have been completed and positively reviewed. Preserve their accepted track layouts, visuals, handling and AI tuning unless a new request calls for changes. Thomas did not report a specific FPS result for the latest Starfall pass, or specify which race scenarios he checked.
