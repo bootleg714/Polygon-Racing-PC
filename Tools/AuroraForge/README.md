@@ -1,3 +1,9 @@
+October 28 terrain-wide repair: all generated ground uses a shared grid with adjacent height differences capped at 20.8 m per 26 m cell, reducing abrupt wall-like spikes. Terrain and scenery foundations use the same grid. Road checks and 90 Play-mode checks passed; user review of the reported location and target-PC FPS is still needed.
+
+October 28 opening-straight repair: locally softened a terrain shelf that produced a steep triangular wall where nearby route sections meet. The repaired driver-height preview no longer shows the wall; road geometry checks and 90 Play-mode checks passed. User confirmation of the repaired view remains pending.
+
+October 28 Arctic landmark polish: added an opaque frozen basin, ice formations, a static mining rig and warmer forge details, retaining the approved route and handling. Unity found zero sampled forward/overhead obstructions, road holes or buried points and passed 90 Play-mode checks. Scenery now has 751 renderers and 157,060 triangles. Full-lap cockpit review and sustained target-PC FPS remain to be checked; earlier counts below are historical.
+
 # Aurora Forge v01
 
 South Korea-inspired route revision, October 28, 2026: long straight, hairpin and a technical return sector, retaining the Arctic scenery and existing handling. The revised route is 4,489 m with elevation 32.0?63.7 m, maximum sampled grade 12.9%, and minimum sampled corner radius 32.6 m. Timing ID is AuroraForgeV02. Native Unity road checks found no sampled obstructions, holes or buried road points; 90 Play-mode checks passed. Revised scenery has 737 renderers and 155,980 triangles. Full-lap handling, AI and target-PC FPS remain to be tested. Notes below describe the original route and verification.

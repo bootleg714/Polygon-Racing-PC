@@ -12,10 +12,15 @@ namespace PolygonRacing
         public const string AnimatedName="Aurora Forge - animated machinery";
         public const float Barrier=12f,DeckEdge=13.2f;
         const float ChunkSize=220,Floor=-35;
+        const int TerrainStep=26,TerrainMinX=-1120,TerrainMinZ=-620,TerrainCellsX=89,TerrainCellsZ=80;
+        static float[,] terrainGrid;
         static Material road,deck,steel,black,paint,basalt,basaltLight,basaltDark,dust,
-            cyan,amber,violet,warmWindow,glass,energy,data,plum;
+            cyan,amber,violet,warmWindow,glass,energy,data,plum,forgeHeat;
         static Vector3[] samples;
         static float[] sampleHeights;
+        static Vector3 lakeCenter;
+        static Quaternion lakeInverse;
+        static float lakeLevel;
         sealed class Pad {public Vector3 Center;public Quaternion Inverse;public float HalfX,HalfZ,Height;}
         static readonly List<Pad> pads=new List<Pad>();
         public static int StructureCount {get;private set;}
@@ -68,6 +73,7 @@ namespace PolygonRacing
             glass=Mat("Control room glass",new Color(.06f,.11f,.17f),0,.5f);
             plum=Mat("Reactor cladding",new Color(.22f,.34f,.43f));
             energy=Mat("Frozen glacial river",new Color(.30f,.67f,.78f),.25f,.5f);
+            forgeHeat=Mat("Forge warm glow",new Color(1f,.26f,.045f),2f);
             var panel=Resources.Load<Shader>("PolygonNeonPanel");
             if(!panel)throw new InvalidOperationException("PolygonNeonPanel.shader is missing.");
             data=new Material(panel){name="AF Cascading conduit",enableInstancing=true};
@@ -88,9 +94,19 @@ namespace PolygonRacing
         }
         static void PrepareTerrain()
         {
+            terrainGrid=null;
             const int n=512;samples=new Vector3[n];sampleHeights=new float[n];
             for(int i=0;i<n;i++)
             {float d=PolygonCircuit.Length*i/n;samples[i]=PolygonCircuit.AtDistance(d);sampleHeights[i]=PolygonCircuit.Elevation(d);}
+            float lakeD=D(13f);lakeCenter=RoadPoint(lakeD,200);
+            lakeInverse=Quaternion.Inverse(Quaternion.LookRotation(T(lakeD)));
+            lakeLevel=lakeCenter.y-12;
+        }
+        static float LakeWeight(Vector3 point)
+        {
+            var local=lakeInverse*(point-lakeCenter);
+            float r=Mathf.Sqrt(local.x*local.x/(120f*120f)+local.z*local.z/(270f*270f));
+            return 1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(.72f,1f,r));
         }
         static int Outside(float d)
         {
@@ -112,6 +128,18 @@ namespace PolygonRacing
         }
         public static float GroundHeight(float x,float z)
         {
+            if(terrainGrid!=null)
+            {
+                float gx=(x-TerrainMinX)/TerrainStep,gz=(z-TerrainMinZ)/TerrainStep;
+                if(gx>=0&&gx<=TerrainCellsX&&gz>=0&&gz<=TerrainCellsZ)
+                {
+                    int ix=Mathf.Min(Mathf.FloorToInt(gx),TerrainCellsX-1);
+                    int iz=Mathf.Min(Mathf.FloorToInt(gz),TerrainCellsZ-1);
+                    float a=Mathf.Lerp(terrainGrid[ix,iz],terrainGrid[ix+1,iz],gx-ix);
+                    float b=Mathf.Lerp(terrainGrid[ix,iz+1],terrainGrid[ix+1,iz+1],gx-ix);
+                    return Mathf.Lerp(a,b,gz-iz);
+                }
+            }
             var p=new Vector3(x,0,z);float nearest=float.MaxValue,height=60;int closest=0;
             for(int i=0;i<samples.Length;i++)
             {
@@ -132,6 +160,16 @@ namespace PolygonRacing
                 float dist=Vector3.Distance(samples[i],p);
                 if(dist<128)result=Mathf.Min(result,sampleHeights[i]-5+Mathf.Max(0,dist-25)*.55f);
             }
+            // Shape one broad frozen basin, keeping every road segment's shelf clear.
+            float lake=LakeWeight(p)*Mathf.SmoothStep(0,1,Mathf.InverseLerp(45,75,Mathf.Sqrt(nearest)));
+            if(lake>0)result=Mathf.Lerp(result,lakeLevel,lake);
+            // Soften the raised shelf between the opening straight and nearby return.
+            // A hard switch between their nearest samples produced a sheer triangle.
+            float opening=D(.85f);var shelfCenter=RoadPoint(opening,-100);
+            var localShelf=Quaternion.Inverse(Quaternion.LookRotation(T(opening)))*(p-shelfCenter);
+            float shelfRadius=Mathf.Sqrt(localShelf.x*localShelf.x/(100f*100f)+localShelf.z*localShelf.z/(300f*300f));
+            float shelfFade=1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(.65f,1f,shelfRadius));
+            if(shelfFade>0)result=Mathf.Lerp(result,Mathf.Min(result,RoadPoint(opening).y-7),shelfFade);
             foreach(var pad in pads)
             {
                 var local=pad.Inverse*(p-pad.Center);
@@ -192,14 +230,43 @@ namespace PolygonRacing
                 float d=length-9-slot*8;Ribbon(chunks.At(RoadPoint(d)),paint,d,d+.14f,side*3-1,side*3+1,.035f);
             }
         }
+        static void PrepareTerrainGrid()
+        {
+            // Lower only anomalous spikes, with a bounded rise per terrain cell.
+            // Two directional sweeps propagate the gentler shelf over the whole grid.
+            var grid=new float[TerrainCellsX+1,TerrainCellsZ+1];
+            for(int ix=0;ix<=TerrainCellsX;ix++)for(int iz=0;iz<=TerrainCellsZ;iz++)
+                grid[ix,iz]=GroundHeight(TerrainMinX+ix*TerrainStep,TerrainMinZ+iz*TerrainStep);
+            float maxStep=TerrainStep*.8f;
+            for(int ix=0;ix<=TerrainCellsX;ix++)for(int iz=0;iz<=TerrainCellsZ;iz++)
+            {
+                if(ix>0)grid[ix,iz]=Mathf.Min(grid[ix,iz],grid[ix-1,iz]+maxStep);
+                if(iz>0)grid[ix,iz]=Mathf.Min(grid[ix,iz],grid[ix,iz-1]+maxStep);
+            }
+            for(int ix=TerrainCellsX;ix>=0;ix--)for(int iz=TerrainCellsZ;iz>=0;iz--)
+            {
+                if(ix<TerrainCellsX)grid[ix,iz]=Mathf.Min(grid[ix,iz],grid[ix+1,iz]+maxStep);
+                if(iz<TerrainCellsZ)grid[ix,iz]=Mathf.Min(grid[ix,iz],grid[ix,iz+1]+maxStep);
+            }
+            float steepest=0;
+            for(int ix=0;ix<=TerrainCellsX;ix++)for(int iz=0;iz<=TerrainCellsZ;iz++)
+            {
+                if(ix>0)steepest=Mathf.Max(steepest,Mathf.Abs(grid[ix,iz]-grid[ix-1,iz]));
+                if(iz>0)steepest=Mathf.Max(steepest,Mathf.Abs(grid[ix,iz]-grid[ix,iz-1]));
+            }
+            if(steepest>maxStep+.01f)throw new InvalidOperationException("Aurora terrain still has an abrupt height step: "+steepest);
+            terrainGrid=grid;
+            Debug.Log($"AURORA_TERRAIN_SLOPE_OK: max neighbouring rise {steepest:0.0} m per {TerrainStep} m");
+        }
         static void BuildTerrain(Chunks chunks)
         {
-            const int step=26;
-            for(int x=-1120;x<1170;x+=step)for(int z=-620;z<1450;z+=step)
+            for(int ix=0;ix<TerrainCellsX;ix++)for(int iz=0;iz<TerrainCellsZ;iz++)
             {
-                var a=new Vector3(x,GroundHeight(x,z),z);var b=new Vector3(x+step,GroundHeight(x+step,z),z);
-                var c=new Vector3(x+step,GroundHeight(x+step,z+step),z+step);var d=new Vector3(x,GroundHeight(x,z+step),z+step);
-                var material=((x/step+z/step)&7)==0?basaltLight:basalt;
+                int x=TerrainMinX+ix*TerrainStep,z=TerrainMinZ+iz*TerrainStep;
+                var a=new Vector3(x,terrainGrid[ix,iz],z);var b=new Vector3(x+TerrainStep,terrainGrid[ix+1,iz],z);
+                var c=new Vector3(x+TerrainStep,terrainGrid[ix+1,iz+1],z+TerrainStep);var d=new Vector3(x,terrainGrid[ix,iz+1],z+TerrainStep);
+                var mid=(a+b+c+d)*.25f;
+                var material=LakeWeight(mid)>.72f?energy:((x/TerrainStep+z/TerrainStep)&7)==0?basaltLight:basalt;
                 chunks.At(a).Quad(material,a,b,c,d,(a+b+c+d)*.25f+Vector3.down);
             }
             // Ground well outside the circuit fades into matching distant rock, rather than a void.
@@ -494,6 +561,8 @@ namespace PolygonRacing
                 foreach(int side in new[]{-1,1})
                 {
                     kit.Beam(amber,RoadPoint(d,side*13.8f,11),RoadPoint(end,side*13.8f,11),.19f,.24f);
+                    if(name=="Forge Cavern"&&((int)((d-a)/4))%6==0)
+                        kit.Beam(forgeHeat,RoadPoint(d,side*13.75f,4),RoadPoint(d,side*13.75f,8),.4f,.4f);
                     if(((int)(d-a)/4)%7==0)
                         kit.Beam(steel,RoadPoint(d,side*13.8f,1.5f),RoadPoint(d,side*13.8f,23),.38f,.38f);
                 }
@@ -546,9 +615,64 @@ namespace PolygonRacing
             }
             Ring(body,new Vector3(0,25,-30.6f),15.5f,steel,2,64);
             Ring(body,new Vector3(0,25,-31.7f),13.5f,cyan,.7f,64);
-            body.Box(data,new Vector3(0,25,-30.8f),new Vector3(16,16,.25f));body.Emit(complex);
+            body.Box(forgeHeat,new Vector3(0,25,-30.8f),new Vector3(16,16,.25f));
+            foreach(int side in new[]{-1,1})
+            {
+                body.Box(black,new Vector3(side*15,16,-30.6f),new Vector3(7,15,.3f));
+                body.Box(forgeHeat,new Vector3(side*15,16,-30.82f),new Vector3(5.5f,13,.08f));
+                body.Beam(amber,new Vector3(side*22,3,-32.1f),new Vector3(side*22,41,-32.1f),.32f,.32f);
+            }
+            body.Emit(complex);
             var mount=new GameObject("Reactor core rotor mount").transform;mount.SetParent(complex,false);mount.localPosition=new Vector3(0,25,-32.1f);
             Rotor(mount,"Slow reactor core",12.2f,8);StructureCount++;
+        }
+        static void BuildIceLandmarks(Chunks chunks)
+        {
+            foreach(float knot in new[]{10.8f,17.8f,31.8f})
+            {
+                float d=D(knot);int side=Outside(d);var site=RoadPoint(d,side*105);
+                if(!ClearRock(site,22))continue;
+                site.y=GroundHeight(site.x,site.z);var kit=chunks.At(site);
+                for(int i=0;i<3;i++)
+                {
+                    var p=site+T(d)*(i-1)*9+S(d)*side*(i==1?5:0);
+                    float h=28+i*9;
+                    kit.Chamfered(i==1?basaltLight:basalt,p,5,4,1.2f,1.2f,0,h,1);
+                    kit.Beam(cyan,p+Vector3.up*2,p+Vector3.up*(h-1),.16f,.16f);
+                }
+            }
+        }
+        static void BuildMiningRig(Chunks chunks)
+        {
+            // A static silhouette: no particles, realtime lights or moving machinery.
+            foreach(float knot in new[]{17.8f,19.2f,27.4f,30.8f})
+            {
+                float d=D(knot);int side=Outside(d);var p=RoadPoint(d,side*125);
+                if(!ClearRock(p,36))continue;
+                p.y=GroundHeight(p.x,p.z);var rot=Quaternion.LookRotation(T(d));
+                Vector3 V(float x,float y,float z)=>p+rot*new Vector3(x,y,z);
+                var kit=chunks.At(p);
+                foreach(int s in new[]{-1,1})kit.Box(black,V(s*14,2,0),new Vector3(8,4,35),rot);
+                kit.Box(deck,V(0,6,0),new Vector3(32,5,34),rot);
+                kit.Box(plum,V(-3,14,-3),new Vector3(24,12,22),rot);
+                kit.Box(warmWindow,V(-3,17,-14.1f),new Vector3(15,2,.15f),rot);
+                kit.Box(steel,V(-3,21,-3),new Vector3(26,2,24),rot);
+                kit.Beam(steel,V(5,18,0),V(5,39,28),3,3);
+                kit.Beam(amber,V(5,20,-.4f),V(5,40,27.6f),.24f,.24f);
+                FrameForMiningWheel(kit,V(5,39,28),rot);
+                StructureCount++;return;
+            }
+        }
+        static void FrameForMiningWheel(PolygonSceneryKit kit,Vector3 center,Quaternion rotation)
+        {
+            const int segments=16;float radius=8;
+            for(int i=0;i<segments;i++)
+            {
+                float a=i*Mathf.PI*2/segments,b=(i+1)*Mathf.PI*2/segments;
+                Vector3 A(float t)=>center+rotation*new Vector3(0,Mathf.Cos(t)*radius,Mathf.Sin(t)*radius);
+                kit.Beam(steel,A(a),A(b),1.4f,1.4f);
+                if(i%2==0)kit.Beam(steel,center,A(a),.7f,.7f);
+            }
         }
         static void BuildBeacons(Transform parent,Chunks chunks)
         {
@@ -607,12 +731,12 @@ namespace PolygonRacing
         public static Transform Build(Transform root)
         {
             if(PolygonCircuit.Layout!=PolygonCircuitLayout.AuroraForge)throw new InvalidOperationException("Select Aurora Forge before building the canyon.");
-            Palette();PrepareTerrain();PreparePads();StructureCount=RockCount=0;
+            Palette();PrepareTerrain();PreparePads();PrepareTerrainGrid();StructureCount=RockCount=0;
             var parent=new GameObject(SceneryName).transform;parent.SetParent(root,false);var chunks=new Chunks();
             BuildRoad(chunks);BuildTerrain(chunks);BuildCliffs(chunks);BuildStart(parent);BuildIndustry(chunks);BuildSignalTowers(parent,chunks);
             BuildViaduct(chunks,15.6f,18.3f,true);BuildViaduct(chunks,28.6f,30.7f,false);
             BuildTunnel(parent,chunks,6.1f,6.7f,"Conduit rock passage");
-            BuildReactor(parent,chunks);
+            BuildReactor(parent,chunks);BuildIceLandmarks(chunks);BuildMiningRig(chunks);
             ConduitFalls(chunks,715,1,91);ConduitFalls(chunks,430,-1,75);ConduitFalls(chunks,70,1,47);
             BuildBeacons(parent,chunks);chunks.Emit(parent);BuildAurora(parent);
             Debug.Log($"Aurora Forge canyon: {RockCount} faceted rock formations, {StructureCount} industrial structures. Opaque scenery, shared materials, no extra local real-time lights.");
