@@ -1,3 +1,5 @@
+October 28 city polish: market roofs and animated signage, taller financial-district towers, an open return skyline and an elevated train alongside the starting straight. The layout and handling are unchanged. Unity checked the rebuilt road from above and forward with zero sampled obstructions and passed 34 Play-mode checks. Updated scenery has 309 buildings, 1,041 renderers and 256,446 triangles. Full-lap cockpit review and sustained target-PC FPS remain to be tested. Earlier scene statistics below are historical.
+
 # Neon Meridian v01
 
 Hungary-inspired route revision (October 28, 2026): 3,604 m with a long straight, tight first hairpin and linked bends. Neon city identity retained. Timing ID is NeonMeridianV02, so previous route records remain separate. The updated scene was generated and verified in an isolated Unity project: 1,052 scenery renderers, 266,454 triangles, no sampled road-corridor obstructions, and 34 Play-mode smoke checks passed. Full driven laps, AI behavior through tight turns, readability and sustained FPS on target hardware remain to be tested.

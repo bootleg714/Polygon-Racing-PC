@@ -87,7 +87,17 @@ public static class NeonProbe
             if(Physics.Raycast(p,Vector3.up,out var hit,4.2f))
             {blocked++;Debug.LogError($"BLOCKED_ROAD d={d:0.0} lateral={lateral} hit={hit.collider.name} height={hit.distance:0.00}");}
         }
+        int forwardBlocked=0;
+        for(float d=0;d<length;d+=2)foreach(float lateral in new[]{-8f,-6f,-4f,-2f,0f,2f,4f,6f,8f})
+            foreach(float height in new[]{.8f,1.8f,3f})
+            {
+                var start=PolygonNeonArt.RoadPoint(d,lateral,height);
+                var delta=PolygonNeonArt.RoadPoint(d+2,lateral,height)-start;
+                if(Physics.Raycast(start,delta.normalized,out var hit,delta.magnitude))
+                {forwardBlocked++;Debug.LogError($"NEON_FORWARD_BLOCKED d={d:0.0} lateral={lateral} height={height} hit={hit.collider.name}");}
+            }
         foreach(var collider in colliders)Object.DestroyImmediate(collider);
+        Check(forwardBlocked==0,"Forward road scan has "+forwardBlocked+" obstructions");
         Check(blocked==0,"Road corridor has "+blocked+" obstructions");
         Check(triangles<1200000,"Scenery triangle budget exceeded");
         Check(meshes<1600,"Scenery renderer budget exceeded");
@@ -96,7 +106,7 @@ public static class NeonProbe
         Check(scriptMissing==0,"Missing scripts in scene");
         Debug.Log($"NEON_GEOMETRY: {length:0.0}m, altitude {min:0.0}-{max:0.0}m, maximum grade {grade*100:0.0}%, {meshes} meshes, {triangles} triangles");
         Directory.CreateDirectory("Inspection");
-        File.WriteAllText("Inspection/report.txt",$"Native Unity geometry verification\nLength: {length:0.0} m\nAltitude: {min:0.0}-{max:0.0} m\nMaximum grade: {grade*100:0.0}%\nScenery meshes: {meshes}\nScenery triangles: {triangles}\nRoad corridor obstructions: {blocked}\nChecks: {checks}\n");
+        File.WriteAllText("Inspection/report.txt",$"Native Unity geometry verification\nLength: {length:0.0} m\nAltitude: {min:0.0}-{max:0.0} m\nMaximum grade: {grade*100:0.0}%\nScenery meshes: {meshes}\nScenery triangles: {triangles}\nForward road scan obstructions: {forwardBlocked}\nRoad corridor obstructions: {blocked}\nChecks: {checks}\n");
     }
     static void Capture()
     {

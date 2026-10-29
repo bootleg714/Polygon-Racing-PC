@@ -271,16 +271,22 @@ namespace PolygonRacing
                 float knot=PolygonCircuit.AngleAtDistance(d)/(Mathf.PI*2)*PolygonCircuit.KnotCount;
                 bool crownVista=knot>10.0f&&knot<15.2f;
                 bool overlook=knot>15.2f&&knot<19.5f;
+                bool market=knot>4.5f&&knot<9.5f;
+                bool finance=knot>19.5f&&knot<26.5f;
+                bool skylineVista=knot>32f&&knot<36.5f;
                 foreach(int side in new[]{-1,1})for(int band=0;band<2;band++)
                 {
                     int id=seed++;if(crownVista||(overlook&&side>0))continue;
                     if(knot>27.4f&&knot<30.8f)continue; // Tunnel has its own service architecture.
+                    if(skylineVista&&side>0)continue; // Keep the raised return open to the city.
                     float w=20+Hash(d,side+band,11)*20,depth=20+Hash(d,band,32)*18;
                     float lateral=side*(34+w*.25f+band*64);
                     var p=RoadPoint(d,lateral);p.y=GroundHeight(p.x,p.z);
                     var rotation=Quaternion.LookRotation(T(d))*Quaternion.Euler(0,side<0?180:0,0);
                     if(!CanPlace(p,w+4,depth+4,rotation))continue;
                     float h=28+Hash(d,side,82)*78+(band>0?32:0);
+                    if(market)h*=.72f; // Lower roofs give the lanterns and walkways room to read.
+                    if(finance)h+=band==0?32:55; // Denser, taller silhouette around the financial quarter.
                     Tower(chunks.At(p),p,w,depth,h,rotation,id,true);
                     if(band==0&&id%3==0)TerraceGarden(chunks.At(p),p+rotation*new Vector3(-w*.25f,2.2f,-depth*.5f-3),rotation);
                 }
@@ -300,6 +306,8 @@ namespace PolygonRacing
                 // should be visible from the driver's seat, not only from an aerial camera.
                 float nearest=PolygonCircuit.AngleAtDistance(PolygonCircuit.ProjectLapFlat(p,out _)*PolygonCircuit.Length)/(Mathf.PI*2)*PolygonCircuit.KnotCount;
                 if(nearest>10&&nearest<15.5f&&offset<110)continue;
+                if(nearest>32&&nearest<36.5f&&offset<145)continue;
+                if(nearest>19.5f&&nearest<26.5f)h+=25;
                 Tower(chunks.At(p),p,w,depth,h,rotation,seed++,offset<180);
             }
         }
@@ -436,6 +444,16 @@ namespace PolygonRacing
                     kit.Box(black,stall+Vector3.up*1.0f,new Vector3(4,2,6),rot);
                     kit.Box(side<0?magenta:violet,stall+Vector3.up*3.7f,new Vector3(5,.3f,7),rot);
                     kit.Box(warmWindow,stall+Vector3.up*2.5f,new Vector3(3.6f,.25f,5.5f),rot);
+                    // Small opaque animated signs give the market a warmer, livelier identity.
+                    // Check the whole footprint against every part of the loop first.
+                    var sign=RoadPoint(d+23,side*26,0);
+                    if(CanPlace(sign,5,3,rot,8))
+                    {
+                        kit.Box(steel,sign+Vector3.up*3,new Vector3(.35f,6,.35f),rot);
+                        kit.Box(black,sign+Vector3.up*5.5f,new Vector3(4.2f,2.6f,.35f),rot);
+                        kit.Box(side<0?dataPink:dataCyan,sign+Vector3.up*5.5f-T(d+23)*.21f,new Vector3(3.6f,2,.08f),rot);
+                        kit.Beam(amber,sign+Vector3.up*6.9f-S(d+23)*2,sign+Vector3.up*6.9f+S(d+23)*2,.12f,.12f);
+                    }
                 }
             }
         }
@@ -511,14 +529,18 @@ namespace PolygonRacing
         }
         static void BuildTransit(Transform parent,Chunks chunks)
         {
-            float d=D(7.4f);var p=RoadPoint(d);var axis=(S(d)+T(d)*.25f).normalized;
-            float height=p.y+29;var a=p-axis*200;var b=p+axis*200;a.y=b.y=height;
-            var kit=chunks.At(p);
+            // Run beside the straight rather than crossing it, so the train is visible
+            // from the cockpit for longer. Keep the guideway outside every road segment.
+            float first=D(.7f),last=D(3.6f);
+            var a=RoadPoint(first,31,12);var b=RoadPoint(last,31,12);
+            float height=Mathf.Max(a.y,b.y);a.y=b.y=height;
+            var axis=(b-a).normalized;var kit=chunks.At(a);
             kit.Beam(concrete,a,b,5,1.3f);kit.Beam(cyan,a+Vector3.up*.85f,b+Vector3.up*.85f,.2f,.2f);
             for(int i=0;i<7;i++)
             {
                 var support=Vector3.Lerp(a,b,i/6f);PolygonCircuit.ProjectLapFlat(support,out float offset);
-                if(offset<19)continue;float floor=GroundHeight(support.x,support.z);
+                if(offset<22)continue;float floor=GroundHeight(support.x,support.z);
+                if(height<=floor)continue;
                 kit.Box(steel,new Vector3(support.x,(floor+height)*.5f,support.z),new Vector3(2,height-floor,2));
             }
             var train=new GameObject("Lantern Rise - elevated express train").transform;train.SetParent(parent,false);
@@ -544,6 +566,10 @@ namespace PolygonRacing
             var chunks=new Chunks();
             // Reserve the garage block and skyline landmark sites before populating ordinary lots.
             var pits=RoadPoint(D(1.4f),-37);occupied.Add(new Bounds(new Vector3(pits.x,0,pits.z),new Vector3(145,2,70)));
+            var transitA=RoadPoint(D(.7f),31);var transitB=RoadPoint(D(3.6f),31);
+            var transitCenter=(transitA+transitB)*.5f;
+            occupied.Add(new Bounds(new Vector3(transitCenter.x,0,transitCenter.z),
+                new Vector3(Mathf.Abs(transitB.x-transitA.x)+18,2,Mathf.Abs(transitB.z-transitA.z)+18)));
             BuildRoad(chunks);BuildTerrain(chunks);BuildCrown(chunks);BuildCascade(chunks);
             BuildCity(chunks);BuildStart(parent);BuildMarket(parent,chunks);BuildTunnel(parent,chunks);
             BuildFurniture(parent,chunks);BuildTransit(parent,chunks);chunks.Emit(parent);
