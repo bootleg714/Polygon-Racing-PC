@@ -135,6 +135,18 @@ namespace PolygonRacing
                 float dist=Vector3.Distance(samples[i],p);
                 if(dist<128)result=Mathf.Min(result,sampleHeights[i]-5+Mathf.Max(0,dist-25)*.55f);
             }
+            // Open a low canyon-facing shelf beside the two long straights, so the
+            // distant cliffs and reactor can be seen without changing the road itself.
+            float knot=PolygonCircuit.AngleAtDistance(PolygonCircuit.Length*closest/samples.Length)/(Mathf.PI*2)*PolygonCircuit.KnotCount;
+            if((knot<4.2f||knot>44f&&knot<52f)&&nearest<180*180)
+            {
+                var forward=T(PolygonCircuit.Length*closest/samples.Length);
+                var right=Vector3.Cross(Vector3.up,forward);
+                float towardRiver=Vector3.Dot(new Vector3(RiverX(samples[closest].z)-samples[closest].x,0,0),right);
+                float side=Vector3.Dot(p-samples[closest],right);
+                if(side*towardRiver>0&&Mathf.Abs(side)>30)
+                    result=Mathf.Min(result,height-16+Mathf.Abs(side)*.05f);
+            }
             foreach(var pad in pads)
             {
                 var local=pad.Inverse*(p-pad.Center);
@@ -524,6 +536,58 @@ namespace PolygonRacing
             kit.Box(black,Vector3.zero,new Vector3(radius*.34f,radius*.34f,.5f));kit.Emit(rotor);
             var motion=rotor.gameObject.AddComponent<PolygonIonRiftMotion>();motion.DegreesPerSecond=speed;
         }
+        static bool ClearLandmarkFootprint(Vector3 center,Quaternion rotation,float halfWidth,float halfDepth)
+        {
+            for(int x=-1;x<=1;x++)for(int z=-1;z<=1;z++)
+            {
+                var p=center+rotation*new Vector3(x*halfWidth,0,z*halfDepth);
+                PolygonCircuit.ProjectLapFlat(p,out float offset);
+                if(offset<25)return false;
+            }
+            return true;
+        }
+        static void BuildGorgeEntrance(Transform parent)
+        {
+            float d=D(22.25f);var frame=Frame(parent,"Reactor Gorge - rock gateway",d);
+            var kit=new PolygonSceneryKit("Reactor Gorge - rock gateway");
+            foreach(int side in new[]{-1,1})
+            {
+                var local=new Vector3(side*37,0,0);
+                if(!ClearLandmarkFootprint(frame.TransformPoint(local),frame.rotation,7,6))continue;
+                kit.Chamfered(basaltDark,local,7,6,5,4,0,34,2);
+                kit.Chamfered(basalt,local+new Vector3(side*3,0,2),4,4,2,3,0,42,1.5f);
+                kit.Beam(amber,local+new Vector3(-side*4,5,-6.1f),local+new Vector3(-side*3,25,-4.2f),.22f,.22f);
+            }
+            kit.Beam(basaltDark,new Vector3(-24,29,0),new Vector3(24,29,0),7,7);
+            kit.Beam(cyan,new Vector3(-18,25,-3.6f),new Vector3(18,25,-3.6f),.24f,.24f);
+            kit.Emit(frame);StructureCount++;
+        }
+        static void BuildRiftConduits(Chunks chunks)
+        {
+            // Elevated cross-canyon connections: reuse opaque materials and keep
+            // their supports clear of all track segments, including nearby returns.
+            foreach(float knot in new[]{10.3f,31.5f,47.5f})
+            {
+                float d=D(knot);var center=RoadPoint(d);var right=S(d);
+                var kit=chunks.At(center);
+                var a=center-right*100+Vector3.up*53;var b=center+right*100+Vector3.up*53;
+                for(int pipe=0;pipe<3;pipe++)
+                {
+                    var shift=T(d)*(pipe-1)*4;
+                    kit.Beam(steel,a+shift,b+shift,1.7f,1.7f);
+                    kit.Beam(pipe==1?violet:cyan,a+shift+Vector3.up*.95f,b+shift+Vector3.up*.95f,.22f,.22f);
+                }
+                foreach(int side in new[]{-1,1})
+                {
+                    var foot=center+right*(side*100);
+                    if(!ClearLandmarkFootprint(foot,Quaternion.identity,4,4))continue;
+                    float floor=GroundHeight(foot.x,foot.z);
+                    var top=foot+Vector3.up*53;foot.y=floor;
+                    if(top.y>foot.y)kit.Beam(deck,foot,top,3,3);
+                    kit.Box(amber,top,new Vector3(3,.8f,3));
+                }
+            }
+        }
         static void BuildReactor(Transform parent,Chunks chunks)
         {
             BuildTunnel(parent,chunks,22.25f,24.7f,"Reactor Gorge");
@@ -547,6 +611,16 @@ namespace PolygonRacing
                 body.Column(deck,new Vector3(side*25,44,16),3.5f,2,39,8);
                 body.Column(amber,new Vector3(side*25,83,16),2,2,.9f,8);
             }
+            // A distinctive high-energy crown remains visible beyond the immediate tunnel.
+            body.Column(deck,new Vector3(0,47,0),7,5,45,10);
+            body.Column(steel,new Vector3(0,92,0),5,2,20,10);
+            body.Column(cyan,new Vector3(0,112,0),2.2f,2.2f,2,8);
+            foreach(int side in new[]{-1,1})
+            {
+                body.Beam(steel,new Vector3(side*25,48,-9),new Vector3(side*7,94,-9),2,2);
+                body.Beam(violet,new Vector3(side*24,50,-10.1f),new Vector3(side*6,93,-10.1f),.34f,.34f);
+            }
+            Ring(body,new Vector3(0,89,-9),9.5f,cyan,.7f,32);
             Ring(body,new Vector3(0,25,-30.6f),15.5f,steel,2,64);
             Ring(body,new Vector3(0,25,-31.7f),13.5f,cyan,.7f,64);
             body.Box(data,new Vector3(0,25,-30.8f),new Vector3(16,16,.25f));body.Emit(complex);
@@ -591,7 +665,7 @@ namespace PolygonRacing
             BuildRoad(chunks);BuildTerrain(chunks);BuildCliffs(chunks);BuildStart(parent);BuildIndustry(chunks);BuildSignalTowers(parent,chunks);
             BuildViaduct(chunks,15.6f,18.3f,true);BuildViaduct(chunks,28.6f,30.7f,false);
             BuildTunnel(parent,chunks,6.1f,6.7f,"Conduit rock passage");
-            BuildReactor(parent,chunks);
+            BuildReactor(parent,chunks);BuildGorgeEntrance(parent);BuildRiftConduits(chunks);
             ConduitFalls(chunks,715,1,91);ConduitFalls(chunks,430,-1,75);ConduitFalls(chunks,70,1,47);
             BuildBeacons(parent,chunks);chunks.Emit(parent);
             Debug.Log($"Ion Rift canyon: {RockCount} faceted rock formations, {StructureCount} industrial structures. Opaque scenery, shared materials, no extra local real-time lights.");

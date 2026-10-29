@@ -133,6 +133,16 @@ public static class IonRiftProbe
                     buried++;Debug.LogError($"ION_BURIED_ROAD d={d:0.0} lateral={lateral} mesh={above.collider.name} exitHeight={above.distance:0.00}");break;
                 }
             }
+            int forwardBlocked=0;
+            for(float d=0;d<length;d+=2)foreach(float lateral in new[]{-8f,-6f,-4f,-2f,0f,2f,4f,6f,8f})
+                foreach(float height in new[]{.8f,1.8f,3f})
+                {
+                    var start=PolygonIonRiftArt.RoadPoint(d,lateral,height);
+                    var delta=PolygonIonRiftArt.RoadPoint(d+2,lateral,height)-start;
+                    if(Physics.Raycast(start,delta.normalized,out var hit,delta.magnitude))
+                    {forwardBlocked++;Debug.LogError($"ION_FORWARD_BLOCKED d={d:0.0} lateral={lateral} height={height} hit={hit.collider.name}");}
+                }
+            Check(forwardBlocked==0,"Forward road scan found "+forwardBlocked+" obstructions");
             Check(blocked==0,"Sampled road corridor has "+blocked+" obstructions");
             Check(unsupported==0,"Sampled road surface has "+unsupported+" holes");
             Check(buried==0,"Sampled road points buried in geometry: "+buried);
@@ -143,7 +153,7 @@ public static class IonRiftProbe
             Check(missingScripts==0,"Missing script components in scene");
             Debug.Log($"ION_GEOMETRY: {length:0.0}m, altitude {min:0.0}-{max:0.0}m, maximum grade {grade*100:0.0}%, max bank {maxBank:0.0} degrees, {meshes} meshes, {triangles} triangles");
             Directory.CreateDirectory(Output);
-            File.WriteAllText(Output+"/report.txt",$"Native Unity geometry verification\nLength: {length:0.0} m\nAltitude: {min:0.0}-{max:0.0} m\nMaximum grade: {grade*100:0.0}%\nMaximum bank: {maxBank:0.0} degrees\nScenery meshes: {meshes}\nScenery triangles: {triangles}\nRoad corridor obstructions: {blocked}\nRoad surface holes: {unsupported}\nBuried road points: {buried}\nChecks: {checks}\nCorridor sampling: every 6 m, at lateral -8/0/+8 m, 4.2 m upward clearance above a 0.22 m start height, downward surface queries and backface-aware solid-exit checks.\n");
+            File.WriteAllText(Output+"/report.txt",$"Native Unity geometry verification\nLength: {length:0.0} m\nAltitude: {min:0.0}-{max:0.0} m\nMaximum grade: {grade*100:0.0}%\nMaximum bank: {maxBank:0.0} degrees\nScenery meshes: {meshes}\nScenery triangles: {triangles}\nForward road scan obstructions: {forwardBlocked}\nRoad corridor obstructions: {blocked}\nRoad surface holes: {unsupported}\nBuried road points: {buried}\nChecks: {checks}\nCorridor sampling: every 6 m, at lateral -8/0/+8 m, 4.2 m upward clearance above a 0.22 m start height, downward surface queries and backface-aware solid-exit checks.\n");
         }
         finally {Physics.queriesHitBackfaces=oldBackfaces;foreach(var collider in colliders)if(collider)Object.DestroyImmediate(collider);}
     }

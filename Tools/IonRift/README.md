@@ -1,3 +1,5 @@
+October 28 canyon polish: opened canyon-facing shelves on selected straights, added elevated luminous conduit spans, a taller reactor crown and a rock-framed tunnel entrance. The approved route and handling are unchanged. Unity checks found zero sampled forward/overhead obstructions, road holes or buried points, and 90 Play-mode checks passed. Updated scenery has 780 renderers and 209,965 triangles. A full-lap cockpit review and sustained target-PC FPS check remain to be done. Earlier scenery counts below are historical.
+
 # Ion Rift v01
 
 Malaysia-inspired route revision, October 28, 2026: paired long straights, a final hairpin and a more technical middle sector in the existing neon canyon. The original route notes below are historical. The revised lap is 6,821 m, elevation 60.0?104.2 m, maximum sampled grade 6.1%, minimum sampled corner radius 26.7 m, and uses timing ID IonRiftV02. Unity verified road clearance and surfaces and passed 90 Play-mode checks; 775 scenery renderers and 208,913 triangles. Full-lap handling and AI behavior, visual quality and FPS on the target PC remain to be tested.
