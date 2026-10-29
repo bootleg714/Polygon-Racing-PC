@@ -1,4 +1,18 @@
-## Neon polish option 2 (lighting & atmosphere): wet road on Ion Rift, Aurora Forge, Starfall Port - October 29, 2026 (awaiting Thomas's review)
+## Neon polish option 3 (skyline & landmarks) on all four neon stages - October 29, 2026 (awaiting Thomas's review)
+
+Thomas approved the wet roads on all four stages ("everything looks good") and asked for option 3. New shared files:
+- `Runtime/PolygonNeonSkyline.cs`: per-stage `PolygonNeonSkylineStyle`; builds (a) a ring of distant megastructures beyond the circuit (radius + 300..780 m, 320-820 m tall, at least 260 m from any road) with wrapping light bands, edge lights, a big animated PolygonNeonPanel screen facing the circuit and a mast beacon; (b) sky beams (thin opaque emissive columns 1.9 km tall, >= 70 m from the road); (c) flying-traffic rings 190-230 m above the highest road point: each ring is ONE baked mesh of craft (drawn about 2.2x real size, every 5th a freighter) with long light trails; plus `Tether` and `Mothership` helpers.
+- `Runtime/PolygonNeonSkyLane.cs`: rotates a traffic ring about the circuit centre (about 45-75 m/s along the ring, alternating directions), leaves "Circuit - editable scenery" in Awake before static batching (turbine lesson), pauses with the race.
+Per stage (each `Polygon<Stage>Art.BuildSkyline`, called just before `chunks.Emit`):
+- Neon Meridian: 11 arcology towers, 3 violet sky beams, 5 lanes / 80 craft. About 1,138 renderers, 284k triangles.
+- Ion Rift: 8 power pylons (reactor-cladding body), 2 cyan beams, 3 lanes. About 905 renderers, 249k triangles.
+- Aurora Forge: 7 pale-ice megaspires with cyan bands, 2 forge-amber beams, 3 lanes. About 885 renderers, 185k triangles.
+- Starfall Port: 6 port towers, 2 pink beams, 4 lanes, a 2.6 km space-elevator tether on the far side of the circuit and a hovering carrier ship. About 845 renderers, 188k triangles.
+Backup of the four generators before this pass: `PolygonRacingBackups/NeonStages_skyline_before_20261029.zip`.
+
+Verified by the assistant: compiles; menus 16-19 rebuild; Play-mode overview/driver views show towers, beams and visible traffic streams; Stats about 72 FPS at the grids. Not checked: whether any traffic ring clips a very tall tower somewhere (rings are above the measured city heights), full laps, VR. Remaining: option 4 (road surface), optional per-stage fog tuning.
+
+## Neon polish option 2 (lighting & atmosphere): wet road on Ion Rift, Aurora Forge, Starfall Port - October 29, 2026 (APPROVED by Thomas)
 
 Thomas approved the final Neon Meridian wet road ("looks good now") and asked to apply it to the other stages. Each generator now: road material smoothness .91 / reflection .55 / `_DirectSpecular` 0 (Aurora Forge: icier .86 / .45, slightly bluer); barrier light beam uses its own "Barrier glow" material (same look as the cyan conduit) so the bake leaves it out; setup menus 17/18/19 call `PolygonNeonReflections.Bake` after the night profile and sky tweaks (folders `Generated/PCVisuals/<Stage>/Reflections`). Probes: Ion Rift 85, Aurora Forge 56, Starfall Port 60 (80 m apart). Scenery counts unchanged apart from the new material. Backup of the six pre-change files: `PolygonRacingBackups/NeonStages_lighting_before_20261029.zip`.
 

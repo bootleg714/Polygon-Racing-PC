@@ -689,6 +689,22 @@ namespace PolygonRacing
             PolygonNeonTrackside.Build(style);
         }
 
+        // Skyline pass (October 29, 2026): distant power pylons, reactor sky beams and cargo-drone lanes.
+        static void BuildSkyline(Transform parent,Chunks chunks)
+        {
+            PolygonNeonSkyline.Build(new PolygonNeonSkylineStyle
+            {
+                Prefix="Ion Rift",Parent=parent,KitAt=p=>chunks.At(p),
+                Body=plum,Steel=steel,Glass=glass,Panel=data,Window=warmWindow,
+                SkyBeam=Mat("Sky beam",new Color(.1f,.8f,1),2.8f),
+                TailLight=Mat("Craft tail light",new Color(1,.08f,.12f),3.2f),
+                HeadLight=Mat("Craft head light",new Color(1,.92f,.78f),2.6f),
+                Accents=new[]{cyan,amber,violet},
+                Megastructures=8,MegaMinHeight=360,MegaMaxHeight=640,MegaRingMin=300,MegaRingMax=650,
+                SkyBeams=2,Lanes=3,CraftPerLane=12,LaneLift=230
+            });
+        }
+
         public static Transform Build(Transform root)
         {
             if(PolygonCircuit.Layout!=PolygonCircuitLayout.IonRift)throw new InvalidOperationException("Select Ion Rift before building the canyon.");
@@ -699,7 +715,7 @@ namespace PolygonRacing
             BuildTunnel(parent,chunks,6.1f,6.7f,"Conduit rock passage");
             BuildReactor(parent,chunks);BuildGorgeEntrance(parent);BuildRiftConduits(chunks);
             ConduitFalls(chunks,715,1,91);ConduitFalls(chunks,430,-1,75);ConduitFalls(chunks,70,1,47);
-            BuildBeacons(parent,chunks);BuildTrackside(chunks);chunks.Emit(parent);
+            BuildBeacons(parent,chunks);BuildTrackside(chunks);BuildSkyline(parent,chunks);chunks.Emit(parent);
             Debug.Log($"Ion Rift canyon: {RockCount} faceted rock formations, {StructureCount} industrial structures. Opaque scenery, shared materials, no extra local real-time lights.");
             return parent;
         }

@@ -760,6 +760,22 @@ namespace PolygonRacing
             PolygonNeonTrackside.Build(style);
         }
 
+        // Skyline pass (October 29, 2026): distant ice megaspires, a forge sky beam and slow cargo lanes.
+        static void BuildSkyline(Transform parent,Chunks chunks)
+        {
+            PolygonNeonSkyline.Build(new PolygonNeonSkylineStyle
+            {
+                Prefix="Aurora Forge",Parent=parent,KitAt=p=>chunks.At(p),
+                Body=basalt,Steel=steel,Glass=glass,Panel=data,Window=cyan,
+                SkyBeam=Mat("Sky beam",new Color(1,.42f,.08f),2.6f),
+                TailLight=Mat("Craft tail light",new Color(1,.08f,.12f),3.2f),
+                HeadLight=Mat("Craft head light",new Color(1,.92f,.78f),2.6f),
+                Accents=new[]{cyan,violet,amber},
+                Megastructures=7,MegaMinHeight=340,MegaMaxHeight=620,MegaRingMin=320,MegaRingMax=680,
+                SkyBeams=2,Lanes=3,CraftPerLane=10,LaneLift=220
+            });
+        }
+
         public static Transform Build(Transform root)
         {
             if(PolygonCircuit.Layout!=PolygonCircuitLayout.AuroraForge)throw new InvalidOperationException("Select Aurora Forge before building the canyon.");
@@ -770,7 +786,7 @@ namespace PolygonRacing
             BuildTunnel(parent,chunks,6.1f,6.7f,"Conduit rock passage");
             BuildReactor(parent,chunks);BuildIceLandmarks(chunks);BuildMiningRig(chunks);
             ConduitFalls(chunks,715,1,91);ConduitFalls(chunks,430,-1,75);ConduitFalls(chunks,70,1,47);
-            BuildBeacons(parent,chunks);BuildTrackside(chunks);chunks.Emit(parent);BuildAurora(parent);
+            BuildBeacons(parent,chunks);BuildTrackside(chunks);BuildSkyline(parent,chunks);chunks.Emit(parent);BuildAurora(parent);
             Debug.Log($"Aurora Forge canyon: {RockCount} faceted rock formations, {StructureCount} industrial structures. Opaque scenery, shared materials, no extra local real-time lights.");
             return parent;
         }

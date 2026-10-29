@@ -597,6 +597,21 @@ namespace PolygonRacing
             PolygonNeonTrackside.Build(style);
         }
 
+        // Skyline pass (October 29, 2026): distant arcology towers, sky beams and flying traffic.
+        static void BuildSkyline(Transform parent,Chunks chunks)
+        {
+            PolygonNeonSkyline.Build(new PolygonNeonSkylineStyle
+            {
+                Prefix="Neon Meridian",Parent=parent,KitAt=p=>chunks.At(p),
+                Body=wall,Steel=steel,Glass=glass,Panel=dataPink,Window=coolWindow,
+                SkyBeam=Mat("Sky beam",new Color(.55f,.25f,1),2.6f),
+                TailLight=Mat("Craft tail light",new Color(1,.08f,.12f),3.2f),
+                HeadLight=Mat("Craft head light",new Color(1,.92f,.78f),2.6f),
+                Accents=new[]{cyan,magenta,violet,amber},
+                Megastructures=11,MegaMinHeight=420,MegaMaxHeight=820,SkyBeams=3,Lanes=5,CraftPerLane=16,LaneLift=200
+            });
+        }
+
         public static Transform Build(Transform root)
         {
             if(PolygonCircuit.Layout!=PolygonCircuitLayout.NeonMeridian)
@@ -613,7 +628,7 @@ namespace PolygonRacing
             BuildRoad(chunks);BuildTerrain(chunks);BuildCrown(chunks);BuildCascade(chunks);
             BuildCity(chunks);BuildStart(parent);BuildMarket(parent,chunks);BuildTunnel(parent,chunks);
             BuildFurniture(parent,chunks);BuildTransit(parent,chunks);
-            BuildTrackside(chunks);
+            BuildTrackside(chunks);BuildSkyline(parent,chunks);
             chunks.Emit(parent);
             Debug.Log($"Neon Meridian city: {BuildingCount} buildings. Opaque, chunked scenery; no extra real-time local lights.");
             occupied.Clear();return parent;

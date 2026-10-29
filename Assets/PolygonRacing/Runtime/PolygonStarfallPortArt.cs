@@ -771,6 +771,35 @@ namespace PolygonRacing
             PolygonNeonTrackside.Build(style);
         }
 
+        // Skyline pass (October 29, 2026): a space-elevator tether, a hovering carrier, distant
+        // port towers and shuttle traffic lanes.
+        static void BuildSkyline(Transform parent,Chunks chunks)
+        {
+            var style=new PolygonNeonSkylineStyle
+            {
+                Prefix="Starfall Port",Parent=parent,KitAt=p=>chunks.At(p),
+                Body=plum,Steel=steel,Glass=glass,Panel=data,Window=warmWindow,
+                SkyBeam=Mat("Sky beam",new Color(1,.1f,.5f),2.6f),
+                TailLight=Mat("Craft tail light",new Color(1,.08f,.12f),3.2f),
+                HeadLight=Mat("Craft head light",new Color(1,.92f,.78f),2.6f),
+                Accents=new[]{cyan,violet,amber},
+                Megastructures=6,MegaMinHeight=320,MegaMaxHeight=560,SkyBeams=2,Lanes=4,CraftPerLane=12,LaneLift=210
+            };
+            var b=PolygonNeonSkyline.Build(style);
+            // Tether and carrier sit on the far side of the circuit from the start straight.
+            var away=b.Center-PolygonCircuit.AtDistance(0);away.y=0;
+            if(away.sqrMagnitude<1)away=Vector3.forward;away.Normalize();
+            for(int i=0;i<12;i++)
+            {
+                var dir=Quaternion.Euler(0,i*30,0)*away;
+                var t=b.Center+dir*(b.Radius+260);t.y=b.MinY-50;
+                PolygonCircuit.ProjectLapFlat(t,out float offset);if(offset<220)continue;
+                PolygonNeonSkyline.Tether(chunks.At(t),t,2600,style,cyan);break;
+            }
+            var m=b.Center+Quaternion.Euler(0,-35,0)*away*(b.Radius+700);m.y=b.MaxY+420;
+            PolygonNeonSkyline.Mothership(chunks.At(m),m,Quaternion.Euler(0,90,0)*away,style,violet);
+        }
+
         public static Transform Build(Transform root)
         {
             if(PolygonCircuit.Layout!=PolygonCircuitLayout.StarfallPort)throw new InvalidOperationException("Select Starfall Port before building the canyon.");
@@ -782,7 +811,7 @@ namespace PolygonRacing
             BuildTunnel(parent,chunks,6.1f,6.7f,"Conduit rock passage");
             BuildReactor(parent,chunks);
             ConduitFalls(chunks,715,1,91);ConduitFalls(chunks,430,-1,75);ConduitFalls(chunks,70,1,47);
-            BuildBeacons(parent,chunks);BuildTrackside(chunks);chunks.Emit(parent);
+            BuildBeacons(parent,chunks);BuildTrackside(chunks);BuildSkyline(parent,chunks);chunks.Emit(parent);
             Debug.Log($"Starfall Port canyon: {RockCount} faceted rock formations, {StructureCount} industrial structures. Opaque scenery, shared materials, no extra local real-time lights.");
             return parent;
         }
