@@ -45,6 +45,10 @@ namespace PolygonRacing
         bool travelHeadingValid;
         int lap=1, nextCheckpoint=1;
         bool paused, centered, wasReset, wasRecenter, wasPause, xrActive;
+        int desktopView;
+        PolygonRace race;
+        readonly List<Renderer> viewHidden=new List<Renderer>();
+        readonly List<bool> viewHiddenPrevious=new List<bool>();
         float nextStatus;
         string status="READY - Right trigger to drive";
         Vector3 startPosition;
@@ -60,10 +64,11 @@ namespace PolygonRacing
             var scenery=transform.parent.Find("Circuit - editable scenery");
             if(scenery)StaticBatchingUtility.Combine(scenery.gameObject);
             engine=GetComponent<PolygonEngineSound>();
+            race=Object.FindFirstObjectByType<PolygonRace>();
             if(!engine)engine=gameObject.AddComponent<PolygonEngineSound>();
         }
         void OnEnable() { Application.onBeforeRender+=TrackHead; }
-        void OnDisable() { Application.onBeforeRender-=TrackHead; }
+        void OnDisable() { Application.onBeforeRender-=TrackHead; RestoreViewRenderers(); }
         void RefreshDevices()
         {
             if(!head.isValid)head=InputDevices.GetDeviceAtXRNode(XRNode.CenterEye);
@@ -109,6 +114,9 @@ namespace PolygonRacing
                 gamepad.leftStick.ReadValue().sqrMagnitude>.04f||gamepad.dpad.ReadValue().sqrMagnitude>.04f||
                 gamepad.rightTrigger.ReadValue()>.1f||gamepad.leftTrigger.ReadValue()>.1f))UsingGamepad=true;
             var k=Keyboard.current;
+            if(!race)race=Object.FindFirstObjectByType<PolygonRace>();
+            if(!xrActive&&((k!=null&&k.vKey.wasPressedThisFrame)||(gamepad!=null&&gamepad.dpad.up.wasPressedThisFrame&&(!race||!race.IsMenuOpen))))
+                desktopView=(desktopView+1)%4;
             if(k!=null)
             {
                 if(k.anyKey.wasPressedThisFrame)UsingGamepad=false;
@@ -189,6 +197,30 @@ namespace PolygonRacing
             if(!paused&&!RaceLocked)Drivetrain.Step(speed,throttle,Mathf.Min(Time.deltaTime,.05f));
             if(engine)engine.SetDriving(Drivetrain.Rpm,Drivetrain.Throttle,paused||RaceLocked);
             if(dashboard)dashboard.text=$"{SpeedMph:000} MPH\n{(paused?"PAUSED":"LAP "+lap)}  {FormatTime(lapTime)}";
+        }
+        void LateUpdate()
+        {
+            if(xrActive||!trackingSpace||!view){RestoreViewRenderers();return;}
+            if(!race)race=Object.FindFirstObjectByType<PolygonRace>();
+            int mode=race&&race.RequiresCockpitView?0:desktopView;
+            if(mode==3)
+            {
+                if(viewHidden.Count==0)
+                {
+                    GetComponentsInChildren(true,viewHidden);
+                    foreach(var renderer in viewHidden){viewHiddenPrevious.Add(renderer&&renderer.forceRenderingOff);if(renderer)renderer.forceRenderingOff=true;}
+                }
+                return;
+            }
+            RestoreViewRenderers();
+            if(mode==0)return; // Update already restored the original cockpit pose.
+            trackingSpace.localPosition=mode==1?new Vector3(0,3.0f,-6.5f):new Vector3(0,4.8f,-11f);
+            trackingSpace.localRotation=Quaternion.Euler(mode==1?12f:14f,0,0);
+        }
+        void RestoreViewRenderers()
+        {
+            for(int i=0;i<viewHidden.Count;i++)if(viewHidden[i])viewHidden[i].forceRenderingOff=viewHiddenPrevious[i];
+            viewHidden.Clear();viewHiddenPrevious.Clear();
         }
         public void ResumeFromPause(){paused=false;status="DRIVE";nextStatus=Time.time+3;}
         public static string FormatTime(float seconds) => $"{(int)(seconds/60):00}:{seconds%60:00.0}";

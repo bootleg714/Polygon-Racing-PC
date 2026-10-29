@@ -58,8 +58,8 @@ namespace PolygonRacing
         }
         public static string ControlText(bool gamepad,bool includeMenu)
         {
-            if(gamepad)return "RT: Accelerate   LT: Brake\nLeft stick: Steer\nA: Restart   Start: Pause"+(includeMenu?"\nY: Race menu":"");
-            return "W / Up: Accelerate\nS / Down / Space: Brake\nA / D / Arrows: Steer\nR: Restart  P: Pause"+(includeMenu?"  M: Menu":"");
+            if(gamepad)return "RT: Accelerate   LT: Brake\nLeft stick: Steer   D-pad up: View\nA: Restart   Start: Pause"+(includeMenu?"\nY: Race menu":"");
+            return "W / Up: Accelerate\nS / Down / Space: Brake\nA / D / Arrows: Steer\nR: Restart  P: Pause  V: View"+(includeMenu?"  M: Menu":"");
         }
         public static void Help(Rect rect,float s,bool gamepad,bool paused,bool includeMenu,float alpha=1)
         {

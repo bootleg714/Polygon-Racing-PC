@@ -38,6 +38,8 @@ namespace PolygonRacing
         Material boardMaterial;
         string boardValue;
         public bool SlipstreamAllowed=>phase==Phase.Driving&&mode==Mode.Race&&player&&!player.IsPaused;
+        public bool RequiresCockpitView=>phase==Phase.Menu||phase==Phase.Finished||(phase==Phase.Countdown&&!startLights);
+        public bool IsMenuOpen=>phase==Phase.Menu;
         public float PlayerRaceDistance=>progress.LapsTravelled*PolygonCircuit.Length;
         // Same three-second countdown: reds at 0/.5/1/1.5/2 s, then out at 3 s.
         public int StartLightCount=>phase==Phase.Countdown?Mathf.Clamp(1+Mathf.FloorToInt((3-countdown)/.5f),1,5):0;

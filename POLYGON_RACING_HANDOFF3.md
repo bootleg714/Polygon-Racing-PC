@@ -1,4 +1,39 @@
-## Neon polish option 4 (road surface) on all four neon stages - October 29, 2026 (awaiting Thomas's review)
+## PC camera perspectives - October 29, 2026 (approved by Thomas)
+
+Thomas confirmed V works, but the original controller stick-click binding did not. The controller binding is now D-pad up (reserved for menu navigation while the race menu is open). V or D-pad up cycles cockpit, close chase, far chase and a clear first-person view at the cockpit camera position with player renderers hidden. The original cockpit pose is retained; the chase camera follows the car and its banking. The cockpit is automatically shown for the race menu, results and a cockpit-panel countdown, then the selected view returns. The selected view resets on scene load. Control hints include the new binding. XR tracking is unchanged.
+
+Unity's bundled Roslyn compiled the runtime and editor assemblies. Thomas confirmed the updated controls and clear view worked perfectly. The assistant did not independently run a Unity Play-mode test or verify every track and race state. Keep an eye on camera clipping around tunnels and barriers and target-PC FPS during normal play. Windows standalone build remains deferred until further refinement, including music, race starts/finishes and the title screen; later verify wet-road reflections in that build. Thomas will commit and push these changes.
+
+## Latest status and what's next - October 29, 2026 (16:10)
+
+**Where the project stands.** All ten circuits are playable on PC at about 72 FPS on Thomas's machine. Today's work, all approved by Thomas and committed/pushed by him:
+- Nordwald Ring PC pass (Oct 27): PC profile plus countryside/trackside detail and spinning turbines.
+- Neon second polish pass on Neon Meridian, Ion Rift, Aurora Forge and Starfall Port, in four options:
+  1. Trackside dressing (`Runtime/PolygonNeonTrackside.cs`): LED barrier boards, glowing kerbs, light arches, billboards, brake markers.
+  2. Lighting & atmosphere (`Editor/PolygonNeonReflections.cs` + PolygonFlatPC Forward+ probe keywords): wet/icy reflective roads from baked, box-projected probes.
+  3. Skyline & landmarks (`Runtime/PolygonNeonSkyline.cs`, `Runtime/PolygonNeonSkyLane.cs`): megastructures, sky beams, flying-traffic rings; Starfall tether and carrier.
+  4. Road surface (`Runtime/PolygonNeonRoadSurface.cs`): seams, cat's-eye studs, braking chevrons, faint racing line.
+- Each neon generator (`Runtime/Polygon<Stage>Art.cs`) calls these in Build: `BuildTrackside`, `BuildSkyline`, `BuildRoadSurface` before `chunks.Emit`; the setup menus (16 Neon, 17 Ion, 18 Aurora, 19 Starfall) bake the reflection probes last.
+
+**How to rebuild a neon stage:** stop Play mode, run its menu (16-19, about 90-120 s), then enter Play before judging (GPU Resident Drawer edit-mode caveat). After editing a probe setting only, use **PC Visuals > Bake Wet-Road Reflections - Open Neon Stage**. If scripts were changed from outside Unity while it had focus, press Ctrl+R first and confirm the build log reflects the change.
+
+**Next ideas, agreed list (do one at a time, Thomas reviews each):**
+1. Car lights on the night stages (recommended first): emissive headlight pool on the road ahead, tail lights and coloured underglow on the player and rivals (fake glow geometry, no real-time lights). Rivals copy the player's mesh/material references, so check their livery recolouring still works.
+2. Sense of speed: subtle FOV widening near top speed, faint edge speed streaks, light camera shake over kerbs; keep subtle with an off switch (VR comfort).
+3. Pulsing light sequences: arches and tunnel light strips ripple forward in sequence (one small emissive-shader change, no new objects).
+4. Light rain on Neon Meridian only (rain streaks plus road spray), switchable, watch FPS.
+5. Per-stage fog/haze tuning (left over from the lighting pass): canyon haze for Ion Rift, low icy mist for Aurora Forge, harbour fog for Starfall Port.
+6. Bring the new tricks to daytime circuits: reflection probes for Downtown's glass, road detailing (seams, studs, chevrons) for Nordwald and Coastal Expressway. The shared modules assume the neon cross-section (road +-10 m, barrier at 12 m); other circuits need their own lateral numbers.
+7. Start/finish moments: countdown light show on the start gantry and a finish-line burst on a win.
+
+**Still unverified / to keep an eye on (updated 16:23 with Thomas's checks):**
+- FPS: Thomas confirms a steady 72 FPS on all stages. Windows standalone build not yet tested: check that the wet-road reflections survive shader stripping (PC_RPAsset `m_PrefilterReflectionProbeBlending/BoxProjection/Atlas: 0`); if the build's neon roads only reflect the sky, fix the URP prefiltering/stripping settings.
+- VR: this PC project is NOT intended for VR (it was copied from the VR version, which lives separately). Ignore VR/Quest checks in older notes for this project. Porting the PC polish back to the VR/Quest version would be a separate project with much tighter budgets (probes, bloom, triangle counts, comfort).
+- Flying-traffic rings: Thomas saw no tower clipping ("if it does it's hard to spot"); accepted as is.
+- Racing line: Thomas is happy with it as it is (including on straights).
+- Shared shader: `PolygonFlatPC.shader` (used by all circuits) gained Forward+ probe keywords and a `_DirectSpecular` property (default 1). Circuits without probes should look unchanged. What to look for on a daytime circuit: surfaces suddenly darker/brighter or flatter than before, sun glints missing on cars, metal and glass, or odd shiny/dark patches. Thomas checked a daytime stage at 16:27 after being told what to look for and saw no issues, so this is closed. (Backup if ever needed: `PolygonRacingBackups/PolygonFlatPC_before_20261029.zip`.)
+
+## Neon polish option 4 (road surface) on all four neon stages - October 29, 2026 (APPROVED by Thomas)
 
 Thomas approved the skyline pass ("great"; committed and pushed) and asked for option 4 on all stages. New shared `Runtime/PolygonNeonRoadSurface.cs` (`PolygonNeonRoadSurfaceStyle`), called from each `Polygon<Stage>Art.BuildRoadSurface` just before `chunks.Emit`:
 - Expansion-joint seams across the road every 16 m (dark, 14 cm, at +.012 m).
@@ -88,7 +123,7 @@ Verified by the assistant in Thomas's editor: compiles (existing CS0618 warnings
 
 Lesson: after writing scripts from outside, Unity may not auto-import while it already has focus; press Ctrl+R (Assets > Refresh) before rebuilding, and confirm the build log reflects the change.
 
-## Latest status - October 29, 2026
+## Earlier status - October 29, 2026 (morning; superseded by the section at the top)
 
 Thomas reports that the polished Starfall Port works and looks good, and plans to commit and push. All four neon-stage polish passes have been completed and positively reviewed. Preserve their accepted track layouts, visuals, handling and AI tuning unless a new request calls for changes. Thomas did not report a specific FPS result for the latest Starfall pass, or specify which race scenarios he checked.
 
