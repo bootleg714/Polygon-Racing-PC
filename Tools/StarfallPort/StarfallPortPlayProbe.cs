@@ -29,6 +29,8 @@ public static class StarfallPortPlayProbe
     static PolygonRace race;
     static readonly Dictionary<Transform,Vector3> shuttleStart=new Dictionary<Transform,Vector3>();
     static Keyboard testKeyboard;
+    static PolygonStarfallLaunch launch;
+    static Vector3 launchStart,launchPaused;
 
     static StarfallPortPlayProbe()
     {if(SessionState.GetBool(SessionKey,false))Attach();}
@@ -151,7 +153,7 @@ public static class StarfallPortPlayProbe
             }
             else if(stage==1&&elapsed>1)
             {
-                AcquireRace(PolygonStarfallPortSetup.ScenePath,PolygonCircuitLayout.StarfallPort,"Race");InspectRotors();foreach(var shuttle in Object.FindObjectsByType<PolygonStarfallShuttle>()){Check(shuttle.transform.parent.name==PolygonStarfallPortArt.AnimatedName,"Shuttle is still in static scenery");shuttleStart.Add(shuttle.transform,shuttle.transform.position);}Check(shuttleStart.Count==2,"Expected two cargo shuttles");Next(2);
+                AcquireRace(PolygonStarfallPortSetup.ScenePath,PolygonCircuitLayout.StarfallPort,"Race");InspectRotors();foreach(var shuttle in Object.FindObjectsByType<PolygonStarfallShuttle>()){Check(shuttle.transform.parent.name==PolygonStarfallPortArt.AnimatedName,"Shuttle is still in static scenery");shuttleStart.Add(shuttle.transform,shuttle.transform.position);}Check(shuttleStart.Count==2,"Expected two cargo shuttles");launch=Object.FindFirstObjectByType<PolygonStarfallLaunch>();Check(launch&&launch.transform.parent.name==PolygonStarfallPortArt.AnimatedName,"Launch ship missing or statically batched");foreach(var renderer in launch.GetComponentsInChildren<MeshRenderer>())Check(!renderer.isPartOfStaticBatch,"Launch ship frozen inside a static batch");launchStart=launch.transform.position;Next(2);
             }
             else if(stage==2&&Get(race,"phase").ToString()=="Driving")Next(3);
             else if(stage==3&&elapsed>3.5)
@@ -169,12 +171,14 @@ public static class StarfallPortPlayProbe
                     rotationAtPause.Add(pair.Key,pair.Key.rotation);
                 }
                 foreach(var shuttle in shuttleStart)Check(Vector3.Distance(shuttle.Key.position,shuttle.Value)>5,"Cargo shuttle did not move");
+                Check(Vector3.Distance(launch.transform.position,launchStart)>5,"Launch ship did not move");
                 var player=Object.FindFirstObjectByType<PolygonDriver>();
-                typeof(PolygonDriver).GetField("paused",Private).SetValue(player,true);Next(4);
+                typeof(PolygonDriver).GetField("paused",Private).SetValue(player,true);launchPaused=launch.transform.position;Next(4);
             }
             else if(stage==4&&elapsed>.45)
             {
                 foreach(var pair in rotationAtPause)Check(Quaternion.Angle(pair.Value,pair.Key.rotation)<.1f,"Machinery did not honor pause");
+                Check(Vector3.Distance(launch.transform.position,launchPaused)<.1f,"Launch ship did not honor pause");
                 Object.FindFirstObjectByType<PolygonDriver>().ResumeFromPause();
                 LoadThroughSharedHandler(PolygonCircuitLayout.Forest,"TimeTrial");Next(5);
             }
@@ -198,7 +202,7 @@ public static class StarfallPortPlayProbe
                 Check(Get(race,"phase").ToString()=="Countdown"&&(float)Get(race,"elapsed")==0,"Same-track restart did not reset timing/countdown");
                 Check(errors==0,"Play mode logged "+errors+" game/engine errors");
                 Directory.CreateDirectory(Output);
-                File.WriteAllText(Output+"/play-mode-report.txt",$"Native Play mode: {checks} checks passed.\nFast Enter Play: domain and scene reload disabled, matching the main project.\nForest -> Starfall Port Race via shared desktop circuit handler: passed.\nCountdown, three progressing opponents and valid elevation: passed.\nMachinery detachment from static batching, rotation and pause behavior: passed.\nStarfall Port -> Forest TimeTrial -> Starfall Port TimeTrial via center-menu Enter: passed.\nFourteen-line center menu fits its backing panel: passed.\nSame-track restart, mode persistence and runtime scene availability: passed.\nGame/engine errors: {errors}.\nNo sustained target-hardware FPS or complete-lap driving claim.\n");
+                File.WriteAllText(Output+"/play-mode-report.txt",$"Native Play mode: {checks} checks passed.\nFast Enter Play: domain and scene reload disabled, matching the main project.\nForest -> Starfall Port Race via shared desktop circuit handler: passed.\nCountdown, three progressing opponents and valid elevation: passed.\nMachinery and launch ship detachment, movement and pause behavior: passed.\nStarfall Port -> Forest TimeTrial -> Starfall Port TimeTrial via center-menu Enter: passed.\nFourteen-line center menu fits its backing panel: passed.\nSame-track restart, mode persistence and runtime scene availability: passed.\nGame/engine errors: {errors}.\nNo sustained target-hardware FPS or complete-lap driving claim.\n");
                 Debug.Log("STARFALL_PLAY_OK: "+checks+" cross-scene/menu/race/animation checks passed");Finish(0);
             }
         }

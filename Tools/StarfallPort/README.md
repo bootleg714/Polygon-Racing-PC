@@ -1,3 +1,5 @@
+October 28 spaceport polish: added cargo stacks, a freighter alongside the opening straight, and an off-track launch pad with a slowly rising and returning spacecraft. The layout and handling are unchanged. Unity found zero sampled forward/overhead obstructions, road holes or buried points, and passed 103 Play-mode checks including launch motion and pause. Updated scenery has 678 renderers and 158,518 triangles. Full-lap cockpit review and sustained target-PC FPS remain to be checked. Earlier scenery counts below are historical.
+
 October 28 obstruction fix: fixed-world conduit falls too close to the revised route are omitted. A forward-facing scan across the road found the likely obstruction near 3,500 m before the fix and zero hits after regeneration. The updated scenery has 659 renderers and 157,614 triangles. A full driven lap is still needed to confirm the reported object is gone. The Play-mode report below predates this scenery-only fix.
 
 # Starfall Port v01

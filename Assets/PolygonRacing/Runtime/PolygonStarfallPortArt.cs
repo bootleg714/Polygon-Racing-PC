@@ -591,6 +591,100 @@ namespace PolygonRacing
             kit.Box(accent,new Vector3(0,11.4f,-.25f),new Vector3(19,.14f,.09f));kit.Emit(frame);
             Label(frame,text+" lettering",text,new Vector3(0,10.3f,-.24f),.12f,accent.color);
         }
+        static bool ClearPortFootprint(Vector3 center,Quaternion rotation,float halfWidth,float halfDepth)
+        {
+            // Sample the whole footprint, including its interior, against every road section.
+            for(int x=-2;x<=2;x++)for(int z=-2;z<=2;z++)
+            {
+                var p=center+rotation*new Vector3(x*halfWidth*.5f,0,z*halfDepth*.5f);
+                PolygonCircuit.ProjectLapFlat(p,out float offset);
+                if(offset<25)return false;
+            }
+            return true;
+        }
+        static void BuildCargoDocks(Chunks chunks)
+        {
+            int groups=0;
+            foreach(float knot in new[]{1.4f,3.4f,19.5f,30.8f})
+            {
+                float d=D(knot);var rotation=Quaternion.LookRotation(T(d));
+                foreach(int side in new[]{-1,1})
+                {
+                    var p=RoadPoint(d,side*65);
+                    if(!ClearPortFootprint(p,rotation,12,21))continue;
+                    p.y=GroundHeight(p.x,p.z);var kit=chunks.At(p);
+                    for(int row=0;row<2;row++)for(int col=0;col<3;col++)
+                    {
+                        var center=p+rotation*new Vector3((row-.5f)*8,3,(col-1)*12);
+                        kit.Box((row+col)%2==0?plum:deck,center,new Vector3(7.4f,6,10.5f),rotation);
+                        kit.Box((row+col)%2==0?cyan:amber,center+rotation*new Vector3(0,2.8f,-5.3f),new Vector3(6,.16f,.09f),rotation);
+                    }
+                    groups++;break;
+                }
+            }
+            if(groups==0)throw new InvalidOperationException("Unable to place cargo docks clear of the course.");
+            Debug.Log($"STARFALL_CARGO_GROUPS: {groups}");
+        }
+        static void BuildBoulevardFreighter(Transform parent)
+        {
+            float d=D(2.5f);var rotation=Quaternion.LookRotation(T(d));
+            foreach(int side in new[]{1,-1})
+            {
+                var pos=RoadPoint(d,side*80,18);
+                if(!ClearPortFootprint(pos,rotation,27,83))continue;
+                var dock=Frame(parent,"Prism straight - docked freighter",d,side*80,18);
+                var ship=new PolygonSceneryKit("Boulevard freighter");
+                ship.Prism(steel,new[]{new Vector3(-22,-5,-78),new Vector3(22,-5,-78),new Vector3(25,-5,35),new Vector3(0,-5,83),new Vector3(-25,-5,35)},
+                    new[]{new Vector3(-18,12,-73),new Vector3(18,12,-73),new Vector3(20,12,33),new Vector3(0,12,72),new Vector3(-20,12,33)});
+                ship.Box(plum,new Vector3(0,17,-18),new Vector3(29,10,58));
+                ship.Box(glass,new Vector3(0,23,18),new Vector3(22,3,18));
+                foreach(int s in new[]{-1,1})
+                {
+                    ship.Beam(cyan,new Vector3(s*20,3,-70),new Vector3(s*20,3,32),.3f,.3f);
+                    ship.Box(amber,new Vector3(s*14,1,-78.2f),new Vector3(5,2,.2f));
+                    foreach(int z in new[]{-58,45})
+                    {
+                        var top=new Vector3(s*24,-5,z);var world=dock.TransformPoint(top);
+                        world.y=GroundHeight(world.x,world.z);
+                        var bottom=dock.InverseTransformPoint(world);
+                        if(bottom.y<top.y)ship.Beam(deck,bottom,top,2.4f,2.4f);
+                    }
+                }
+                ship.Emit(dock);StructureCount++;return;
+            }
+            throw new InvalidOperationException("Unable to place the boulevard freighter clear of the course.");
+        }
+        static void BuildLaunchPad(Transform parent,Chunks chunks)
+        {
+            foreach(float knot in new[]{10.7f,12.8f,16.2f,27.5f})foreach(int side in new[]{1,-1})
+            {
+                float d=D(knot);var rotation=Quaternion.LookRotation(T(d));var center=RoadPoint(d,side*170);
+                if(!ClearPortFootprint(center,rotation,34,34))continue;
+                center.y=GroundHeight(center.x,center.z);
+                var pad=chunks.At(center);pad.Box(deck,center+Vector3.up*2,new Vector3(60,4,60),rotation);
+                foreach(int s in new[]{-1,1})
+                {
+                    var p=center+rotation*new Vector3(s*25,0,-25);
+                    pad.Beam(steel,p,p+Vector3.up*45,1.5f,1.5f);
+                    pad.Box(amber,p+Vector3.up*46,new Vector3(3,2,3));
+                }
+                pad.Beam(cyan,center+rotation*new Vector3(-24,4,-25),center+rotation*new Vector3(24,4,-25),.25f,.25f);
+                var launch=new GameObject("Starfall launch ship").transform;launch.SetParent(parent,false);
+                launch.localPosition=center+Vector3.up*4;launch.localRotation=rotation;
+                var ship=new PolygonSceneryKit("Launch ship");
+                ship.Column(steel,Vector3.zero,8,7,48,10);
+                ship.Column(plum,new Vector3(0,48,0),7,.3f,18,10);
+                foreach(int s in new[]{-1,1})
+                {
+                    ship.Box(deck,new Vector3(s*9,10,0),new Vector3(4,20,12));
+                    ship.Beam(violet,new Vector3(s*7.4f,5,-4),new Vector3(s*7.4f,42,-4),.25f,.25f);
+                }
+                ship.Box(amber,new Vector3(0,-1,0),new Vector3(8,2,8));ship.Emit(launch);
+                var motion=launch.gameObject.AddComponent<PolygonStarfallLaunch>();motion.StartPoint=launch.localPosition;
+                motion.TravelHeight=180;motion.Speed=12;motion.Phase=.08f;StructureCount++;return;
+            }
+            throw new InvalidOperationException("Unable to place a launch pad clear of the course.");
+        }
         static void BuildSpaceport(Transform parent,Chunks chunks)
         {
             var harbor=Mat("Harbor water",new Color(.07f,.13f,.25f),.12f,.65f);
@@ -651,6 +745,7 @@ namespace PolygonRacing
             Palette();PrepareTerrain();PreparePads();StructureCount=RockCount=0;
             var parent=new GameObject(SceneryName).transform;parent.SetParent(root,false);var chunks=new Chunks();
             BuildRoad(chunks);BuildTerrain(chunks);BuildStart(parent);BuildIndustry(chunks);BuildSignalTowers(parent,chunks);BuildSpaceport(parent,chunks);
+            BuildCargoDocks(chunks);BuildBoulevardFreighter(parent);BuildLaunchPad(parent,chunks);
             BuildViaduct(chunks,15.6f,18.3f,true);BuildViaduct(chunks,28.6f,30.7f,false);
             BuildTunnel(parent,chunks,6.1f,6.7f,"Conduit rock passage");
             BuildReactor(parent,chunks);

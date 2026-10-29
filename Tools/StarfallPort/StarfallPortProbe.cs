@@ -74,6 +74,8 @@ public static class StarfallPortProbe
         Check(Mathf.Abs(PolygonCircuit.Elevation(.01f)-PolygonCircuit.Elevation(length-.01f))<.01f,"Elevation seam is discontinuous");
         Check(maxBank<=6.1f,"Banking exceeds planned mild banking");
         var scenery=player.transform.parent.Find(PolygonStarfallPortArt.SceneryName);Check(scenery,"Ion scenery root missing");
+        Check(scenery.Find("Prism straight - docked freighter"),"Boulevard freighter missing");
+        Check(scenery.Find("Starfall launch ship"),"Launch ship missing");
         long triangles=0;int meshes=0;var colliders=new List<MeshCollider>();
         var collisionSources=new Dictionary<Collider,CollisionSource>();
         bool oldBackfaces=Physics.queriesHitBackfaces;

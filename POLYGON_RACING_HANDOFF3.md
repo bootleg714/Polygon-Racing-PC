@@ -1,3 +1,17 @@
+## Latest status - October 29, 2026
+
+Thomas reports that the polished Starfall Port works and looks good, and plans to commit and push. All four neon-stage polish passes have been completed and positively reviewed. Preserve their accepted track layouts, visuals, handling and AI tuning unless a new request calls for changes. Thomas did not report a specific FPS result for the latest Starfall pass, or specify which race scenarios he checked.
+
+The Starfall launch script and its .meta file, updated scene and generated mesh assets, test helpers and previews, and this handoff should be included in the commit. Local PolygonRacingBackups are ignored by Git. Existing automated-check details and remaining limitations are recorded below. No new work is currently requested.
+
+## Starfall Port spaceport polish - October 28, 2026
+
+Thomas confirmed Aurora Forge looks good with solid FPS after the terrain-wide fix and requested the final neon-stage polish for Starfall Port. Starfall now has four cargo-container clusters, a larger docked freighter beside the opening straight, and an off-track launch pad with a slowly rising and returning spacecraft. The launch craft uses PolygonStarfallLaunch, detaches from static scenery before batching and pauses with the race. Footprints are sampled against the circuit before placement. Existing materials are reused; there are no added real-time lights, particles or dependencies. The Australia-inspired route, timing ID, handling and AI tuning are unchanged.
+
+Unity 6000.6.4f1 rebuilt the scene and compiled scripts in an isolated project. Road sampling found zero forward/overhead obstructions, road holes or buried samples. Play mode passed 103 checks including scene switching, race countdown, three progressing rivals, time trial, restart, moving shuttle/launch and pause behavior. Updated scenery has 678 renderers and 158,518 triangles, compared with 659 and 157,614 before polish. Reports and driver-height captures are in Tools/StarfallPort/Previews. The prior scene and generated assets are backed up in PolygonRacingBackups/StarfallPortPolish_before_20261028_212002.
+
+User review: On October 29, Thomas said Starfall works and looks good and plans to commit and push. He did not report a specific FPS figure or the extent of lap, race or pause testing. Unity fast Play has scene reload disabled; stop Play and reload Starfall Port after the scene changes externally. All four requested neon-stage polish passes have been implemented and positively reviewed.
+
 ## Aurora Forge terrain-wide seam repair - October 28, 2026
 
 Thomas found another broken triangular wall after the local opening-straight repair. Aurora terrain generation now prepares a shared height grid, lowers abrupt spikes with two directional sweeps, and verifies all adjacent grid samples differ by at most 20.8 m per 26 m cell. Road footings, structures and terrain query the same smoothed grid to avoid mismatched heights. This addresses terrain-wide seams while preserving the approved track layout, car handling and AI. A full user drive is still needed to confirm the reported wall is gone.
