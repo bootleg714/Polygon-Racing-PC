@@ -657,6 +657,34 @@ namespace PolygonRacing
             kit.Box(accent,new Vector3(0,11.4f,-.25f),new Vector3(19,.14f,.09f));kit.Emit(frame);
             Label(frame,text+" lettering",text,new Vector3(0,10.3f,-.24f),.12f,accent.color);
         }
+        // Second polish pass (October 29, 2026): shared neon trackside dressing in the canyon's
+        // cyan/amber palette. Tunnels and the start are skipped; viaducts keep their own
+        // superstructure, so no posts or overhead pieces are added there.
+        static void BuildTrackside(Chunks chunks)
+        {
+            float length=PolygonCircuit.Length;
+            float[] overhead={D(4),D(14.4f),D(21.7f),D(32.2f),D(5.2f),D(8.8f),D(20.5f),D(27.1f),D(32.5f),
+                              D(6.1f),D(6.7f),D(22.25f),D(24.7f)};
+            var style=new PolygonNeonTracksideStyle
+            {
+                Prefix="Ion Rift",KitAt=p=>chunks.At(p),Dark=black,Steel=steel,
+                KerbA=Mat("Kerb amber glow",new Color(1,.42f,.06f),1.6f,.3f),
+                KerbB=Mat("Kerb pale",new Color(.80f,.82f,.88f),.2f,.3f),
+                BoardA=PolygonNeonTrackside.Panel("IR LED board cyan",new Color(.04f,1.4f,2.3f),.5f,1.5f),
+                BoardB=PolygonNeonTrackside.Panel("IR LED board amber",new Color(2.2f,.72f,.07f),-.35f,1.2f),
+                Accents=new[]{cyan,amber,violet},
+                SkipAt=d=>d<45||d>length-40||(d>D(6.1f)-15&&d<D(6.7f)+15)||(d>D(22.25f)-15&&d<D(24.7f)+15),
+                PostBlocked=(d,side)=>
+                {
+                    if((d>D(15.6f)-12&&d<D(18.3f)+12)||(d>D(28.6f)-12&&d<D(30.7f)+12))return true;   // viaducts
+                    foreach(float o in overhead)if(Mathf.Abs(d-o)<10)return true;                      // portals and signs
+                    float fin=Mathf.Repeat(d-110,96);if(fin<6||fin>90)return true;                       // signal fins at 17.2 m
+                    return false;
+                }
+            };
+            PolygonNeonTrackside.Build(style);
+        }
+
         public static Transform Build(Transform root)
         {
             if(PolygonCircuit.Layout!=PolygonCircuitLayout.IonRift)throw new InvalidOperationException("Select Ion Rift before building the canyon.");
@@ -667,7 +695,7 @@ namespace PolygonRacing
             BuildTunnel(parent,chunks,6.1f,6.7f,"Conduit rock passage");
             BuildReactor(parent,chunks);BuildGorgeEntrance(parent);BuildRiftConduits(chunks);
             ConduitFalls(chunks,715,1,91);ConduitFalls(chunks,430,-1,75);ConduitFalls(chunks,70,1,47);
-            BuildBeacons(parent,chunks);chunks.Emit(parent);
+            BuildBeacons(parent,chunks);BuildTrackside(chunks);chunks.Emit(parent);
             Debug.Log($"Ion Rift canyon: {RockCount} faceted rock formations, {StructureCount} industrial structures. Opaque scenery, shared materials, no extra local real-time lights.");
             return parent;
         }

@@ -1,4 +1,12 @@
-## Neon second polish pass: Neon Meridian trackside dressing - October 29, 2026 (awaiting Thomas's review)
+## Neon second polish pass: Ion Rift trackside dressing - October 29, 2026 (awaiting Thomas's review)
+
+Thomas approved Neon Meridian's trackside pass ("looks awesome and works great, solid FPS"; committed and pushed) and asked for the next stage. He also wants ALL the other polish options offered, one at a time, after the trackside pass on every neon stage: (1) lighting & atmosphere (shadows, wet-look road reflections, selective bloom, per-stage fog/haze), (2) skyline & landmarks (distant silhouettes, megastructures, flying traffic, extra animated set pieces), (3) road surface (lane markings, panel seams, glowing chevrons, racing-line detail).
+
+Ion Rift now calls the shared `PolygonNeonTrackside` (`PolygonIonRiftArt.BuildTrackside`, before `chunks.Emit`) in a cyan/amber palette: amber-glow/pale kerbs, cyan and amber LED boards, cyan/amber/violet accents. Skipped: start/grid, Conduit rock passage and Reactor Gorge tunnel (+-15 m). No posts or overhead pieces on the two viaducts (they keep their own hangers/arches) or within 10 m of the six signal portals, tunnel portals and four route signs; posts also keep 6 m clear of the 96 m signal-fin rhythm at 17.2 m. Build log: "Ion Rift trackside v02: 128 LED board runs, 8 kerbed corners, 24 light arches, 23 billboards, 11 brake markers." Scene: 873 scenery renderers, about 243k triangles. Backup: `PolygonRacingBackups/IonRift_trackside_before_20261029.zip`.
+
+Verified by the assistant: compiles, menu 17 rebuilds, Play-mode views show the LED boards and kerbs; Stats about 72 FPS at the grid. The arches/billboards were not individually framed in a screenshot (they sit on the long straights); Thomas to confirm on a lap.
+
+## Neon second polish pass: Neon Meridian trackside dressing - October 29, 2026 (APPROVED by Thomas)
 
 Thomas asked for a second polish pass on the four neon stages, focused on trackside dressing, one stage at a time with a review after each. Neon Meridian is done first; Ion Rift, Aurora Forge and Starfall Port follow after his review.
 
