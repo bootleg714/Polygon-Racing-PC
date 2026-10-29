@@ -28,6 +28,7 @@ namespace PolygonRacing
         public float SpeedMph => speed * 2.23693629f;
         public float CornerSlip { get; private set; }
         public bool IsPaused => paused;
+        public bool IsXrActive => xrActive;
         public bool UsingGamepad { get; private set; }
         public bool ShowDesktopDebug { get; private set; }
         public float HudSessionTime { get; private set; }
@@ -202,6 +203,34 @@ namespace PolygonRacing
         {
             if(xrActive||!trackingSpace||!view){RestoreViewRenderers();return;}
             if(!race)race=Object.FindFirstObjectByType<PolygonRace>();
+            if(race&&race.IntroActive)
+            {
+                RestoreViewRenderers();
+                float t=race.IntroTime;
+                Vector3 position,target;
+                if(t<2f)
+                {
+                    float u=t/2f;
+                    position=Vector3.Lerp(new Vector3(-8,5,13),new Vector3(-5,3.5f,8),u);
+                    target=new Vector3(0,.7f,-2);
+                }
+                else if(t<4f)
+                {
+                    float u=(t-2f)/2f;
+                    position=Vector3.Lerp(new Vector3(7,2.4f,-9),new Vector3(5,1.8f,1),u);
+                    target=new Vector3(0,.7f,0);
+                }
+                else
+                {
+                    float u=(t-4f)/2f;u=u*u*(3-2*u);
+                    position=Vector3.Lerp(new Vector3(0,3.2f,-8),Seat,u);
+                    var start=Quaternion.LookRotation(new Vector3(0,.7f,1)-new Vector3(0,3.2f,-8));
+                    trackingSpace.localPosition=position;trackingSpace.localRotation=Quaternion.Slerp(start,Quaternion.identity,u);
+                    return;
+                }
+                trackingSpace.localPosition=position;trackingSpace.localRotation=Quaternion.LookRotation(target-position);
+                return;
+            }
             int mode=race&&race.RequiresCockpitView?0:desktopView;
             if(mode==3)
             {

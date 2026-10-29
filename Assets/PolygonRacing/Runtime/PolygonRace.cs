@@ -9,7 +9,7 @@ namespace PolygonRacing
     [DefaultExecutionOrder(100)]
     public sealed class PolygonRace : MonoBehaviour
     {
-        enum Phase { Menu,Countdown,Driving,Finished }
+        enum Phase { Menu,Intro,Countdown,Driving,Finished }
         enum Mode { Race,TimeTrial }
         const int RaceLaps=3;
         PolygonDriver player;
@@ -20,6 +20,7 @@ namespace PolygonRacing
         Mode mode;
         Mode menuMode;
         float countdown,elapsed,lapStarted,bestLap,lastLap,goUntil,trialBest;
+        float introTime;
         float[] finishTimes,previousRivalLaps;
         int resetSerial,place,finalPlace,selection;
         bool selectingCircuit,selectingRivieraLighting,wasConfirm,wasMenu,navLatched;
@@ -38,8 +39,10 @@ namespace PolygonRacing
         Material boardMaterial;
         string boardValue;
         public bool SlipstreamAllowed=>phase==Phase.Driving&&mode==Mode.Race&&player&&!player.IsPaused;
-        public bool RequiresCockpitView=>phase==Phase.Menu||phase==Phase.Finished||(phase==Phase.Countdown&&!startLights);
+        public bool RequiresCockpitView=>phase==Phase.Menu||phase==Phase.Finished||phase==Phase.Countdown;
         public bool IsMenuOpen=>phase==Phase.Menu;
+        public bool IntroActive=>phase==Phase.Intro;
+        public float IntroTime=>introTime;
         public float PlayerRaceDistance=>progress.LapsTravelled*PolygonCircuit.Length;
         // Same three-second countdown: reds at 0/.5/1/1.5/2 s, then out at 3 s.
         public int StartLightCount=>phase==Phase.Countdown?Mathf.Clamp(1+Mathf.FloorToInt((3-countdown)/.5f),1,5):0;
@@ -144,7 +147,9 @@ namespace PolygonRacing
             for(int i=0;i<finishTimes.Length;i++){finishTimes[i]=-1;previousRivalLaps[i]=rivals[i].RaceDistance/PolygonCircuit.Length;}
             progress.Reset(player.transform.position);
             countdown=3;elapsed=lapStarted=bestLap=lastLap=goUntil=0;place=FieldSize;finalPlace=0;
-            phase=Phase.Countdown;SetBoard("3\nGET READY",!startLights);
+            introTime=0;
+            if(player.IsXrActive){phase=Phase.Countdown;SetBoard("3\nGET READY",!startLights);}
+            else {phase=Phase.Intro;SetBoard("",false);}
         }
         static bool Button(UnityEngine.XR.InputDevice d,InputFeatureUsage<bool> key)=>d.TryGetFeatureValue(key,out var value)&&value;
         void Update()
@@ -202,6 +207,12 @@ namespace PolygonRacing
                 foreach(var car in rivals)car.SetSlipstreamStrength(0);
                 return;
             }
+            if(phase==Phase.Intro)
+            {
+                introTime+=Mathf.Min(Time.deltaTime,.05f);
+                if(introTime>=6f){phase=Phase.Countdown;SetBoard("3\nGET READY",!startLights);}
+                return;
+            }
             if(phase==Phase.Countdown)
             {
                 countdown-=Mathf.Min(Time.deltaTime,.05f);
@@ -251,6 +262,7 @@ namespace PolygonRacing
             if(!player||!player.dashboard||rivals==null)return;
             if(player.IsPaused){Dashboard("PAUSED","","","P / START");return;}
             if(phase==Phase.Menu){DrawMenu();Dashboard("SELECT MODE","","","");return;}
+            if(phase==Phase.Intro){Dashboard("GET READY","","","");return;}
             if(phase==Phase.Countdown)
             {
                 SetBoard(Mathf.Max(1,Mathf.CeilToInt(countdown))+"\nGET READY",!startLights);
@@ -354,6 +366,17 @@ namespace PolygonRacing
             {
                 DrawDesktopMenu(safe,scale);
                 return;
+            }
+            if(phase==Phase.Intro)
+            {
+                float alpha=1-Mathf.Clamp01(introTime/.6f);
+                if(alpha>0)
+                {
+                    var previous=GUI.color;GUI.color=new Color(0,0,0,alpha);
+                    GUI.DrawTexture(new Rect(0,0,Screen.width,Screen.height),Texture2D.whiteTexture);
+                    GUI.color=previous;
+                }
+                if(!player.IsPaused)return;
             }
             var race=PolygonDesktopHUD.RaceRect(safe,scale);
             var help=PolygonDesktopHUD.HelpRect(safe,scale,player.IsPaused);

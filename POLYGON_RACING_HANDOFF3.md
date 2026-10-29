@@ -1,3 +1,7 @@
+## PC race intro - October 29, 2026 (approved by Thomas)
+
+Race and Time Trial start with three two-second moving grid shots: a front overview, a side pass and a rear shot that moves into the cockpit. The first shot fades from black over 0.6 seconds. Thomas confirmed the result works and looks great. The existing three-second countdown starts afterward, with cars locked until it finishes. The intro also plays on restart; pause freezes it, and the menu can interrupt it. The selected driving perspective returns when the countdown ends. No extra cameras or assets; XR skips the sequence. Runtime and editor assemblies compiled with Unity's bundled Roslyn; no assistant Play-mode visual test or target-PC measurement was performed. The shots are grid-relative, not bespoke landmark shots. Thomas will commit and push these changes.
+
 ## PC camera perspectives - October 29, 2026 (approved by Thomas)
 
 Thomas confirmed V works, but the original controller stick-click binding did not. The controller binding is now D-pad up (reserved for menu navigation while the race menu is open). V or D-pad up cycles cockpit, close chase, far chase and a clear first-person view at the cockpit camera position with player renderers hidden. The original cockpit pose is retained; the chase camera follows the car and its banking. The cockpit is automatically shown for the race menu, results and a cockpit-panel countdown, then the selected view returns. The selected view resets on scene load. Control hints include the new binding. XR tracking is unchanged.
