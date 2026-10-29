@@ -1,4 +1,10 @@
-## Neon polish option 2 (lighting & atmosphere): Neon Meridian wet road - October 29, 2026 (awaiting Thomas's review)
+## Neon polish option 2 (lighting & atmosphere): wet road on Ion Rift, Aurora Forge, Starfall Port - October 29, 2026 (awaiting Thomas's review)
+
+Thomas approved the final Neon Meridian wet road ("looks good now") and asked to apply it to the other stages. Each generator now: road material smoothness .91 / reflection .55 / `_DirectSpecular` 0 (Aurora Forge: icier .86 / .45, slightly bluer); barrier light beam uses its own "Barrier glow" material (same look as the cyan conduit) so the bake leaves it out; setup menus 17/18/19 call `PolygonNeonReflections.Bake` after the night profile and sky tweaks (folders `Generated/PCVisuals/<Stage>/Reflections`). Probes: Ion Rift 85, Aurora Forge 56, Starfall Port 60 (80 m apart). Scenery counts unchanged apart from the new material. Backup of the six pre-change files: `PolygonRacingBackups/NeonStages_lighting_before_20261029.zip`.
+
+Verified by the assistant: compiles; menus 17, 18, 19 rebuild and bake all probes; Play-mode driver views show dark roads mirroring portals, signs, billboards and beacons with no light band; Stats about 72 FPS at each grid. Remaining polish options after Thomas's review: per-stage fog/haze tuning (optional), then option 3 (skyline & landmarks) and option 4 (road surface).
+
+## Neon polish option 2 (lighting & atmosphere): Neon Meridian wet road - October 29, 2026 (APPROVED by Thomas)
 
 Thomas approved the Starfall trackside pass ("everything looks and runs great, 72 FPS"; committed and pushed) and asked for option 2, lighting & atmosphere. First stage: Neon Meridian, "rain-slick" road that mirrors the neon.
 

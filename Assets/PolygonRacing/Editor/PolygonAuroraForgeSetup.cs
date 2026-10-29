@@ -78,6 +78,8 @@ namespace PolygonRacing.Editor
             if(!PolygonPCVisualSetup.ApplyToOpenAuroraForgeScene())throw new InvalidOperationException("Aurora Forge night profile failed.");
             var sky=RenderSettings.skybox;
             if(sky){sky.SetFloat("_SunGlow",0);sky.SetFloat("_SunHalo",0);sky.SetFloat("_SunDisc",0);EditorUtility.SetDirty(sky);}
+            // Lighting pass (Oct 29): bake the wet-road reflection probes last, with the final sky and materials.
+            PolygonNeonReflections.Bake(root,scenery,"Assets/PolygonRacing/Generated/PCVisuals/AuroraForge/Reflections","Aurora Forge");
             EditorSceneManager.MarkSceneDirty(scene);
             if(!EditorSceneManager.SaveScene(scene,ScenePath))throw new IOException("Could not save Aurora Forge.");
             var builds=new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);bool found=false;

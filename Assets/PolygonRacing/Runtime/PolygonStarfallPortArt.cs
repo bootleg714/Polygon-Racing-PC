@@ -13,7 +13,7 @@ namespace PolygonRacing
         public const float Barrier=12f,DeckEdge=13.2f;
         const float ChunkSize=220,Floor=-58;
         static Material road,deck,steel,black,paint,basalt,basaltLight,basaltDark,dust,
-            cyan,amber,violet,warmWindow,glass,energy,data,plum;
+            cyan,amber,violet,warmWindow,glass,energy,data,plum,barrierGlow;
         static Vector3[] samples;
         static float[] sampleHeights;
         sealed class Pad {public Vector3 Center;public Quaternion Inverse;public float HalfX,HalfZ,Height;}
@@ -52,7 +52,11 @@ namespace PolygonRacing
         }
         static void Palette()
         {
-            road=Mat("Asphalt",new Color(.12f,.13f,.18f),0,.25f);
+            // Lighting pass (Oct 29): wet asphalt that mirrors the neon via the baked probes
+            // (PolygonNeonReflections); no moon highlight stripe.
+            road=Mat("Asphalt",new Color(.08f,.09f,.135f),0,.91f);road.SetFloat("_ReflectionStrength",.55f);road.SetFloat("_DirectSpecular",0);
+            // Same look as the cyan conduit, but named so the probe bake leaves the barrier light out.
+            barrierGlow=Mat("Barrier glow",new Color(.035f,.85f,1),3.0f);
             deck=Mat("Bridge graphite",new Color(.20f,.24f,.31f));
             steel=Mat("Pale alloy",new Color(.52f,.60f,.68f),0,.42f);
             black=Mat("Black recess",new Color(.025f,.035f,.055f));
@@ -168,7 +172,7 @@ namespace PolygonRacing
                     Ribbon(kit,deck,d,end,side*10,side*Barrier,.04f);
                     Ribbon(kit,paint,d,end,side*9.6f,side*9.79f,.025f);
                     Slab(kit,black,d,end,side*Barrier,side*(Barrier+.5f),0,1.08f);
-                    kit.Beam(cyan,RoadPoint(d,side*(Barrier-.03f),1.06f),RoadPoint(end,side*(Barrier-.03f),1.06f),.11f,.12f);
+                    kit.Beam(barrierGlow,RoadPoint(d,side*(Barrier-.03f),1.06f),RoadPoint(end,side*(Barrier-.03f),1.06f),.11f,.12f);
                     if(((int)d/4)%6==0)
                     {
                         kit.Beam(steel,RoadPoint(d,side*(Barrier+.2f),.08f),RoadPoint(d,side*(Barrier+.2f),1.3f),.13f,.13f);
