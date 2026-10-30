@@ -48,6 +48,7 @@ namespace PolygonRacing
         bool paused, centered, wasReset, wasRecenter, wasPause, xrActive;
         int desktopView;
         PolygonRace race;
+        PolygonRivalPlan finishPlan;
         readonly List<Renderer> viewHidden=new List<Renderer>();
         readonly List<bool> viewHiddenPrevious=new List<bool>();
         float nextStatus;
@@ -130,6 +131,23 @@ namespace PolygonRacing
             if(reset&&!wasReset)ResetCar();if(recenter&&!wasRecenter)centered=false;
             if(pause&&!wasPause){paused=!paused;status=paused?"PAUSED":"DRIVE";nextStatus=Time.time+3;}
             wasReset=reset;wasRecenter=recenter;wasPause=pause;
+            if(race&&race.FinishPresentation)
+            {
+                if(finishPlan==null||!Mathf.Approximately(finishPlan.Length,PolygonCircuit.Length))
+                    finishPlan=PolygonRivalPlan.For(steeringAngle,braking*.8f+1.3f,cornerGrip);
+                float distance=PolygonCircuit.ProjectLap(transform.position,out _)*PolygonCircuit.Length;
+                float look=Mathf.Clamp(10+speed*.55f,12,38);
+                float ahead=distance+look;
+                var tangent=PolygonCircuit.Tangent(PolygonCircuit.AngleAtDistance(ahead));
+                var target=PolygonCircuit.AtDistance(ahead)+Vector3.Cross(Vector3.up,tangent)*finishPlan.Line(ahead);
+                var delta=target-transform.position;delta.y=0;
+                var forward=transform.forward;forward.y=0;
+                float heading=Vector3.SignedAngle(forward,delta,Vector3.up)*Mathf.Deg2Rad;
+                float desiredAngle=Mathf.Atan(2*2.85f*Mathf.Sin(heading)/Mathf.Max(1,delta.magnitude))*Mathf.Rad2Deg;
+                turn=Mathf.Clamp(desiredAngle/(steeringAngle/(1+speed*.065f)),-1,1);
+                float targetSpeed=Mathf.Min(topSpeed*.65f,finishPlan.CornerLimit(distance+speed*.25f,0)*.8f);
+                throttle=speed<targetSpeed-1?1:0;brake=speed>targetSpeed+1?1:0;
+            }
             if(!xrActive)
             {
                 trackingSpace.localPosition=Seat;trackingSpace.localRotation=Quaternion.identity;
@@ -203,6 +221,15 @@ namespace PolygonRacing
         {
             if(xrActive||!trackingSpace||!view){RestoreViewRenderers();return;}
             if(!race)race=Object.FindFirstObjectByType<PolygonRace>();
+            if(race&&race.FinishPresentation)
+            {
+                RestoreViewRenderers();
+                float angle=race.FinishPresentationTime*.48f;
+                var target=new Vector3(0,.8f,0);
+                var position=target+new Vector3(Mathf.Sin(angle)*7,3.1f,-Mathf.Cos(angle)*7);
+                trackingSpace.localPosition=position;trackingSpace.localRotation=Quaternion.LookRotation(target-position);
+                return;
+            }
             if(race&&race.IntroActive)
             {
                 RestoreViewRenderers();

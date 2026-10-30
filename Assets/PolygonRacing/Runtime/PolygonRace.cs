@@ -21,6 +21,7 @@ namespace PolygonRacing
         Mode menuMode;
         float countdown,elapsed,lapStarted,bestLap,lastLap,goUntil,trialBest;
         float introTime;
+        float finishPresentationTime;
         float[] finishTimes,previousRivalLaps;
         int resetSerial,place,finalPlace,selection;
         bool selectingCircuit,selectingRivieraLighting,wasConfirm,wasMenu,navLatched;
@@ -38,11 +39,14 @@ namespace PolygonRacing
         TextMesh boardText;
         Material boardMaterial;
         string boardValue;
+        GUIStyle finishPlaceStyle;
         public bool SlipstreamAllowed=>phase==Phase.Driving&&mode==Mode.Race&&player&&!player.IsPaused;
-        public bool RequiresCockpitView=>phase==Phase.Menu||phase==Phase.Finished||phase==Phase.Countdown;
+        public bool RequiresCockpitView=>phase==Phase.Menu||phase==Phase.Countdown||(phase==Phase.Finished&&player&&player.IsXrActive);
         public bool IsMenuOpen=>phase==Phase.Menu;
         public bool IntroActive=>phase==Phase.Intro;
         public float IntroTime=>introTime;
+        public bool FinishPresentation=>phase==Phase.Finished&&player&&!player.IsXrActive;
+        public float FinishPresentationTime=>finishPresentationTime;
         public float PlayerRaceDistance=>progress.LapsTravelled*PolygonCircuit.Length;
         // Same three-second countdown: reds at 0/.5/1/1.5/2 s, then out at 3 s.
         public int StartLightCount=>phase==Phase.Countdown?Mathf.Clamp(1+Mathf.FloorToInt((3-countdown)/.5f),1,5):0;
@@ -224,6 +228,11 @@ namespace PolygonRacing
                 }
                 return;
             }
+            if(phase==Phase.Finished)
+            {
+                if(FinishPresentation){finishPresentationTime+=Mathf.Min(Time.deltaTime,.05f);progress.Tick(player.transform.position);}
+                return;
+            }
             if(phase!=Phase.Driving)return;
             float dt=Mathf.Min(Time.deltaTime,.05f);elapsed+=dt;
             float previousPlayerLaps=progress.LapsTravelled;
@@ -236,7 +245,7 @@ namespace PolygonRacing
             {
                 float laps=rivals[i].RaceDistance/PolygonCircuit.Length;
                 if(laps>=RaceLaps&&finishTimes[i]<0)
-                {finishTimes[i]=elapsed-dt+dt*Mathf.InverseLerp(previousRivalLaps[i],laps,RaceLaps);rivals[i].SetRaceLock(true);}
+                {finishTimes[i]=elapsed-dt+dt*Mathf.InverseLerp(previousRivalLaps[i],laps,RaceLaps);if(player.IsXrActive)rivals[i].SetRaceLock(true);}
                 previousRivalLaps[i]=laps;
                 if(finishTimes[i]>=0||laps>progress.LapsTravelled+.0001f)place++;
             }
@@ -251,9 +260,14 @@ namespace PolygonRacing
             {
                 float playerFinish=elapsed-dt+dt*Mathf.InverseLerp(previousPlayerLaps,progress.LapsTravelled,RaceLaps);
                 finalPlace=1;foreach(float time in finishTimes)if(time>=0&&time<=playerFinish)finalPlace++;
-                place=finalPlace;phase=Phase.Finished;player.SetRaceLock(true);foreach(var car in rivals)car.SetRaceLock(true);
+                place=finalPlace;phase=Phase.Finished;finishPresentationTime=0;
                 ClearSlipstream();
-                SetBoard($"FINISH - {Ordinal(finalPlace)} PLACE\nTOTAL {PolygonDriver.FormatTime(elapsed)}\nBEST LAP {PolygonDriver.FormatTime(bestLap)}\nA / R: RACE AGAIN\nY / M: MENU",true);
+                if(player.IsXrActive)
+                {
+                    player.SetRaceLock(true);foreach(var car in rivals)car.SetRaceLock(true);
+                    SetBoard($"FINISH - {Ordinal(finalPlace)} PLACE\nTOTAL {PolygonDriver.FormatTime(elapsed)}\nBEST LAP {PolygonDriver.FormatTime(bestLap)}\nA / R: RACE AGAIN\nY / M: MENU",true);
+                }
+                else SetBoard("",false);
             }
             else if(elapsed>=goUntil)SetBoard("",false);
         }
@@ -378,6 +392,22 @@ namespace PolygonRacing
                 }
                 if(!player.IsPaused)return;
             }
+            if(FinishPresentation&&!player.IsPaused)
+            {
+                float flash=Mathf.Clamp01(1-finishPresentationTime/.45f);
+                var previous=GUI.color;
+                if(flash>0){GUI.color=new Color(1,1,1,flash*.6f);GUI.DrawTexture(new Rect(0,0,Screen.width,Screen.height),Texture2D.whiteTexture);GUI.color=previous;}
+                float unit=Mathf.Min(safe.width/800f,safe.height/600f);
+                float width=Mathf.Min(safe.width-16*unit,760*unit),x=safe.center.x-width*.5f,y=safe.y+safe.height*.07f;
+                DrawFinishText(new Rect(x,y,width,75*unit),"RACE COMPLETE!",56*unit,new Color(1,.91f,.08f));
+                DrawFinishText(new Rect(x,y+100*unit,width,92*unit),"POSITION  "+Ordinal(finalPlace),65*unit,new Color(1,.76f,.17f));
+                DrawFinishText(new Rect(x,y+216*unit,width*.55f,54*unit),"BEST LAP",33*unit,new Color(1,.18f,.13f));
+                DrawFinishText(new Rect(x+width*.55f,y+216*unit,width*.45f,54*unit),PolygonDriver.FormatTime(bestLap),33*unit,Color.white);
+                DrawFinishText(new Rect(x,y+285*unit,width*.55f,54*unit),"TOTAL TIME",33*unit,new Color(1,.18f,.13f));
+                DrawFinishText(new Rect(x+width*.55f,y+285*unit,width*.45f,54*unit),PolygonDriver.FormatTime(elapsed),33*unit,Color.white);
+                DrawFinishText(new Rect(x,y+390*unit,width,48*unit),"R / A: RACE AGAIN     M / Y: MENU",22*unit,new Color(1,.91f,.08f));
+                return;
+            }
             var race=PolygonDesktopHUD.RaceRect(safe,scale);
             var help=PolygonDesktopHUD.HelpRect(safe,scale,player.IsPaused);
             string heading=mode==Mode.TimeTrial?"TIME TRIAL":"POSITION  "+place+" / "+FieldSize;
@@ -396,6 +426,18 @@ namespace PolygonRacing
             else if(phase==Phase.Driving&&elapsed<8)
                 PolygonDesktopHUD.Help(help,scale,player.UsingGamepad,false,true,Mathf.Clamp01((8-elapsed)/2));
             if(player.ShowDesktopDebug)PolygonDesktopHUD.Debug(safe,race,help,scale,player.HudFps,player);
+        }
+        void DrawFinishText(Rect rect,string value,float size,Color color)
+        {
+            if(finishPlaceStyle==null)finishPlaceStyle=new GUIStyle(GUI.skin.label){fontStyle=FontStyle.BoldAndItalic,alignment=TextAnchor.MiddleCenter,clipping=TextClipping.Clip};
+            finishPlaceStyle.fontSize=Mathf.Max(10,Mathf.RoundToInt(size));
+            float outline=Mathf.Max(1,size*.055f);
+            finishPlaceStyle.normal.textColor=Color.black;
+            GUI.Label(new Rect(rect.x-outline,rect.y,rect.width,rect.height),value,finishPlaceStyle);
+            GUI.Label(new Rect(rect.x+outline,rect.y,rect.width,rect.height),value,finishPlaceStyle);
+            GUI.Label(new Rect(rect.x,rect.y-outline,rect.width,rect.height),value,finishPlaceStyle);
+            GUI.Label(new Rect(rect.x,rect.y+outline,rect.width,rect.height),value,finishPlaceStyle);
+            finishPlaceStyle.normal.textColor=color;GUI.Label(rect,value,finishPlaceStyle);
         }
         void DrawDesktopMenu(Rect safe,float scale)
         {
