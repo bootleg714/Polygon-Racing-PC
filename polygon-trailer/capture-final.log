@@ -1,0 +1,768 @@
+VBCSCompilerPreWarmer: watching VBCSCompiler (PID 163476)
+VBCSCompilerPreWarmer: pre-warm launched (dotnet PID 163644)
+VBCSCompiler prewarm took 12.48 ms
+[Licensing::Module] Trying to connect to existing licensing client channel...
+Built from '6000.6/staging' branch; Version is '6000.6.4f1 (12bfff696524) revision 1228799'; Using compiler version '194234433'; Build Type 'Release'
+OS: 'Windows 10  (10.0.19045) 64bit Professional' Language: 'en' Physical Memory: 64729 MB
+BatchMode: 1, IsHumanControllingUs: 0, StartBugReporterOnCrash: 0, Is64bit: 1
+System  architecture: x64
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-User1" at "2026-11-02T06:56:33.4878576Z"
+Process architecture: x64
+Date: 2026-11-02T06:56:33Z
+[Licensing::Client] Code 10 while verifying Licensing Client signature (process Id: 29148, path: "C:/Program Files/Unity Hub/UnityLicensingClient_V1/Unity.Licensing.Client.exe")
+[Licensing::Module] LicensingClient has failed validation; ignoring
+[Licensing::Client] Handshaking with LicensingClient:
+  Version:                 1.18.3+d7ffd15
+  Session Id:              6bc02a56c9474c0d91b162f45ff83452
+  Correlation Id:          ca16b5a961a1f52538c3c48bc7bc5efd
+  External correlation Id: 5291955244716117698
+  Machine Id:              3ucTxqAlK9+kJVnamVZmSRrEO1s=
+[Licensing::Module] Successfully connected to LicensingClient on channel: "LicenseClient-User1" (connect: 0.00s, validation: 0.00s, handshake: 0.02s)
+[Licensing::IpcConnector] Successfully connected to: "LicenseClient-User1-notifications" at "2026-11-02T06:56:33.5087617Z"
+[Licensing::Module] Error: Access token is unavailable; failed to update
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] License group:
+  Id: 2476060034647-UnityPersXXXX
+  Product: Unity Personal
+  Type: Assigned
+  Expiration: Unlimited
+[Licensing::Client] Successfully updated license, isAsync: True, time: 0.00
+[Licensing::Client] Successfully resolved entitlement details
+[Licensing::Module] Licensing Background thread has ended after 0.03s
+
+COMMAND LINE ARGUMENTS:
+C:\Program Files\Unity\Hub\Editor\6000.6.4f1\Editor\Unity.exe
+-batchmode
+-projectPath
+C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project
+-executeMethod
+TrailerCapture.Run
+-logFile
+C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-final.log
+Successfully changed project path to: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project
+C:/Users/User1/Downloads/Polygon Racing PC/polygon-trailer/capture-project
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-gi-baking-worker=262144"
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+    "memorysetup-temp-allocator-size-gfx=262144"
+    "memorysetup-remapper-allocator-initial-capacity=32768"
+    "memorysetup-temp-allocator-size-preload-manager=33554432"
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=33554432"
+    "memorysetup-bucket-allocator-block-count=8"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-main-allocator-mimalloc-enabled=1"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=33554432"
+    "memorysetup-profiler-bucket-allocator-block-count=8"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=16777216"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+Logging is directed to a specific file, skipping project log.
+Player connection [160576]  Target information:
+
+Player connection [160576]  * "[IP] 192.168.1.80 [Port] 55505 [Flags] 2 [Guid] 2499940233 [EditorId] 2499940233 [Version] 1048832 [Id] WindowsEditor(7,DESKTOP-HPIAV0S) [Debug] 1 [PackageName] WindowsEditor [ProjectName] Editor" 
+
+Player connection [160576] Host joined multi-casting on [225.0.0.222:54997]...
+Player connection [160576] Host joined alternative multi-casting on [225.0.0.222:34997]...
+Input System module state changed to: Initialized.
+[Physics::Module] Initialized fallback backend.
+[Physics::Module] Id: 0xdecafbad
+[Package Manager] Connected to IPC stream "Upm-164476" after 0.2 seconds.
+[Licensing::Client] Successfully resolved entitlement details
+Library Redirect Path: Library/
+Initialising UDS system complete:
+  - System type: Client
+  - Resource namespace: 444818cb4c128aba0252fe70deaa8dcd
+  - Shared memory size: 1073741824
+  - Command buffer id: 1052576
+  - Command buffer size: 8192
+  - Hashmap size: 4194304
+  - Service connected: false
+Launching Unity Data Store - C:/Program Files/Unity/Hub/Editor/6000.6.4f1/Editor/Data/Tools/Unity.DataStore.exe 
+Unity Data Store artifact dir = Library/DataStore, working dir = C:/Users/User1/Downloads/Polygon Racing PC/polygon-trailer/capture-projectUnity Data Store running and initialised
+Refreshing native plugins compatible for Editor in 2.68 ms, found 0 plugins.
+[Physics::Module] Selected backend (deferred post-plugins).
+[Physics::Module] Name: PhysX
+[Physics::Module] Id: 0xf2b8ea05
+[Physics::Module] SDK Version: 4.1.2
+[Physics::Module] Integration Version: 1.0.0
+[Physics::Module] Threading Mode: Multi-Threaded
+Initialize engine version: 6000.6.4f1 (12bfff696524)
+[EntityIdStore] init: VM path (explicit commit), pageSize=4096, blockCount=1048576, entitiesPerBlock=256, slots reserved=4294967296 bytes
+[Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/6000.6.4f1/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path C:/Users/User1/Downloads/Polygon Racing PC/polygon-trailer/capture-project/Assets
+GfxDevice: creating device client; kGfxThreadingModeNonThreaded
+Direct3D:
+    Version:  Direct3D 11.0 [level 11.1]
+    Renderer: AMD Radeon RX 7900 XT (ID=0x744c)
+    Vendor:   ATI
+    VRAM:     20415 MB
+    Driver:   32.0.11037.4004
+Initialize mono
+Mono path[0] = 'C:/Program Files/Unity/Hub/Editor/6000.6.4f1/Editor/Data/Managed'
+Mono path[1] = 'C:/Program Files/Unity/Hub/Editor/6000.6.4f1/Editor/Data/BCLExtensions/runtime/netstandard2.1'
+Mono path[2] = 'C:/Program Files/Unity/Hub/Editor/6000.6.4f1/Editor/Data/MonoBleedingEdge/lib/mono/unityjit-win32'
+Mono config path = 'C:/Program Files/Unity/Hub/Editor/6000.6.4f1/Editor/Data/MonoBleedingEdge/etc'
+Using monoOptions --debugger-agent=transport=dt_socket,embedding=1,server=y,suspend=n,address=127.0.0.1:56476
+CodeReloadManager initialized
+ImportWorker Server TCP listen port: 0
+AcceleratorClientConnectionCallback - disconnected - :0
+Begin MonoManager ReloadAssembly
+Registering precompiled unity dll's ...
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.6.4f1/Editor/Data/PlaybackEngines/WebGLSupport/UnityEditor.WebGL.Extensions.dll
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.6.4f1/Editor/Data/PlaybackEngines/WindowsStandaloneSupport/UnityEditor.WindowsStandalone.Extensions.dll
+[Licensing::Client] Successfully resolved entitlement details
+Register platform support module: C:/Program Files/Unity/Hub/Editor/6000.6.4f1/Editor/Data/PlaybackEngines/AndroidPlayer/UnityEditor.Android.Extensions.dll
+Registered in 0.004407 seconds.
+Native extension for Android target not found
+Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+Package Manager log level set to [2]
+ScheduleIndexationOnStartup MainProcess:False IndexOnStartup:False
+Scripting: successfully reloaded assembly
+- Finished resetting the current domain, in  0.489 seconds
+Domain Reload Profiling: 963ms
+	BeginReloadAssembly (114ms)
+		CreateAndSetChildDomain (6ms)
+	RebuildCommonClasses (4ms)
+	RebuildNativeTypeToScriptingClass (13ms)
+	initialDomainReloadingComplete (68ms)
+	LoadAllAssembliesAndSetupDomain (275ms)
+		LoadAssemblies (104ms)
+		TypeCache.Refresh (181ms)
+			TypeCache.ScanAssembly (169ms)
+		AnalyzeDomain (1ms)
+	FinalizeReload (490ms)
+		SetupLoadedEditorAssemblies (0ms)
+			InitializePlatformSupportModulesInManaged (8ms)
+			BeforeProcessingInitializeOnLoad (72ms)
+			ProcessInitializeOnLoadAttributes (86ms)
+			ProcessInitializeOnLoadMethodAttributes (154ms)
+[Licensing::Client] Successfully resolved entitlement details
+Application.AssetDatabase Initial Refresh Start
+[Package Manager] Restoring resolved packages state from cache
+[Licensing::Client] Successfully resolved entitlement details
+[Package Manager] Registered 63 packages:
+  Packages from [https://packages.unity.com]:
+    com.unity.ai.navigation@2.0.14 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.ai.navigation@134dd6a3b97b)
+    com.unity.collab-proxy@2.13.6 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.collab-proxy@4628d2ba6ea4)
+    com.unity.ide.rider@3.0.38 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.ide.rider@1f60b3138684)
+    com.unity.ide.visualstudio@2.0.26 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.ide.visualstudio@a99d56dec63f)
+    com.unity.inputsystem@1.20.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.inputsystem@7a4e1a2a8194)
+    com.unity.visualscripting@1.9.12 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.visualscripting@4edfcc09512f)
+    com.unity.xr.management@4.7.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.xr.management@2ad85c7dd480)
+    com.unity.xr.openxr@1.16.1 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.xr.openxr@ef0033a586bf)
+    com.unity.xr.core-utils@2.6.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.xr.core-utils@a8b900321199)
+    com.unity.xr.legacyinputhelpers@3.0.1 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.xr.legacyinputhelpers@3f62d634f63b)
+    com.unity.searcher@4.9.5 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.searcher@a463122f2c00)
+    com.unity.profiling.core@1.0.3 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.profiling.core@8a49f7027d06)
+    com.unity.nuget.mono-cecil@1.11.6 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.nuget.mono-cecil@ecb9724e46ff)
+  Built-in packages:
+    com.unity.render-pipelines.universal@17.6.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.render-pipelines.universal@b0678dfc9e21)
+    com.unity.test-framework@1.8.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.test-framework@80f691d4262b)
+    com.unity.timeline@6.6.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.timeline@c56d56b0070b)
+    com.unity.ugui@2.6.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.ugui@0727b404f3a0)
+    com.unity.modules.accessibility@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.accessibility)
+    com.unity.modules.adaptiveperformance@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.adaptiveperformance)
+    com.unity.modules.ai@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.ai)
+    com.unity.modules.androidjni@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.androidjni)
+    com.unity.modules.animation@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.animation)
+    com.unity.modules.assetbundle@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.assetbundle)
+    com.unity.modules.audio@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.audio)
+    com.unity.modules.cloth@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.cloth)
+    com.unity.modules.director@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.director)
+    com.unity.modules.imageconversion@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.imageconversion)
+    com.unity.modules.imgui@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.imgui)
+    com.unity.modules.jsonserialize@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.jsonserialize)
+    com.unity.modules.particlesystem@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.particlesystem)
+    com.unity.modules.physics@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.physics)
+    com.unity.modules.physics2d@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.physics2d)
+    com.unity.modules.physicscore2d@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.physicscore2d)
+    com.unity.modules.screencapture@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.screencapture)
+    com.unity.modules.terrain@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.terrain)
+    com.unity.modules.terrainphysics@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.terrainphysics)
+    com.unity.modules.tetgen@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.tetgen)
+    com.unity.modules.tilemap@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.tilemap)
+    com.unity.modules.timelinefoundation@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.timelinefoundation)
+    com.unity.modules.ui@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.ui)
+    com.unity.modules.uielements@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.uielements)
+    com.unity.modules.umbra@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.umbra)
+    com.unity.modules.unityanalytics@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.unityanalytics)
+    com.unity.modules.unitywebrequest@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.unitywebrequest)
+    com.unity.modules.unitywebrequestassetbundle@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.unitywebrequestassetbundle)
+    com.unity.modules.unitywebrequestaudio@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.unitywebrequestaudio)
+    com.unity.modules.unitywebrequesttexture@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.unitywebrequesttexture)
+    com.unity.modules.unitywebrequestwww@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.unitywebrequestwww)
+    com.unity.modules.vectorgraphics@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.vectorgraphics)
+    com.unity.modules.vehicles@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.vehicles)
+    com.unity.modules.video@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.video)
+    com.unity.modules.wind@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.wind)
+    com.unity.modules.xr@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.xr)
+    com.unity.modules.subsystems@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.subsystems)
+    com.unity.modules.hierarchycore@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.modules.hierarchycore)
+    com.unity.ext.nunit@2.1.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.ext.nunit@0198eae3b53e)
+    com.unity.render-pipelines.core@17.6.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.render-pipelines.core@285af6b8c83f)
+    com.unity.shadergraph@17.6.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.shadergraph@58bcb150677d)
+    com.unity.render-pipelines.universal-config@17.6.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.render-pipelines.universal-config@561422b74439)
+    com.unity.graph-authoring@1.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.graph-authoring@cfd2588851ee)
+    com.unity.burst@2.0.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.burst@626e66ab421b)
+    com.unity.collections@6.6.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.collections@10fff0607388)
+    com.unity.test-framework.performance@6.6.0 (location: C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.test-framework.performance@b6023decb532)
+[Subsystems] Looking for new subsystems at path C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.xr.openxr@ef0033a586bf
+[Subsystems] Novel subsystem found at Library/PackageCache/com.unity.xr.openxr@ef0033a586bf/Runtime/UnitySubsystemsManifest.json
+[Subsystems] Discovering subsystems at path C:/Program Files/Unity/Hub/Editor/6000.6.4f1/Editor/Data/Resources/UnitySubsystems
+[Subsystems] Discovering subsystems at path C:/Users/User1/Downloads/Polygon Racing PC/polygon-trailer/capture-project/Assets
+[Subsystems] Discovering subsystems at path C:\Users\User1\Downloads\Polygon Racing PC\polygon-trailer\capture-project\Library\PackageCache\com.unity.xr.openxr@ef0033a586bf
+[Subsystems] No descriptors matched for  examples in Library/PackageCache/com.unity.xr.openxr@ef0033a586bf/Runtime/UnitySubsystemsManifest.json.
+[Subsystems] 1 'inputs' descriptors matched in Library/PackageCache/com.unity.xr.openxr@ef0033a586bf/Runtime/UnitySubsystemsManifest.json
+[Subsystems] 1 'displays' descriptors matched in Library/PackageCache/com.unity.xr.openxr@ef0033a586bf/Runtime/UnitySubsystemsManifest.json
+[Subsystems] No descriptors matched for  meshings in Library/PackageCache/com.unity.xr.openxr@ef0033a586bf/Runtime/UnitySubsystemsManifest.json.
+[Package Manager] Done registering packages in 0.02 seconds
+[ScriptCompilation] Requested script compilation because: AssetDatabase observed changes in script compilation related files
+Starting: C:\Program Files\Unity\Hub\Editor\6000.6.4f1\Editor\Data\Tools\BuildPipeline\bee_backend.exe --ipc --defer-dag-verification --dagfile="Library/Bee/1900b0aE.dag" --continue-on-failure --profile="Library/Bee/backend1.traceevents" ScriptAssemblies
+WorkingDir: C:/Users/User1/Downloads/Polygon Racing PC/polygon-trailer/capture-project
+DisplayProgressbar: Compiling Scripts
+ExitCode: 0 Duration: 1s303ms
+[ 909/1181  0s] ILPP-Configuration Library/ilpp-configuration.nevergeneratedoutput
+[1177/1181  0s] Csc Library/Bee/artifacts/1900b0aE.dag/Assembly-CSharp-Editor.dll (+2 others)
+Assets\PolygonRacing\Editor\PolygonCarSetup.cs(55,28): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+
+Assets\PolygonRacing\Editor\PolygonSceneryModelsSetup.cs(39,94): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+
+Assets\PolygonRacing\Editor\PolygonSceneryModelsSetup.cs(39,30): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+
+Assets\PolygonRacing\Editor\PolygonDowntownSetup.cs(45,24): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+
+Assets\PolygonRacing\Editor\PolygonCoastalExpresswaySetup.cs(37,30): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+
+Assets\PolygonRacing\Editor\PolygonCoastalExpresswaySetup.cs(62,24): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+
+Assets\PolygonRacing\Editor\PolygonSakuraSetup.cs(45,24): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+
+Assets\PolygonRacing\Editor\PolygonRivieraSetup.cs(44,24): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+
+Assets\PolygonRacing\Editor\PolygonCircuitUpgrade.cs(16,24): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+
+Assets\PolygonRacing\Editor\PolygonNordwaldSetup.cs(46,24): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+
+Assets\PolygonRacing\Editor\PolygonPCVisualSetup.cs(370,26): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+
+Assets\PolygonRacing\Editor\PolygonCoastalExpresswaySetup.cs(127,24): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+
+Assets\PolygonRacing\Editor\PolygonLookSetup.cs(75,24): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+
+Assets\PolygonRacing\Editor\PolygonStarfallPortSetup.cs(48,24): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+
+Assets\PolygonRacing\Editor\PolygonStarfallPortSetup.cs(60,118): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+
+Assets\PolygonRacing\Editor\PolygonStarfallPortSetup.cs(60,35): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+
+Assets\PolygonRacing\Editor\PolygonNeonSetup.cs(48,24): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+
+Assets\PolygonRacing\Editor\PolygonNeonSetup.cs(60,118): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+
+Assets\PolygonRacing\Editor\PolygonNeonSetup.cs(60,35): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+
+Assets\PolygonRacing\Editor\PolygonPCVisualSetup.cs(410,55): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+
+Assets\PolygonRacing\Editor\PolygonPCVisualSetup.cs(409,38): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+
+Assets\PolygonRacing\Editor\PolygonAuroraForgeSetup.cs(48,24): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+
+Assets\PolygonRacing\Editor\PolygonAuroraForgeSetup.cs(60,118): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+
+Assets\PolygonRacing\Editor\PolygonAuroraForgeSetup.cs(60,35): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+
+Assets\PolygonRacing\Editor\PolygonIonRiftSetup.cs(48,24): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+
+Assets\PolygonRacing\Editor\PolygonIonRiftSetup.cs(60,118): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+
+Assets\PolygonRacing\Editor\PolygonIonRiftSetup.cs(60,35): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+
+Assets\PolygonRacing\Editor\PolygonDowntownSetup.cs(95,26): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+
+Assets\PolygonRacing\Editor\PolygonLookSetup.cs(100,100): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+
+Assets\PolygonRacing\Editor\PolygonLookSetup.cs(100,37): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+
+Assets\PolygonRacing\Editor\PolygonNeonReflections.cs(37,93): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+
+Assets\PolygonRacing\Editor\PolygonNeonReflections.cs(37,30): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+
+Assets\PolygonRacing\Editor\PolygonRacingSetup.cs(75,89): warning CS0618: 'XRGeneralSettings.k_SettingsKey' is obsolete: 'k_SettingsKey is deprecated in XR Plug-in Management 4.7. Use settingsKey instead.'
+
+Assets\PolygonRacing\Editor\PolygonRacingSetup.cs(79,53): warning CS0618: 'XRGeneralSettings.k_SettingsKey' is obsolete: 'k_SettingsKey is deprecated in XR Plug-in Management 4.7. Use settingsKey instead.'
+
+Assets\PolygonRacing\Editor\PolygonSceneryModelsSetup.cs(104,94): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+
+Assets\PolygonRacing\Editor\PolygonSceneryModelsSetup.cs(104,30): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+
+Assets\PolygonRacing\Editor\PolygonSceneryModelsSetup.cs(107,85): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+
+Assets\PolygonRacing\Editor\PolygonSceneryModelsSetup.cs(107,21): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+
+Assets\PolygonRacing\Editor\PolygonCarSetup.cs(77,106): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+
+Assets\PolygonRacing\Editor\PolygonCarSetup.cs(77,38): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+
+Assets\PolygonRacing\Editor\PolygonPCVisualSetup.cs(531,59): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+
+Assets\PolygonRacing\Editor\PolygonPCVisualSetup.cs(530,39): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+
+Assets\PolygonRacing\Editor\PolygonLookSetup.cs(216,96): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+
+Assets\PolygonRacing\Editor\PolygonLookSetup.cs(216,33): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+
+Assets\PolygonRacing\Editor\PolygonLookSetup.cs(236,94): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+
+Assets\PolygonRacing\Editor\PolygonLookSetup.cs(236,34): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+
+Assets\PolygonRacing\Editor\PolygonNeonReflections.cs(128,26): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+
+Assets\PolygonRacing\Editor\PolygonSceneryModelsSetup.cs(146,94): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+
+Assets\PolygonRacing\Editor\PolygonSceneryModelsSetup.cs(146,30): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+[1178/1181  0s] ILPostProcess Library/Bee/artifacts/1900b0aE.dag/post-processed/Assembly-CSharp-Editor.dll (+pdb)
+Processing assembly Library/Bee/artifacts/1900b0aE.dag/Assembly-CSharp-Editor.dll, with 147 defines and 393 references
+
+processors: Unity.Jobs.CodeGen.JobsILPostProcessor, zzzUnity.Burst.CodeGen.BurstILPostProcessor
+
+1 processor(s) skipped this assembly
+
+running Unity.Jobs.CodeGen.JobsILPostProcessor
+[1179/1181  0s] CopyFiles Library/ScriptAssemblies/Assembly-CSharp-Editor.pdb
+[1180/1181  0s] CopyFiles Library/ScriptAssemblies/Assembly-CSharp-Editor.dll
+*** Tundra build success (1.27 seconds), 5 items updated, 1181 evaluated
+Assets\PolygonRacing\Editor\PolygonCarSetup.cs(55,28): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+Assets\PolygonRacing\Editor\PolygonSceneryModelsSetup.cs(39,94): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+Assets\PolygonRacing\Editor\PolygonSceneryModelsSetup.cs(39,30): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+Assets\PolygonRacing\Editor\PolygonDowntownSetup.cs(45,24): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+Assets\PolygonRacing\Editor\PolygonCoastalExpresswaySetup.cs(37,30): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+Assets\PolygonRacing\Editor\PolygonCoastalExpresswaySetup.cs(62,24): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+Assets\PolygonRacing\Editor\PolygonSakuraSetup.cs(45,24): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+Assets\PolygonRacing\Editor\PolygonRivieraSetup.cs(44,24): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+Assets\PolygonRacing\Editor\PolygonCircuitUpgrade.cs(16,24): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+Assets\PolygonRacing\Editor\PolygonNordwaldSetup.cs(46,24): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+Assets\PolygonRacing\Editor\PolygonPCVisualSetup.cs(370,26): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+Assets\PolygonRacing\Editor\PolygonCoastalExpresswaySetup.cs(127,24): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+Assets\PolygonRacing\Editor\PolygonLookSetup.cs(75,24): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+Assets\PolygonRacing\Editor\PolygonStarfallPortSetup.cs(48,24): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+Assets\PolygonRacing\Editor\PolygonStarfallPortSetup.cs(60,118): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+Assets\PolygonRacing\Editor\PolygonStarfallPortSetup.cs(60,35): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+Assets\PolygonRacing\Editor\PolygonNeonSetup.cs(48,24): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+Assets\PolygonRacing\Editor\PolygonNeonSetup.cs(60,118): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+Assets\PolygonRacing\Editor\PolygonNeonSetup.cs(60,35): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+Assets\PolygonRacing\Editor\PolygonPCVisualSetup.cs(410,55): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+Assets\PolygonRacing\Editor\PolygonPCVisualSetup.cs(409,38): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+Assets\PolygonRacing\Editor\PolygonAuroraForgeSetup.cs(48,24): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+Assets\PolygonRacing\Editor\PolygonAuroraForgeSetup.cs(60,118): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+Assets\PolygonRacing\Editor\PolygonAuroraForgeSetup.cs(60,35): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+Assets\PolygonRacing\Editor\PolygonIonRiftSetup.cs(48,24): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+Assets\PolygonRacing\Editor\PolygonIonRiftSetup.cs(60,118): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+Assets\PolygonRacing\Editor\PolygonIonRiftSetup.cs(60,35): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+Assets\PolygonRacing\Editor\PolygonDowntownSetup.cs(95,26): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+Assets\PolygonRacing\Editor\PolygonLookSetup.cs(100,100): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+Assets\PolygonRacing\Editor\PolygonLookSetup.cs(100,37): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+Assets\PolygonRacing\Editor\PolygonNeonReflections.cs(37,93): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+Assets\PolygonRacing\Editor\PolygonNeonReflections.cs(37,30): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+Assets\PolygonRacing\Editor\PolygonRacingSetup.cs(75,89): warning CS0618: 'XRGeneralSettings.k_SettingsKey' is obsolete: 'k_SettingsKey is deprecated in XR Plug-in Management 4.7. Use settingsKey instead.'
+Assets\PolygonRacing\Editor\PolygonRacingSetup.cs(79,53): warning CS0618: 'XRGeneralSettings.k_SettingsKey' is obsolete: 'k_SettingsKey is deprecated in XR Plug-in Management 4.7. Use settingsKey instead.'
+Assets\PolygonRacing\Editor\PolygonSceneryModelsSetup.cs(104,94): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+Assets\PolygonRacing\Editor\PolygonSceneryModelsSetup.cs(104,30): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+Assets\PolygonRacing\Editor\PolygonSceneryModelsSetup.cs(107,85): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+Assets\PolygonRacing\Editor\PolygonSceneryModelsSetup.cs(107,21): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+Assets\PolygonRacing\Editor\PolygonCarSetup.cs(77,106): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+Assets\PolygonRacing\Editor\PolygonCarSetup.cs(77,38): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+Assets\PolygonRacing\Editor\PolygonPCVisualSetup.cs(531,59): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+Assets\PolygonRacing\Editor\PolygonPCVisualSetup.cs(530,39): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+Assets\PolygonRacing\Editor\PolygonLookSetup.cs(216,96): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+Assets\PolygonRacing\Editor\PolygonLookSetup.cs(216,33): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+Assets\PolygonRacing\Editor\PolygonLookSetup.cs(236,94): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+Assets\PolygonRacing\Editor\PolygonLookSetup.cs(236,34): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+Assets\PolygonRacing\Editor\PolygonNeonReflections.cs(128,26): warning CS0618: 'Object.FindFirstObjectByType<T>()' is obsolete: 'FindFirstObjectByType has been deprecated because it relies on instance ID ordering. Use FindAnyObjectByType instead, which does not depend on ordering.'
+Assets\PolygonRacing\Editor\PolygonSceneryModelsSetup.cs(146,94): warning CS0618: 'FindObjectsSortMode' is obsolete: 'FindObjectsSortMode has been deprecated. Use the FindObjectsByType overloads that do not take a FindObjectsSortMode parameter.'
+Assets\PolygonRacing\Editor\PolygonSceneryModelsSetup.cs(146,30): warning CS0618: 'Object.FindObjectsByType<T>(FindObjectsInactive, FindObjectsSortMode)' is obsolete: 'FindObjectsByType with FindObjectsSortMode parameter has been deprecated. Use FindObjectsByType<T>() or FindObjectsByType<T>(FindObjectsInactive) instead. InstanceID will be replaced in the future with EntityId and previous sort order cannot be maintained.'
+AssetDatabase: script compilation time: 1.906332s
+Total cache size 267495576
+Total cache size after purge 267495576, took 00:00:00.3054638
+Begin MonoManager ReloadAssembly
+'Packages/com.unity.render-pipelines.core/Editor/Deprecated.cs' contains partial class of Unity.Object, exactly 1 of the partial classes needs to be in a file with the same filename. This is to know the one that can be referenced from ie. GameObjects
+'Packages/com.unity.render-pipelines.core/Editor/Deprecated.cs' contains partial class of Unity.Object, exactly 1 of the partial classes needs to be in a file with the same filename. This is to know the one that can be referenced from ie. GameObjects
+Refreshing native plugins compatible for Editor in 6.96 ms, found 10 plugins.
+Native extension for Android target not found
+Native extension for WindowsStandalone target not found
+Native extension for WebGL target not found
+ScheduleIndexationOnStartup MainProcess:True IndexOnStartup:True
+Scripting: successfully reloaded assembly
+- Finished resetting the current domain, in  0.758 seconds
+Domain Reload Profiling: 1639ms
+	BeginReloadAssembly (231ms)
+		DisableScriptedObjects (51ms)
+		CreateAndSetChildDomain (50ms)
+	RebuildCommonClasses (7ms)
+	RebuildNativeTypeToScriptingClass (13ms)
+	initialDomainReloadingComplete (63ms)
+	LoadAllAssembliesAndSetupDomain (567ms)
+		LoadAssemblies (326ms)
+		TypeCache.Refresh (132ms)
+			TypeCache.ScanAssembly (120ms)
+		AnalyzeDomain (68ms)
+			BuildScriptInfoCaches (61ms)
+			ResolveRequiredComponents (6ms)
+	FinalizeReload (759ms)
+		SetupLoadedEditorAssemblies (0ms)
+			InitializePlatformSupportModulesInManaged (6ms)
+			BeforeProcessingInitializeOnLoad (76ms)
+			ProcessInitializeOnLoadAttributes (232ms)
+			ProcessInitializeOnLoadMethodAttributes (116ms)
+			AfterProcessingInitializeOnLoad (8ms)
+		AwakeInstancesAfterBackupRestoration (21ms)
+Starting new worker id: 0 with log in C:/Users/User1/Downloads/Polygon Racing PC/polygon-trailer/capture-project/Logs/AssetImportWorkerHW0.log
+Refreshing native plugins compatible for Editor in 7.56 ms, found 10 plugins.
+
+Asset Pipeline Refresh (id=4246701036ebbab46a406323fb6c6bb2): Total: 4.593 seconds - Initiated by InitialRefreshV2(ForceSynchronousImport)
+	(Values over 0.05ms)
+	Summary:
+		Imports: total=0 (actual=0, local cache=0, cache server=0)
+		Asset DB Process Time: managed=0 ms, native=1371 ms
+		Asset DB Callback time: managed=273 ms, native=30 ms
+		Scripting: domain reloads=1, domain reload time=944 ms, compile time=1908 ms, other=65 ms
+		Project Asset Count: scripts=1610, non-scripts=16669
+		Asset File Changes: new=0, changed=1, moved=0, deleted=0
+		Scan Filter Count: 0
+	InvokePackagesCallback: 19.985ms
+	ApplyChangesToAssetFolders: 0.575ms
+	Scan: 155.739ms
+	Collect global state as custom dependencies: 18.219ms
+	OnSourceAssetsModified: 0.471ms
+	CategorizeScriptCompilationAssets: 40.678ms
+	ProcessAssetsWithTransientArtifactChanges: 64.043ms
+	CategorizeAssets: 131.268ms
+	CompileScripts: 1908.234ms
+	ImportOutOfDateAssets: 795.218ms (780.900ms without children)
+		ReloadNativeAssets: 0.062ms
+		UnloadImportedAssets: 2.228ms
+		EnsureUptoDateAssetsAreRegisteredWithGuidPM: 3.178ms
+		ImportSchedulerStart: 8.847ms
+	PostProcessAllAssets: 276.498ms
+		XRBuildSystem.XRAssetImported 2.358ms
+		VCAutoAddAssetPostprocess 0.701ms
+		MonoPostProcessAllAssets: 273.034ms
+			AssetPostprocessor.OnPostprocessAllAssets 181.891ms
+			StyleCatalogPostProcessor.OnPostprocessAllAssets 26.237ms
+			AssetCallbacks.OnPostprocessAllAssets 20.965ms
+			UniversalRenderPipelineGlobalSettingsPostprocessor.OnPostprocessAllAssets 11.896ms
+			SyncVS.PostprocessSyncProject 7.661ms
+			BuilderAssetPostprocessor.OnPostprocessAllAssets 4.200ms
+			SpeedTree9Postprocessor.OnPostprocessAllAssets 1.453ms
+			WindowAssetPostprocessingWatcher.OnPostprocessAllAssets 1.384ms
+			RetainedModeAssetPostprocessor.OnPostprocessAllAssets 1.383ms
+			AssetChangedListener.OnPostprocessAllAssets 1.367ms
+			ShaderGraphAssetPostProcessor.OnPostprocessAllAssets 1.367ms
+			EditModeScopePostprocessor.OnPostprocessAllAssets 0.638ms
+			RenderPipelineGlobalSettingsPostprocessor.OnPostprocessAllAssets 0.557ms
+			MaterialPostprocessor.OnPostprocessAllAssets 0.540ms
+			ShaderReflectionAssetPostProcessor.OnPostprocessAllAssets 0.383ms
+			ArtifactBrowserPostProcessor.OnPostprocessAllAssets 0.350ms
+			UVCSAssetPostprocessor.OnPostprocessAllAssets 0.322ms
+			PostProcessor.OnPostprocessAllAssets 0.301ms
+			TextAssetPostProcessor.OnPostprocessAllAssets 0.299ms
+			InputActionAssetPostprocessor.OnPostprocessAllAssets 0.290ms
+			ReferencedClipsPostProcessor.OnPostprocessAllAssets 0.223ms
+			AudioMixerPostprocessor.OnPostprocessAllAssets 0.220ms
+			InputActionJsonNameModifierAssetProcessor.OnPostprocessAllAssets 0.203ms
+			AssetEvents.OnPostprocessAllAssets 0.199ms
+			TMPro_TexturePostProcessor.OnPostprocessAllAssets 0.193ms
+			TerrainToolbarOverlayPostProcessor.OnPostprocessAllAssets 0.178ms
+			ProjectSettingsPostprocessor.OnPostprocessAllAssets 0.153ms
+			AssetDatabaseCallbacks.OnPostprocessAllAssets 0.131ms
+			ThemePostprocessor.OnPostprocessAllAssets 0.122ms
+			SpeedTreePostProcessor.OnPostprocessAllAssets 0.122ms
+			SamplePostprocessor.OnPostprocessAllAssets 0.120ms
+			ConfigAssetsTracker.OnPostprocessAllAssets 0.111ms
+			ScenarioDriftAssetsTracker.OnPostprocessAllAssets 0.089ms
+			AssetReloadNotifier.OnPostprocessAllAssets 0.080ms
+			AudioContainerPostProcessor.OnPostprocessAllAssets 0.055ms
+	PostAssetChangesProfiler: 8.662ms
+	UnloadStreamsBegin: 1.363ms
+	PersistCurrentRevisions: 0.357ms
+	GenerateScriptTypeHashes: 1.196ms
+	GenerateScriptTypeSerializationHashes: 2.111ms
+	Untracked: 1151.923ms
+
+Application.AssetDatabase Initial Refresh End
+Launched and connected shader compiler UnityShaderCompiler.exe after 0.01 seconds
+Scanning for USB devices : 39.359ms
+Initializing Unity extensions:
+[MODES] ModeService[none].Initialize
+[MODES] ModeService[none].LoadModes
+[MODES] Loading mode Default (0) for mode-current-id-Polygon Racing PC
+Unloading 80 Unused Serialized files (Serialized files now loaded: 0)
+Unloading 7256 unused Assets / (15.4 MB). Loaded Objects now: 8209.
+Memory consumption went from 461.7 MB to 446.3 MB.
+Total: 12.882800 ms (FindLiveObjects: 0.569700 ms CreateObjectMapping: 0.408300 ms MarkObjects: 6.963400 ms  DeleteObjects: 4.688300 ms)
+
+Opening scene 'Assets/PolygonRacing/Scenes/CoastalExpressway.unity'
+Unloading 4 Unused Serialized files (Serialized files now loaded: 0)
+Loaded scene 'Assets/PolygonRacing/Scenes/CoastalExpressway.unity'
+	Deserialize:            82.176 ms
+	Integration:            574.888 ms
+	Integration of assets:  0.805 ms
+	Thread Wait Time:       0.064 ms
+	Total Operation Time:   657.934 ms
+Unloading 4 unused Assets / (165.2 KB). Loaded Objects now: 19076.
+Memory consumption went from 0.55 GB to 0.55 GB.
+Total: 8.576800 ms (FindLiveObjects: 1.647200 ms CreateObjectMapping: 0.205500 ms MarkObjects: 6.339400 ms  DeleteObjects: 0.096500 ms)
+
+GPU Resident Drawer created.
+Worker ready: AssetImportWorkerHW0 0
+TRAILER_SCENE_DONE CoastalExpressway
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TrailerCapture:Run () (at Assets/PolygonRacing/Editor/TrailerCapture.cs:30)
+
+(Filename: Assets/PolygonRacing/Editor/TrailerCapture.cs Line: 30)
+
+Opening scene 'Assets/PolygonRacing/Scenes/DowntownCircuit.unity'
+Unloading 1021 Unused Serialized files (Serialized files now loaded: 0)
+Loaded scene 'Assets/PolygonRacing/Scenes/DowntownCircuit.unity'
+	Deserialize:            31.339 ms
+	Integration:            502.260 ms
+	Integration of assets:  0.106 ms
+	Thread Wait Time:       0.007 ms
+	Total Operation Time:   533.711 ms
+Unloading 993 unused Assets / (33.9 MB). Loaded Objects now: 13254.
+Memory consumption went from 0.66 GB to 0.62 GB.
+Total: 9.935400 ms (FindLiveObjects: 0.883000 ms CreateObjectMapping: 0.211700 ms MarkObjects: 5.318400 ms  DeleteObjects: 3.273100 ms)
+
+TRAILER_SCENE_DONE DowntownCircuit
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TrailerCapture:Run () (at Assets/PolygonRacing/Editor/TrailerCapture.cs:30)
+
+(Filename: Assets/PolygonRacing/Editor/TrailerCapture.cs Line: 30)
+
+Opening scene 'Assets/PolygonRacing/Scenes/RivieraHarbour.unity'
+Unloading 817 Unused Serialized files (Serialized files now loaded: 0)
+Loaded scene 'Assets/PolygonRacing/Scenes/RivieraHarbour.unity'
+	Deserialize:            34.525 ms
+	Integration:            659.643 ms
+	Integration of assets:  0.087 ms
+	Thread Wait Time:       0.014 ms
+	Total Operation Time:   694.269 ms
+Unloading 816 unused Assets / (53.6 MB). Loaded Objects now: 13840.
+Memory consumption went from 0.72 GB to 0.67 GB.
+Total: 8.825300 ms (FindLiveObjects: 0.871000 ms CreateObjectMapping: 0.105400 ms MarkObjects: 5.265400 ms  DeleteObjects: 2.337000 ms)
+
+TRAILER_SCENE_DONE RivieraHarbour
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TrailerCapture:Run () (at Assets/PolygonRacing/Editor/TrailerCapture.cs:30)
+
+(Filename: Assets/PolygonRacing/Editor/TrailerCapture.cs Line: 30)
+
+Opening scene 'Assets/PolygonRacing/Scenes/SakuraHills.unity'
+Unloading 849 Unused Serialized files (Serialized files now loaded: 0)
+Loaded scene 'Assets/PolygonRacing/Scenes/SakuraHills.unity'
+	Deserialize:            55.110 ms
+	Integration:            604.085 ms
+	Integration of assets:  0.112 ms
+	Thread Wait Time:       0.004 ms
+	Total Operation Time:   659.311 ms
+Unloading 845 unused Assets / (91.8 MB). Loaded Objects now: 16080.
+Memory consumption went from 0.76 GB to 0.67 GB.
+Total: 9.859300 ms (FindLiveObjects: 1.095900 ms CreateObjectMapping: 0.233300 ms MarkObjects: 5.812600 ms  DeleteObjects: 2.444400 ms)
+
+TRAILER_SCENE_DONE SakuraHills
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TrailerCapture:Run () (at Assets/PolygonRacing/Editor/TrailerCapture.cs:30)
+
+(Filename: Assets/PolygonRacing/Editor/TrailerCapture.cs Line: 30)
+
+Opening scene 'Assets/PolygonRacing/Scenes/NordwaldRing.unity'
+Unloading 1328 Unused Serialized files (Serialized files now loaded: 0)
+Loaded scene 'Assets/PolygonRacing/Scenes/NordwaldRing.unity'
+	Deserialize:            65.956 ms
+	Integration:            622.778 ms
+	Integration of assets:  0.115 ms
+	Thread Wait Time:       0.004 ms
+	Total Operation Time:   688.853 ms
+Unloading 1327 unused Assets / (64.5 MB). Loaded Objects now: 18992.
+Memory consumption went from 0.71 GB to 0.65 GB.
+Total: 12.775400 ms (FindLiveObjects: 1.590500 ms CreateObjectMapping: 0.363700 ms MarkObjects: 6.524100 ms  DeleteObjects: 4.028100 ms)
+
+TRAILER_SCENE_DONE NordwaldRing
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TrailerCapture:Run () (at Assets/PolygonRacing/Editor/TrailerCapture.cs:30)
+
+(Filename: Assets/PolygonRacing/Editor/TrailerCapture.cs Line: 30)
+
+Opening scene 'Assets/PolygonRacing/Scenes/NeonMeridian.unity'
+Unloading 1943 Unused Serialized files (Serialized files now loaded: 0)
+Loaded scene 'Assets/PolygonRacing/Scenes/NeonMeridian.unity'
+	Deserialize:            44.542 ms
+	Integration:            442.356 ms
+	Integration of assets:  0.107 ms
+	Thread Wait Time:       0.006 ms
+	Total Operation Time:   487.010 ms
+Unloading 1950 unused Assets / (38.0 MB). Loaded Objects now: 15528.
+Memory consumption went from 0.65 GB to 0.61 GB.
+Total: 12.847800 ms (FindLiveObjects: 1.283600 ms CreateObjectMapping: 0.161900 ms MarkObjects: 5.732000 ms  DeleteObjects: 5.416400 ms)
+
+TRAILER_SCENE_DONE NeonMeridian
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TrailerCapture:Run () (at Assets/PolygonRacing/Editor/TrailerCapture.cs:30)
+
+(Filename: Assets/PolygonRacing/Editor/TrailerCapture.cs Line: 30)
+
+Opening scene 'Assets/PolygonRacing/Scenes/IonRift.unity'
+Unloading 1398 Unused Serialized files (Serialized files now loaded: 0)
+Loaded scene 'Assets/PolygonRacing/Scenes/IonRift.unity'
+	Deserialize:            38.693 ms
+	Integration:            383.582 ms
+	Integration of assets:  0.110 ms
+	Thread Wait Time:       0.003 ms
+	Total Operation Time:   422.388 ms
+Unloading 1367 unused Assets / (24.8 MB). Loaded Objects now: 14587.
+Memory consumption went from 0.63 GB to 0.61 GB.
+Total: 11.262800 ms (FindLiveObjects: 1.124500 ms CreateObjectMapping: 0.256300 ms MarkObjects: 5.684800 ms  DeleteObjects: 3.945500 ms)
+
+TRAILER_SCENE_DONE IonRift
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TrailerCapture:Run () (at Assets/PolygonRacing/Editor/TrailerCapture.cs:30)
+
+(Filename: Assets/PolygonRacing/Editor/TrailerCapture.cs Line: 30)
+
+Opening scene 'Assets/PolygonRacing/Scenes/AuroraForge.unity'
+Unloading 1192 Unused Serialized files (Serialized files now loaded: 0)
+Loaded scene 'Assets/PolygonRacing/Scenes/AuroraForge.unity'
+	Deserialize:            35.620 ms
+	Integration:            326.769 ms
+	Integration of assets:  0.117 ms
+	Thread Wait Time:       0.019 ms
+	Total Operation Time:   362.525 ms
+Unloading 1168 unused Assets / (22.4 MB). Loaded Objects now: 14003.
+Memory consumption went from 0.62 GB to 0.59 GB.
+Total: 11.095900 ms (FindLiveObjects: 1.072300 ms CreateObjectMapping: 0.273400 ms MarkObjects: 5.949500 ms  DeleteObjects: 3.551600 ms)
+
+TRAILER_SCENE_DONE AuroraForge
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TrailerCapture:Run () (at Assets/PolygonRacing/Editor/TrailerCapture.cs:30)
+
+(Filename: Assets/PolygonRacing/Editor/TrailerCapture.cs Line: 30)
+
+Opening scene 'Assets/PolygonRacing/Scenes/StarfallPort.unity'
+Unloading 1063 Unused Serialized files (Serialized files now loaded: 0)
+Loaded scene 'Assets/PolygonRacing/Scenes/StarfallPort.unity'
+	Deserialize:            34.959 ms
+	Integration:            363.937 ms
+	Integration of assets:  0.113 ms
+	Thread Wait Time:       0.019 ms
+	Total Operation Time:   399.029 ms
+Unloading 1052 unused Assets / (15.2 MB). Loaded Objects now: 13937.
+Memory consumption went from 0.61 GB to 0.60 GB.
+Total: 12.362500 ms (FindLiveObjects: 1.060700 ms CreateObjectMapping: 0.267000 ms MarkObjects: 6.501600 ms  DeleteObjects: 4.274500 ms)
+
+TRAILER_SCENE_DONE StarfallPort
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TrailerCapture:Run () (at Assets/PolygonRacing/Editor/TrailerCapture.cs:30)
+
+(Filename: Assets/PolygonRacing/Editor/TrailerCapture.cs Line: 30)
+
+TRAILER_CAPTURE_COMPLETE
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:Log (object)
+TrailerCapture:Run () (at Assets/PolygonRacing/Editor/TrailerCapture.cs:32)
+
+(Filename: Assets/PolygonRacing/Editor/TrailerCapture.cs Line: 32)
+
+MonoPathRemapper: Attempts to remap: 18118; Successful remaps: 2
+Serialized file version minimum: 23, current 23
+Killing ADB server in 2.0710222 seconds.
+GPU Resident Drawer disposed.
+[Physics::Module] Cleanup current backend.
+[Physics::Module] Id: 0xf2b8ea05
+Input System module state changed to: ShutdownInProgress.
+Input Polling Thread exited.
+Input System module state changed to: Shutdown.
+[Licensing::IpcConnector] LicenseClient-User1-notifications channel disconnected successfully.
+[Licensing::IpcConnector] LicenseClient-User1 channel disconnected successfully.
+Lingering sessions upon destruction of worker manager
+Unity Data Store service was successfully shut down
+UDS shutting down local client system
+Shut down UDS service system complete
+AcceleratorClientConnectionCallback - disconnected - :0
+Cleanup mono
+CodeReloadManager destroyed
+VBCSCompilerPreWarmer: requested VBCSCompiler shutdown
+Checking for leaked weakptr:
+  Found no leaked weakptrs.
+[Package Manager] Server process was shutdown
+##utp:{"type":"MemoryLeaks","version":2,"phase":"Immediate","time":1793602618355,"processId":164476,"allocatedMemory":30099897,"memoryLabels":[{"Default":201567},{"Permanent":15516},{"NewDelete":68887},{"Thread":4197984},{"Manager":825053},{"VertexData":728},{"Geometry":816},{"Texture":24},{"Shader":851878},{"Material":132},{"GfxDevice":56328},{"Animation":952},{"FreeType":8},{"FontEngine":736},{"Physics":1970},{"Physics2D":16},{"Serialization":19168},{"Input":42840},{"JobScheduler":256},{"TextLib":336},{"Mono":48},{"MonoCode":64},{"ScriptingNativeRuntime":1286480},{"BaseObject":48912},{"Resource":1444},{"Renderer":2512},{"Transform":4685},{"File":31185},{"WebCam":616},{"Culling":32},{"Terrain":11442},{"Wind":24},{"STL":40},{"String":509848},{"StaticString":3808},{"Utility":2675894},{"Curl":2559},{"PoolAlloc":2504},{"AI":80},{"TypeTree":21101},{"ScriptManager":12656},{"CodeReload":448},{"RuntimeInitializeOnLoadManager":64},{"Sprites":102},{"SpriteAtlas":120},{"GI":7816},{"Director":8296},{"CloudService":7584},{"WebRequest":10956},{"VR":49794},{"SceneManager":608},{"Video":64},{"LazyScriptCache":32},{"Camera":729},{"Secure":2377},{"SerializationCache":9256},{"APIUpdating":10320},{"Subsystems":192},{"VirtualTexturing":57888},{"StaticSafetyDebugInfo":278528},{"Analytics":768},{"Hierarchy":1188},{"UIElements":40},{"CoreStats":14456},{"Identifiers":7152},{"Gui":128},{"EditorUtility":158437},{"VersionControl":8},{"Undo":931},{"AssetDatabase":18502026},{"AssetImporter":40},{"EditorGi":328},{"UnityConnect":40441},{"Upm":1912},{"UpmDiagnostics":8},{"AssetCompliance":96},{"DrivenProperties":72},{"LocalIPC":260},{"ProfilerEditor":9746},{"CoreBusinessMetrics":3600},{"Windowing":456},{"Licensing":12757},{"AssetReference":32},{"IPCStream":32}]}
